@@ -1,0 +1,17 @@
+{
+    "LocaleSwitcher": {
+        "label": "Change language",
+        "locale": "{locale, select, de {German} en {English} other {Unknown}}"
+    },
+    "HomePage_Dashboard": {
+        "headline": "Welcome back!",
+        "subheading": "Your Restaurant, Your Way",
+        "description": "Manage your restaurant operations effortlessly. \nExplore your restaurant's data, create new dishes, and stay on top of inventory."
+    },
+    "Navigation": {
+        "ingredients": "Ingredients",
+        "recipes": "Recipes",
+        "dishes": "Dishes",
+        "suppliers": "Suppliers"
+    }
+}

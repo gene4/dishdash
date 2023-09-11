@@ -1,0 +1,17 @@
+{
+    "LocaleSwitcher": {
+        "label": "Sprache ändern",
+        "locale": "{locale, select, de {Deutsch} en {Englisch} other {Unbekannt}}"
+    },
+    "HomePage_Dashboard": {
+        "headline": "Willkommen zurück!",
+        "subheading": "Dein Restaurant, deine Art",
+        "description": "Verwalte deinen Restaurantbetrieb ganz einfach. \nCheck die Daten deines Restaurants, bastel neue Gerichte und behalt den Überblick über dein Inventar."
+    },
+    "Navigation": {
+        "ingredients": "Zutaten",
+        "recipes": "Rezepte",
+        "dishes": "Gerichte",
+        "suppliers": "Lieferanten"
+    }
+}
