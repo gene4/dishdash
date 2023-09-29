@@ -1,8 +1,7 @@
-import DataTable from "@/components/data-table";
+import DataTable from "@/components/ingredients/table/ingredients-table";
 import { title } from "@/components/primitives";
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
-import { IngredientT } from "@/types";
 import { ingredientsColumns } from "@/config/data";
 
 export default async function IngredientsPage() {
@@ -20,10 +19,7 @@ export default async function IngredientsPage() {
     return (
         <div>
             <h1 className={title({ size: "sm" })}>Ingredients</h1>
-            <DataTable
-                data={ingredients as IngredientT[]}
-                columns={ingredientsColumns}
-            />
+            <DataTable data={ingredients} columns={ingredientsColumns} />
         </div>
     );
 }
