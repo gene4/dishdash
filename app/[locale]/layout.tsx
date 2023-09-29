@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
-import { Providers } from "./providers";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { NextIntlClientProvider } from "next-intl";
 import { ReactNode } from "react";
@@ -61,11 +61,11 @@ export default async function RootLayout({
                         "min-h-screen bg-background font-sans antialiased",
                         fontSans.variable
                     )}>
-                    <Providers
-                        themeProps={{
-                            attribute: "class",
-                            defaultTheme: "dark",
-                        }}>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange>
                         <div className="relative flex flex-col h-screen">
                             <NextIntlClientProvider
                                 locale={locale}
@@ -87,7 +87,7 @@ export default async function RootLayout({
                                 </footer> */}
                             </NextIntlClientProvider>
                         </div>
-                    </Providers>
+                    </ThemeProvider>
                 </body>
             </html>
         </ClerkProvider>

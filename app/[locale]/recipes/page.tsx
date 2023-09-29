@@ -1,8 +1,7 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
-import { title } from "@/components/primitives";
-import RecipesTable from "@/components/recipes/recipes-table";
-import { recipesColumns } from "@/config/data";
+import { DataTable } from "./data-table";
+import { columns } from "./columns";
 
 export default async function RecipesPage() {
     const { userId } = auth();
@@ -29,8 +28,10 @@ export default async function RecipesPage() {
 
     return (
         <div>
-            <h1 className={title({ size: "sm" })}>Recipes</h1>
-            <RecipesTable data={recipes} columns={recipesColumns} />
+            <h1 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0  mb-5">
+                Recipes
+            </h1>
+            <DataTable columns={columns} data={recipes} />
         </div>
     );
 }

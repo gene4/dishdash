@@ -8,7 +8,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
-import { Button, Switch } from "@nextui-org/react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
@@ -35,6 +34,10 @@ import {
 } from "@/components/ui/select";
 
 import { Ingredient } from "@prisma/client";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
@@ -57,7 +60,6 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
         resolver: zodResolver(formSchema),
         defaultValues: initialIngredient || {
             name: "",
-            unit: "",
             price: undefined,
             category: "",
             supplier: "",
@@ -111,45 +113,45 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                         Add a new ingredient to your list
                     </SheetDescription>
                 </SheetHeader>
-                <Form {...form}>
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-3 mt-5">
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className={labelStyle}>
-                                        Name
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            disabled={isLoading}
-                                            {...field}
-                                        />
-                                    </FormControl>
+                <div>
+                    <Form {...form}>
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-3 mt-5">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            Name
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={isLoading}
+                                                {...field}
+                                            />
+                                        </FormControl>
 
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="unit"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className={labelStyle}>
-                                        Unit
-                                    </FormLabel>
-                                    <FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="unit"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            Unit
+                                        </FormLabel>
                                         <Select
                                             disabled={isLoading}
                                             onValueChange={field.onChange}
                                             defaultValue={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="" />
+                                                    <SelectValue placeholder="Select a unit" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
@@ -162,88 +164,94 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                    </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="price"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            Price
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={isLoading}
+                                                type="number"
+                                                step={0.1}
+                                                {...field}
+                                            />
+                                        </FormControl>
 
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="price"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className={labelStyle}>
-                                        Price
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            disabled={isLoading}
-                                            type="number"
-                                            step={0.1}
-                                            {...field}
-                                        />
-                                    </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="supplier"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            Supplier
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={isLoading}
+                                                {...field}
+                                            />
+                                        </FormControl>
 
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="supplier"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className={labelStyle}>
-                                        Supplier
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            disabled={isLoading}
-                                            {...field}
-                                        />
-                                    </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            Category
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={isLoading}
+                                                {...field}
+                                            />
+                                        </FormControl>
 
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className={labelStyle}>
-                                        Category
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            disabled={isLoading}
-                                            {...field}
-                                        />
-                                    </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex justify-between pt-5">
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        checked={isMultiple}
+                                        onCheckedChange={setIsMultiple}
+                                        id="multiple"
+                                    />
+                                    <Label htmlFor="multiple">
+                                        Add multiple
+                                    </Label>
+                                </div>
 
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className="flex justify-between pt-5">
-                            <Switch
-                                isSelected={isMultiple}
-                                onValueChange={setIsMultiple}>
-                                Add multiple
-                            </Switch>
-                            <Button
-                                isLoading={isLoading}
-                                radius="lg"
-                                size="md"
-                                color="primary"
-                                type="submit">
-                                {initialIngredient ? "Update" : "Add"}
-                            </Button>
-                        </div>
-                    </form>
-                </Form>
+                                <Button
+                                    className="rounded-lg"
+                                    disabled={isLoading}
+                                    type="submit">
+                                    {isLoading && (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    )}
+                                    {initialIngredient ? "Update" : "Add"}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
             </SheetContent>
         </Sheet>
     );
