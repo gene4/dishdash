@@ -75,7 +75,7 @@ export default async function RootLayout({
                                     <div className="hidden md:flex w-fit flex-col h-full">
                                         <Sidebar />
                                     </div>
-                                    <main className="container mx-auto max-w-7xl pt-6 px-6 flex-grow">
+                                    <main className="container mx-auto max-w-7xl pt-6 px-3 md:px-7 flex-grow">
                                         {children}
                                     </main>
                                 </div>

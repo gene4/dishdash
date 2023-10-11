@@ -48,7 +48,7 @@ const formSchema = z.object({
 });
 
 interface Props {
-    initialIngredient: Ingredient | null;
+    initialIngredient?: Ingredient;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
 }
@@ -68,7 +68,7 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
     const { toast } = useToast();
     const router = useRouter();
     const isLoading = form.formState.isSubmitting;
-    console.log(initialIngredient);
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         let response;
 
@@ -101,7 +101,7 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
         }
     }
 
-    const labelStyle = "after:content-['*'] after:text-danger after:ml-0.5";
+    const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetContent side={"left"}>

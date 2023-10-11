@@ -33,8 +33,8 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData, TValue>({
-    columns,
     data,
+    columns,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -49,6 +49,7 @@ export function DataTable<TData, TValue>({
         getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
+
         state: {
             sorting,
             columnFilters,
@@ -58,7 +59,7 @@ export function DataTable<TData, TValue>({
     return (
         <>
             <div className="flex items-center py-4 justify-between">
-                <div className="relative w-80">
+                <div className="relative w-48 md:w-80">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Filter ingredients..."
@@ -76,7 +77,9 @@ export function DataTable<TData, TValue>({
                     />
                 </div>
                 <Button
-                    onClick={() => setIsFormOpen(true)}
+                    onClick={() => {
+                        setIsFormOpen(true);
+                    }}
                     className="rounded-lg">
                     Add New <Plus className="ml-2 w-4 h-4" />
                 </Button>
@@ -105,11 +108,7 @@ export function DataTable<TData, TValue>({
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={
-                                        row.getIsSelected() && "selected"
-                                    }>
+                                <TableRow key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(
@@ -133,11 +132,7 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <IngredientForm
-                isOpen={isFormOpen}
-                setIsOpen={setIsFormOpen}
-                initialIngredient={null}
-            />
+            <IngredientForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
         </>
     );
 }

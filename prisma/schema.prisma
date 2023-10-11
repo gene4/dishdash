@@ -18,6 +18,7 @@ model Ingredient {
   supplier    String
   category    String
   recipes     RecipeIngredient[]
+  dishes      DishIngredient[]
   updatedAt DateTime @updatedAt
 
 }
@@ -29,6 +30,7 @@ model Recipe {
   unit      String
   yield     Float
   ingredients     RecipeIngredient[]
+  dishes      DishIngredient[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -45,4 +47,34 @@ model RecipeIngredient {
 
 @@index([recipeId])
 @@index([ingredientId])
+}
+
+
+model Dish {
+  id        String      @id @default(uuid()) 
+  name      String
+  userId    String
+  targetPrice Float
+  multiplier Float
+  ingredients     DishIngredient[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DishIngredient {
+  id        String      @id @default(uuid()) 
+  amount    Float
+
+  dish     Dish   @relation(fields: [dishId], references: [id])
+  dishId   String
+
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id])
+  ingredientId String?
+
+  recipe Recipe? @relation(fields: [recipeId], references: [id])
+  recipeId String?
+
+@@index([dishId])
+@@index([ingredientId])
+@@index([recipeId])
 }

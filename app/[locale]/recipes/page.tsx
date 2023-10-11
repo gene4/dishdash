@@ -1,7 +1,6 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
-import { columns } from "./columns";
 
 export default async function RecipesPage() {
     const { userId } = auth();
@@ -18,11 +17,17 @@ export default async function RecipesPage() {
                 include: {
                     ingredient: {
                         select: {
-                            price: true, // Include the price field from the Ingredient model
+                            price: true,
                         },
                     },
                 },
             },
+        },
+    });
+
+    const ingredients = await prismadb.ingredient.findMany({
+        where: {
+            userId,
         },
     });
 
@@ -31,7 +36,7 @@ export default async function RecipesPage() {
             <h1 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0  mb-5">
                 Recipes
             </h1>
-            <DataTable columns={columns} data={recipes} />
+            <DataTable data={recipes} ingredients={ingredients} />
         </div>
     );
 }

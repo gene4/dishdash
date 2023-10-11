@@ -23,18 +23,21 @@ import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import IngredientForm from "@/components/ingredients/table/ingredient-form";
+import { Row } from "@tanstack/react-table";
 
 interface Props {
-    ingredient: Ingredient;
+    row: Row<Ingredient>;
 }
 
-function IngredientsActions({ ingredient }: Props) {
+function IngredientsActions({ row }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
     const { toast } = useToast();
     const router = useRouter();
+
+    const ingredient = row.original;
 
     const onDelete = useCallback(async () => {
         setIsLoading(true);
@@ -63,7 +66,9 @@ function IngredientsActions({ ingredient }: Props) {
                     <Tooltip>
                         <TooltipTrigger>
                             <Edit
-                                onClick={() => setIsFormOpen(true)}
+                                onClick={() => {
+                                    setIsFormOpen(true);
+                                }}
                                 className="w-4 h-4 text-gray-500"
                             />
                         </TooltipTrigger>
@@ -91,8 +96,7 @@ function IngredientsActions({ ingredient }: Props) {
                             <DialogTitle>Are you absolutely sure?</DialogTitle>
                             <DialogDescription>
                                 This action cannot be undone. This will
-                                permanently delete your account and remove your
-                                data from our servers.
+                                permanently delete your ingredient.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>

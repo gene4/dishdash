@@ -7,6 +7,7 @@ import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import IngredientsActions from "./ingredients-actions";
+import { formatPrice } from "@/lib/utils/format-price";
 
 export const columns: ColumnDef<Ingredient>[] = [
     {
@@ -14,7 +15,7 @@ export const columns: ColumnDef<Ingredient>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 font-bold group hover:bg-transparent"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -34,7 +35,7 @@ export const columns: ColumnDef<Ingredient>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 group font-bold hover:bg-transparent"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -44,22 +45,14 @@ export const columns: ColumnDef<Ingredient>[] = [
                 </Button>
             );
         },
-        cell: ({ row }) => {
-            const price = parseFloat(row.getValue("price"));
-            const formatted = new Intl.NumberFormat("de-DE", {
-                style: "currency",
-                currency: "EUR",
-            }).format(price);
-
-            return formatted;
-        },
+        cell: ({ row }) => formatPrice(row.original.price),
     },
     {
         accessorKey: "supplier",
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 group font-bold hover:bg-transparent"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -75,12 +68,12 @@ export const columns: ColumnDef<Ingredient>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 group font-bold hover:bg-transparent"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
                     }>
-                    SUPPLIER
+                    CATEGORY
                     <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                 </Button>
             );
@@ -91,7 +84,7 @@ export const columns: ColumnDef<Ingredient>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 group font-bold hover:bg-transparent"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -105,9 +98,6 @@ export const columns: ColumnDef<Ingredient>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => {
-            const ingredient = row.original;
-            return <IngredientsActions ingredient={ingredient} />;
-        },
+        cell: ({ row }) => <IngredientsActions row={row} />,
     },
 ];

@@ -1,7 +1,7 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
-import { columns } from "./columns";
 import { DataTable } from "./data-table";
+import { columns } from "./columns";
 
 export default async function IngredientsPage() {
     const { userId } = auth();

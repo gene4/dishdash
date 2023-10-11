@@ -2,7 +2,7 @@ export type SiteConfig = typeof siteConfig;
 import { Home, Banana, Pizza, ClipboardList, Truck } from "lucide-react";
 
 export const siteConfig = {
-    name: "Next.js + NextUI",
+    name: "Dishdash",
     description:
         "Make beautiful websites regardless of your design experience.",
     navItems: [

@@ -1,35 +1,37 @@
 "use client";
 
 import { siteConfig } from "@/config/site";
-import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { Link } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
-export const Sidebar = () => {
+interface Props {
+    setIsOpen?: (open: boolean) => void;
+}
+
+export const Sidebar = ({ setIsOpen }: Props) => {
     const t = useTranslations("Navigation");
     const pathname = usePathname();
+
     return (
-        <aside className="flex space-y-4 flex-col h-full border-r border-divider shadow-sm w-40">
+        <aside className="flex space-y-4 flex-col h-full md:border-r md:border-divider md:shadow-sm md:w-40">
             <div className="p-4 flex-1 justify-center">
                 <div className="space-y-2">
                     {siteConfig.navItems.map((item) => (
-                        <Link
-                            as={NextLink}
-                            size="sm"
+                        <NextLink
+                            onClick={() => setIsOpen && setIsOpen(false)}
                             className={clsx(
+                                "flex items-center hover:bg-muted",
                                 pathname === item.href &&
-                                    "bg-primary text-white",
+                                    "bg-primary hover:bg-primary text-white",
                                 "w-full rounded-xl py-1 px-3"
                             )}
                             key={item.href}
-                            color="foreground"
                             href={item.href}>
                             <item.icon className="mr-2 w-4 h-4" />
                             {t(item.label)}
-                        </Link>
+                        </NextLink>
                     ))}
                 </div>
             </div>
