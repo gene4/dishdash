@@ -95,8 +95,8 @@ function IngredientsActions({ row }: Props) {
                         <DialogHeader>
                             <DialogTitle>Are you absolutely sure?</DialogTitle>
                             <DialogDescription>
-                                This action cannot be undone. This will
-                                permanently delete your ingredient.
+                                This ingredient will be removed from recipes or
+                                dishes where it might have been included.{" "}
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>

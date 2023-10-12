@@ -58,24 +58,26 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
         }).format(totalPrice);
 
     return recipeIngredients ? (
-        <div>
-            <div className="mb-5">
-                <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight transition-colors first:mt-0">
+        <>
+            <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
+                <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
                     Recipe: <span className="font-normal">{recipe?.name}</span>
                 </h1>
-                <div className="text-xl mt-5">
-                    <h2 className="font-extrabold">
-                        Yield:{" "}
-                        <span className="font-normal">
-                            {recipe?.yield} {recipe?.unit}
-                        </span>
-                    </h2>
-                    <h2 className="font-extrabold">
-                        Total Price:{" "}
-                        <span className="font-normal">
-                            {formattedTotalPrice}
-                        </span>
-                    </h2>
+                <div className="text-xl flex flex-wrap text-center font-bold space-y-4 md:space-y-0">
+                    <div className="flex justify-around w-full md:w-fit space-x-10">
+                        <div>
+                            <h2 className="border-b mb-1">Yield</h2>
+                            <span className="font-normal text-2xl">
+                                {recipe?.yield} {recipe?.unit}
+                            </span>
+                        </div>
+                        <div>
+                            <h2 className="border-b mb-1">Total Price</h2>
+                            <span className="font-normal text-2xl">
+                                {formattedTotalPrice}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <DataTable
@@ -83,7 +85,7 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                 ingredients={ingredients}
                 recipe={recipe}
             />
-        </div>
+        </>
     ) : (
         <div>Not Found!</div>
     );

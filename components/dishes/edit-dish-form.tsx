@@ -34,39 +34,38 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import { Recipe } from "@prisma/client";
+import { Dish } from "@prisma/client";
 
-const recipeSchema = z.object({
+const dishSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    unit: z.string().min(1, { message: "Unit is required" }),
-    yield: z.coerce.number({ required_error: "Yield is required" }),
+    multiplier: z.coerce.number({ required_error: "Multiplier is required" }),
+    targetPrice: z.coerce.number({
+        required_error: "Target price is required",
+    }),
 });
 
 interface Props {
-    initialRecipe: Recipe;
+    initialDish: Dish;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
 }
 
-function EditRecipeForm({ initialRecipe, isOpen, setIsOpen }: Props) {
-    const form = useForm<z.infer<typeof recipeSchema>>({
-        resolver: zodResolver(recipeSchema),
-        defaultValues: initialRecipe,
+function EditDishForm({ initialDish, isOpen, setIsOpen }: Props) {
+    const form = useForm<z.infer<typeof dishSchema>>({
+        resolver: zodResolver(dishSchema),
+        defaultValues: initialDish,
     });
 
     const { toast } = useToast();
     const router = useRouter();
     const isLoading = form.formState.isSubmitting;
 
-    async function onSubmit(values: z.infer<typeof recipeSchema>) {
-        const formattedValues = { ...values, recipeYield: values.yield };
-
+    async function onSubmit(values: z.infer<typeof dishSchema>) {
         try {
             const response = await axios.patch(
-                `/api/recipe/${initialRecipe.id}`,
-                formattedValues
+                `/api/dish/${initialDish.id}`,
+                values
             );
-
             setIsOpen(false);
             toast({
                 description: `${response.data.name} was updated`,
@@ -88,7 +87,7 @@ function EditRecipeForm({ initialRecipe, isOpen, setIsOpen }: Props) {
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
-                    <DialogTitle>Edit Recipe</DialogTitle>
+                    <DialogTitle>Edit Dish</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form
@@ -117,32 +116,19 @@ function EditRecipeForm({ initialRecipe, isOpen, setIsOpen }: Props) {
 
                             <FormField
                                 control={form.control}
-                                name="unit"
+                                name="multiplier"
                                 render={({ field }) => (
-                                    <FormItem className="flex-1">
+                                    <FormItem>
                                         <FormLabel className={labelStyle}>
-                                            Unit
+                                            Multiplier
                                         </FormLabel>
                                         <FormControl>
-                                            <Select
+                                            <Input
                                                 disabled={isLoading}
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger className="rounded-lg">
-                                                        <SelectValue placeholder="Select" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {Unit.map((unit) => (
-                                                        <SelectItem
-                                                            key={unit}
-                                                            value={unit}>
-                                                            {unit}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                                type="number"
+                                                step={0.1}
+                                                {...field}
+                                            />
                                         </FormControl>
 
                                         <FormMessage />
@@ -151,11 +137,11 @@ function EditRecipeForm({ initialRecipe, isOpen, setIsOpen }: Props) {
                             />
                             <FormField
                                 control={form.control}
-                                name="yield"
+                                name="targetPrice"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className={labelStyle}>
-                                            Yield
+                                            Target Price
                                         </FormLabel>
                                         <FormControl>
                                             <Input
@@ -187,4 +173,4 @@ function EditRecipeForm({ initialRecipe, isOpen, setIsOpen }: Props) {
     );
 }
 
-export default EditRecipeForm;
+export default EditDishForm;

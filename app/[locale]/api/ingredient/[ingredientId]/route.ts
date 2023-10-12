@@ -57,6 +57,20 @@ export async function DELETE(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
+        // Delete all RecipeIngredient records associated with the ingredient
+        await prismadb.recipeIngredient.deleteMany({
+            where: {
+                ingredientId: params.ingredientId,
+            },
+        });
+
+        // Delete all DishIngredient records associated with the ingredient
+        await prismadb.dishIngredient.deleteMany({
+            where: {
+                ingredientId: params.ingredientId,
+            },
+        });
+
         const ingredient = await prismadb.ingredient.delete({
             where: {
                 userId,

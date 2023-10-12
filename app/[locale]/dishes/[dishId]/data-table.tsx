@@ -51,38 +51,47 @@ import {
     Trash2,
     Edit,
 } from "lucide-react";
-import { Ingredient, Recipe } from "@prisma/client";
-import RecipeActions from "./recipe-actions";
+import { Dish } from "@prisma/client";
+import RecipeActions from "./dish-actions";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import EditRecipeForm from "@/components/recipes/edit-recipe-form";
-import AddRecipeIngredientForm from "@/components/recipes/add-recipeIngredient-form";
 import { formatPrice } from "@/lib/utils/format-price";
+import { IngredientsAndRecipes } from "../data-table";
+import EditDishForm from "@/components/dishes/edit-dish-form";
+import AddDishIngredientForm from "@/components/dishes/add-dishIngredient-form";
 
-export type RecipeIngredients = {
+export type DishIngredients = {
     amount: number;
-    id: string;
+    id: string | undefined;
     name: string;
     userId: string;
     unit: string;
-    price: number;
+    price?: number;
     createdAt: Date;
-    supplier: string;
-    category: string;
+    yield?: number;
     updatedAt: Date;
-    recipeIngredientId: string;
+    dishIngredientId: string;
+    ingredients?: {
+        ingredient: {
+            price: number;
+        };
+        id: string;
+        amount: number;
+        recipeId: string;
+        ingredientId: string;
+    }[];
 };
 
 interface DataTableProps {
-    recipeIngredients: RecipeIngredients[];
-    ingredients: Ingredient[];
-    recipe: Recipe;
+    dishIngredients: DishIngredients[];
+    ingredientsAndRecipes: IngredientsAndRecipes;
+    dish: Dish;
 }
 
 export function DataTable({
-    recipeIngredients,
-    ingredients,
-    recipe,
+    dishIngredients,
+    ingredientsAndRecipes,
+    dish,
 }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -96,13 +105,13 @@ export function DataTable({
 
     const router = useRouter();
 
-    const columns: ColumnDef<RecipeIngredients>[] = [
+    const columns: ColumnDef<DishIngredients>[] = [
         {
             accessorKey: "name",
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -126,57 +135,42 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }>
-                        PRICE
+                        PRICE PER UNIT
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
             },
-            cell: ({ row }) => formatPrice(row.original.price),
+            cell: ({ row }) => {
+                if ("yield" in row.original) {
+                    const totalPrice = row.original.ingredients!.reduce(
+                        (acc: number, ingredient: any) => {
+                            const { amount } = ingredient;
+                            const ingredientPrice =
+                                ingredient.ingredient?.price || 0;
+                            return acc + amount * ingredientPrice;
+                        },
+                        0
+                    );
+
+                    const pricePerUnit = totalPrice / row.original.yield!;
+                    return formatPrice(pricePerUnit);
+                } else {
+                    return formatPrice(row.original.price!);
+                }
+            },
         },
 
-        {
-            accessorKey: "supplier",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        SUPPLIER
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-        },
-        {
-            accessorKey: "category",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        CATEGORY
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-        },
         {
             accessorKey: "totalPrice",
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -187,22 +181,38 @@ export function DataTable({
                 );
             },
             cell: ({ row }) => {
-                const totalPrice = row.original.price * row.original.amount;
+                if ("yield" in row.original) {
+                    const totalPrice = row.original.ingredients!.reduce(
+                        (acc: number, ingredient: any) => {
+                            const { amount } = ingredient;
+                            const ingredientPrice =
+                                ingredient.ingredient?.price || 0;
+                            return acc + amount * ingredientPrice;
+                        },
+                        0
+                    );
 
-                return formatPrice(totalPrice);
+                    const pricePerUnit = totalPrice / row.original.yield!;
+                    return formatPrice(pricePerUnit * row.original.amount);
+                } else {
+                    const totalPrice =
+                        row.original.price! * row.original.amount;
+
+                    return formatPrice(totalPrice);
+                }
             },
         },
         {
             id: "actions",
             cell: ({ row }) => {
-                const recipeIngredient = row.original;
-                return <RecipeActions recipeIngredient={recipeIngredient} />;
+                const dishIngredient = row.original;
+                return <RecipeActions dishIngredient={dishIngredient} />;
             },
         },
     ];
 
     const table = useReactTable({
-        data: recipeIngredients,
+        data: dishIngredients,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -219,12 +229,12 @@ export function DataTable({
     const onDelete = useCallback(async () => {
         setIsLoading(true);
         try {
-            await axios.delete(`/api/recipe/${recipe.id}`);
+            await axios.delete(`/api/dish/${dish.id}`);
             setIsDeleteDialogOpen(false);
             setIsLoading(false);
-            router.push("/recipes");
+            router.push("/dishes");
             toast({
-                description: `Recipe ${recipe.name} was deleted.`,
+                description: `Dish ${dish.name} was deleted.`,
             });
             router.refresh();
         } catch (error) {
@@ -235,7 +245,7 @@ export function DataTable({
                 description: "Something went wrong.",
             });
         }
-    }, [recipe.id, recipe.name, router, toast]);
+    }, [dish.id, dish.name, router, toast]);
 
     return (
         <>
@@ -270,9 +280,7 @@ export function DataTable({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>
-                                Recipe actions
-                            </DropdownMenuLabel>
+                            <DropdownMenuLabel>Dish actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => {
@@ -347,10 +355,10 @@ export function DataTable({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <EditRecipeForm
+            <EditDishForm
                 isOpen={isFormOpen}
                 setIsOpen={setIsFormOpen}
-                initialRecipe={recipe}
+                initialDish={dish}
             />
             <AlertDialog
                 open={isDeleteDialogOpen}
@@ -361,8 +369,8 @@ export function DataTable({
                             Are you absolutely sure?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This recipe will be removed from dishes where it
-                            might have been included.{" "}
+                            This action cannot be undone. This will permanently
+                            delete your dish.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -379,9 +387,9 @@ export function DataTable({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <AddRecipeIngredientForm
-                recipeId={recipe.id}
-                ingredients={ingredients}
+            <AddDishIngredientForm
+                dishId={dish.id}
+                ingredientsAndRecipes={ingredientsAndRecipes}
                 isOpen={isAddIngredientFormOpen}
                 setIsOpen={setIsAddIngredientFormOpen}
             />

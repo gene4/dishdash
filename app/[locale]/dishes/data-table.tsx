@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    ColumnDef,
     flexRender,
     getCoreRowModel,
     getPaginationRowModel,
@@ -21,18 +20,15 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
-import { useToast } from "@/components/ui/use-toast";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Input } from "@/components/ui/input";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import clsx from "clsx";
-import { ArrowUpDown, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Dish, Ingredient, Recipe } from "@prisma/client";
-import { useRouter } from "next/navigation";
-import { calculateNetoDishPrice } from "@/lib/utils/calculate-dish-neto-price";
-import { formatPrice } from "@/lib/utils/format-price";
 import AddDishForm from "@/components/dishes/add-dish-form";
+import { columns } from "./columns";
+import { useRouter } from "next/navigation";
 
 export type DishDataReceived = Dish & {
     ingredients: {
@@ -90,95 +86,7 @@ export function DataTable({ data, ingredientsAndRecipes }: DataTableProps) {
     const [isAddIngredientFormOpen, setIsAddIngredientFormOpen] =
         useState(false);
 
-    const { toast } = useToast();
-
     const router = useRouter();
-
-    const columns: ColumnDef<DishDataReceived>[] = [
-        {
-            accessorKey: "name",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        NAME
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-        },
-
-        {
-            accessorKey: "netoPrice",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        NETO PRICE
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-            cell: ({ row }) =>
-                formatPrice(calculateNetoDishPrice(row.original)),
-        },
-
-        {
-            accessorKey: "multiplier",
-            header: "MULTIPLIER",
-        },
-        {
-            accessorKey: "targetPrice",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        TARGET PRICE
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-            cell: ({ row }) => formatPrice(row.original.targetPrice),
-        },
-        {
-            header: "TOTAL PRICE",
-            cell: ({ row }) => {
-                const netoPrice = calculateNetoDishPrice(row.original);
-                const multiplier = row.getValue("multiplier") as number;
-                const totalPrice = netoPrice * multiplier;
-
-                const targetPrice = row.getValue("targetPrice") as number;
-
-                return (
-                    <div
-                        className={clsx(
-                            totalPrice > targetPrice && "text-red-500"
-                        )}>
-                        {formatPrice(totalPrice)}
-                    </div>
-                );
-            },
-        },
-        // {
-        //     id: "actions",
-        //     cell: ({ row }) => {
-        //         const recipeIngredient = row.original;
-        //         return <RecipeActions recipeIngredient={recipeIngredient} />;
-        //     },
-        // },
-    ];
 
     const table = useReactTable({
         data,
@@ -249,6 +157,11 @@ export function DataTable({ data, ingredientsAndRecipes }: DataTableProps) {
                                 <TableRow
                                     key={row.id}
                                     className="cursor-pointer"
+                                    onClick={() =>
+                                        router.push(
+                                            `/dishes/${row.original.id}`
+                                        )
+                                    }
                                     data-state={
                                         row.getIsSelected() && "selected"
                                     }>

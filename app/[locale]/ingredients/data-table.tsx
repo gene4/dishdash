@@ -62,7 +62,7 @@ export function DataTable<TData, TValue>({
                 <div className="relative w-48 md:w-80">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
-                        placeholder="Filter ingredients..."
+                        placeholder="Search ingredients..."
                         value={
                             (table
                                 .getColumn("name")

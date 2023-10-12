@@ -5,13 +5,13 @@ import prismadb from "@/lib/prismadb";
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { recipeId: string } }
+    { params }: { params: { dishId: string } }
 ) {
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, unit, recipeYield } = body;
-        if (!params.recipeId) {
+        const { name, targetPrice, multiplier } = body;
+        if (!params.dishId) {
             return new NextResponse("Recipe ID required", { status: 400 });
         }
 
@@ -19,19 +19,19 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!name || !unit || !recipeYield) {
+        if (!name || !targetPrice || !multiplier) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
-        const recipe = await prismadb.recipe.update({
+        const recipe = await prismadb.dish.update({
             where: {
-                id: params.recipeId,
+                id: params.dishId,
                 userId: user.id,
             },
             data: {
                 name,
-                unit,
-                yield: recipeYield,
+                targetPrice,
+                multiplier,
             },
         });
 
@@ -44,7 +44,7 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { recipeId: string } }
+    { params }: { params: { dishId: string } }
 ) {
     try {
         const { userId } = auth();
@@ -54,28 +54,21 @@ export async function DELETE(
         }
 
         // Delete all RecipeIngredient records associated with the recipe
-        await prismadb.recipeIngredient.deleteMany({
-            where: {
-                recipeId: params.recipeId,
-            },
-        });
-
-        // Delete all DishIngredient records associated with the recipe
         await prismadb.dishIngredient.deleteMany({
             where: {
-                recipeId: params.recipeId,
+                dishId: params.dishId,
             },
         });
 
         // Delete the recipe itself
-        const recipe = await prismadb.recipe.delete({
+        const dish = await prismadb.dish.delete({
             where: {
-                id: params.recipeId,
+                id: params.dishId,
                 userId,
             },
         });
 
-        return NextResponse.json(recipe);
+        return NextResponse.json(dish);
     } catch (error) {
         console.log("[RECIPE_DELETE]", error);
         return new NextResponse("Internal Error", { status: 500 });
