@@ -5,29 +5,22 @@ const db = new PrismaClient();
 async function main() {
     try {
         // Create the "Tomato salad" dish
-        const tomatoSaladDish = await db.dish.create({
+        const supplier = await db.supplier.create({
             data: {
-                name: "Tomato Salad",
+                name: "Metro",
                 userId: "user_2VDY5dmkvHBagbod561TixETKhB",
-                multiplier: 3,
-                targetPrice: 12,
             },
         });
 
         // Create and associate the ingredients with the recipe
-        await db.dishIngredient.createMany({
-            data: [
-                {
-                    amount: 0.1,
-                    dishId: tomatoSaladDish.id,
-                    recipeId: "0efa967e-d86b-4ad7-99ca-cfb00f11bec6",
-                },
-                {
-                    amount: 0.2,
-                    dishId: tomatoSaladDish.id,
-                    ingredientId: "faf72ae7-2a87-47c7-94b5-c06c5da5e59d",
-                },
-            ],
+        await db.invoice.create({
+            data: {
+                supplierId: supplier.id,
+                userId: "user_2VDY5dmkvHBagbod561TixETKhB",
+                date: "2023-07-16T19:20:30.451Z",
+                amount: 230,
+                imageUrl: "https://www.africau.edu/images/default/sample.pdf",
+            },
         });
     } catch (error) {
         console.log("Error in seeding", error);

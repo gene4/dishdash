@@ -22,8 +22,8 @@ export const siteConfig = {
             icon: Pizza,
         },
         {
-            label: "suppliers",
-            href: "/suppliers",
+            label: "invoices",
+            href: "/invoices",
             icon: Truck,
         },
     ],

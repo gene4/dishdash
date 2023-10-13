@@ -79,3 +79,26 @@ model DishIngredient {
 @@index([ingredientId])
 @@index([recipeId])
 }
+
+model Supplier {
+  id        String      @id @default(uuid()) 
+  name      String
+  userId    String
+  bills     Invoice[]
+  createdAt DateTime    @default(now())
+}
+
+model Invoice {
+  id          String      @id @default(uuid()) 
+  userId      String
+
+  supplierId  String
+  supplier    Supplier    @relation(fields: [supplierId], references: [id])
+
+  date        DateTime 
+  amount      Float
+  imageUrl   String?
+  createdAt DateTime    @default(now())
+
+  @@index([supplierId])
+}
