@@ -31,6 +31,10 @@ export const columns: ColumnDef<Ingredient>[] = [
         header: "UNIT",
     },
     {
+        accessorKey: "amount",
+        header: "AMOUNT",
+    },
+    {
         accessorKey: "price",
         header: ({ column }) => {
             return (
@@ -46,6 +50,12 @@ export const columns: ColumnDef<Ingredient>[] = [
             );
         },
         cell: ({ row }) => formatPrice(row.original.price),
+    },
+    {
+        accessorKey: "pricePerUnit",
+        header: "PRICE PER UNIT",
+        cell: ({ row }) =>
+            formatPrice(row.original.price / row.original.amount),
     },
     {
         accessorKey: "supplier",

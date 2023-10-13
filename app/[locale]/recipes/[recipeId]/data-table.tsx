@@ -102,7 +102,7 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -126,12 +126,12 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }>
-                        PRICE
+                        PRICE PER UNIT
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
@@ -144,7 +144,7 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -160,7 +160,7 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -176,7 +176,7 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent"
+                        className="px-0 group hover:bg-transparent font-bold"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")

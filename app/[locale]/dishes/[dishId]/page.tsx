@@ -35,6 +35,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                                     ingredient: {
                                         select: {
                                             price: true,
+                                            amount: true,
                                         },
                                     },
                                 },
@@ -53,6 +54,9 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
             ...ingredient.ingredient,
             ...ingredient.recipe,
             amount: ingredient.amount,
+            price: ingredient.ingredient
+                ? ingredient.ingredient.price / ingredient.ingredient.amount
+                : null,
             dishIngredientId: ingredient.id,
         })) as DishIngredients[]);
 
@@ -61,6 +65,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
             userId,
         },
     });
+    console.log(dishIngredients);
 
     const recipes = await prismadb.recipe.findMany({
         where: {
@@ -105,7 +110,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                             <h2 className="border-b mb-1">Total Price </h2>
                             <span
                                 className={clsx(
-                                    "font-normal text-2xl",
+                                    "text-2xl font-semibold",
                                     netoPrice &&
                                         netoPrice * dish.multiplier >
                                             dish.targetPrice &&

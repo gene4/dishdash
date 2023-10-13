@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 import clsx from "clsx";
 import { Sidebar } from "@/components/sidebar";
+import TanstackProvider from "@/components/tanstack-provider";
 
 type Props = {
     children: ReactNode;
@@ -54,42 +55,44 @@ export default async function RootLayout({
     const messages = await getMessages(locale);
     return (
         <ClerkProvider localization={locale === "de" ? deDE : undefined}>
-            <html lang={locale} suppressHydrationWarning>
-                <head />
-                <body
-                    className={clsx(
-                        "min-h-screen bg-background font-sans antialiased",
-                        fontSans.variable
-                    )}>
-                    <ThemeProvider
-                        attribute="class"
-                        defaultTheme="system"
-                        enableSystem
-                        disableTransitionOnChange>
-                        <div className="relative flex flex-col h-screen">
-                            <NextIntlClientProvider
-                                locale={locale}
-                                messages={messages}>
-                                <Navbar />
-                                <div className="flex h-full">
-                                    <div className="hidden md:flex w-fit flex-col h-full">
-                                        <Sidebar />
+            <TanstackProvider>
+                <html lang={locale} suppressHydrationWarning>
+                    <head />
+                    <body
+                        className={clsx(
+                            "min-h-screen bg-background font-sans antialiased",
+                            fontSans.variable
+                        )}>
+                        <ThemeProvider
+                            attribute="class"
+                            defaultTheme="system"
+                            enableSystem
+                            disableTransitionOnChange>
+                            <div className="relative flex flex-col h-screen">
+                                <NextIntlClientProvider
+                                    locale={locale}
+                                    messages={messages}>
+                                    <Navbar />
+                                    <div className="flex h-full">
+                                        <div className="hidden md:flex w-fit flex-col h-full">
+                                            <Sidebar />
+                                        </div>
+                                        <main className="container mx-auto max-w-7xl pt-6 px-3 md:px-7 flex-grow">
+                                            {children}
+                                        </main>
                                     </div>
-                                    <main className="container mx-auto max-w-7xl pt-6 px-3 md:px-7 flex-grow">
-                                        {children}
-                                    </main>
-                                </div>
-                                <Toaster />
-                                {/* <footer className="w-full flex items-center justify-center py-3">
+                                    <Toaster />
+                                    {/* <footer className="w-full flex items-center justify-center py-3">
                                     <span className="text-default-600">
                                         © DishDash
                                     </span>
                                 </footer> */}
-                            </NextIntlClientProvider>
-                        </div>
-                    </ThemeProvider>
-                </body>
-            </html>
+                                </NextIntlClientProvider>
+                            </div>
+                        </ThemeProvider>
+                    </body>
+                </html>
+            </TanstackProvider>
         </ClerkProvider>
     );
 }

@@ -42,6 +42,7 @@ import { Loader2 } from "lucide-react";
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
     unit: z.string().min(1, { message: "Unit is required" }),
+    amount: z.coerce.number(),
     price: z.coerce.number(),
     category: z.string().min(1, { message: "Category is required" }),
     supplier: z.string().min(1, { message: "Supplier is required" }),
@@ -164,6 +165,27 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                                 ))}
                                             </SelectContent>
                                         </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="amount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            Amount
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={isLoading}
+                                                type="number"
+                                                step={0.1}
+                                                {...field}
+                                            />
+                                        </FormControl>
+
                                         <FormMessage />
                                     </FormItem>
                                 )}

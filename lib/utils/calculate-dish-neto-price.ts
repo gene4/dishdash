@@ -1,4 +1,6 @@
 import { DishDataReceived } from "@/app/[locale]/dishes/data-table";
+import { calculateRecipePrice } from "./calculate-recipe-price";
+import { RecipeDataReceived } from "@/app/[locale]/recipes/data-table";
 
 export function calculateNetoDishPrice(dish: DishDataReceived) {
     let netoPrice = 0;
@@ -9,7 +11,9 @@ export function calculateNetoDishPrice(dish: DishDataReceived) {
             const totalRecipePrice = ingredient.recipe!.ingredients.reduce(
                 (acc: number, ingredient: any) => {
                     const { amount } = ingredient;
-                    const ingredientPrice = ingredient.ingredient?.price || 0;
+                    const ingredientPrice =
+                        ingredient.ingredient?.price /
+                            ingredient.ingredient?.amount || 0;
                     return acc + amount * ingredientPrice;
                 },
                 0
@@ -19,7 +23,9 @@ export function calculateNetoDishPrice(dish: DishDataReceived) {
 
             // If its an ingredient
         } else if (ingredient.ingredient) {
-            netoPrice += ingredient.ingredient.price * ingredient.amount;
+            netoPrice +=
+                (ingredient.ingredient.price / ingredient.ingredient.amount) *
+                ingredient.amount;
         }
     }
 

@@ -59,6 +59,7 @@ import { formatPrice } from "@/lib/utils/format-price";
 import { IngredientsAndRecipes } from "../data-table";
 import EditDishForm from "@/components/dishes/edit-dish-form";
 import AddDishIngredientForm from "@/components/dishes/add-dishIngredient-form";
+import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
 
 export type DishIngredients = {
     amount: number;
@@ -74,6 +75,7 @@ export type DishIngredients = {
     ingredients?: {
         ingredient: {
             price: number;
+            amount: number;
         };
         id: string;
         amount: number;
@@ -147,17 +149,11 @@ export function DataTable({
             },
             cell: ({ row }) => {
                 if ("yield" in row.original) {
-                    const totalPrice = row.original.ingredients!.reduce(
-                        (acc: number, ingredient: any) => {
-                            const { amount } = ingredient;
-                            const ingredientPrice =
-                                ingredient.ingredient?.price || 0;
-                            return acc + amount * ingredientPrice;
-                        },
-                        0
+                    const totalRecipePrice = calculateRecipePrice(
+                        row.original.ingredients
                     );
 
-                    const pricePerUnit = totalPrice / row.original.yield!;
+                    const pricePerUnit = totalRecipePrice / row.original.yield!;
                     return formatPrice(pricePerUnit);
                 } else {
                     return formatPrice(row.original.price!);
@@ -181,19 +177,14 @@ export function DataTable({
                 );
             },
             cell: ({ row }) => {
+                // If a recipe
                 if ("yield" in row.original) {
-                    const totalPrice = row.original.ingredients!.reduce(
-                        (acc: number, ingredient: any) => {
-                            const { amount } = ingredient;
-                            const ingredientPrice =
-                                ingredient.ingredient?.price || 0;
-                            return acc + amount * ingredientPrice;
-                        },
-                        0
+                    const totalRecipePrice = calculateRecipePrice(
+                        row.original.ingredients
                     );
-
-                    const pricePerUnit = totalPrice / row.original.yield!;
+                    const pricePerUnit = totalRecipePrice / row.original.yield!;
                     return formatPrice(pricePerUnit * row.original.amount);
+                    // If an ingredient
                 } else {
                     const totalPrice =
                         row.original.price! * row.original.amount;

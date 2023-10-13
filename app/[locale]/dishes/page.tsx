@@ -23,6 +23,7 @@ export default async function RecipesPage() {
                                     ingredient: {
                                         select: {
                                             price: true,
+                                            amount: true,
                                         },
                                     },
                                 },

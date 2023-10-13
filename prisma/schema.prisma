@@ -13,6 +13,7 @@ model Ingredient {
   name      String
   userId    String
   unit      String
+  amount    Float
   price     Float
   createdAt DateTime @default(now())
   supplier    String

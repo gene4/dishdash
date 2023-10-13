@@ -1,6 +1,9 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
+import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
+import { RecipeDataReceived } from "../data-table";
+import { formatPrice } from "@/lib/utils/format-price";
 
 interface RecipeIdPageProps {
     params: {
@@ -33,6 +36,7 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
             ...ingredient.ingredient,
             amount: ingredient.amount,
             recipeIngredientId: ingredient.id,
+            price: ingredient.ingredient.price / ingredient.ingredient.amount,
         }));
 
     const ingredients = await prismadb.ingredient.findMany({
@@ -40,22 +44,6 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
             userId,
         },
     });
-    console.log("recipeIngredients", recipeIngredients);
-
-    // Calculate and format recipe's total price
-    const totalPrice =
-        recipeIngredients &&
-        recipeIngredients.reduce((acc: number, ingredient: any) => {
-            const ingredientPrice = ingredient.price || 0;
-            return acc + ingredient.amount * ingredientPrice;
-        }, 0);
-
-    const formattedTotalPrice =
-        totalPrice &&
-        new Intl.NumberFormat("de-DE", {
-            style: "currency",
-            currency: "EUR",
-        }).format(totalPrice);
 
     return recipeIngredients ? (
         <>
@@ -74,7 +62,9 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                         <div>
                             <h2 className="border-b mb-1">Total Price</h2>
                             <span className="font-normal text-2xl">
-                                {formattedTotalPrice}
+                                {formatPrice(
+                                    calculateRecipePrice(recipe.ingredients)
+                                )}
                             </span>
                         </div>
                     </div>

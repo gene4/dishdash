@@ -12,7 +12,7 @@ export const columns: ColumnDef<DishDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 group hover:bg-transparent font-bold"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -29,7 +29,7 @@ export const columns: ColumnDef<DishDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 group hover:bg-transparent font-bold"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -51,7 +51,7 @@ export const columns: ColumnDef<DishDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent"
+                    className="px-0 group hover:bg-transparent font-bold"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")

@@ -33,6 +33,7 @@ export type RecipeDataReceived = {
     ingredients: ({
         ingredient: {
             price: number;
+            amount: number;
         };
     } & {
         id: string;
@@ -50,15 +51,12 @@ export type RecipeDataReceived = {
     updatedAt: Date;
 };
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps {
     data: RecipeDataReceived[];
     ingredients: Ingredient[];
 }
 
-export function DataTable<TData, TValue>({
-    data,
-    ingredients,
-}: DataTableProps<TData, TValue>) {
+export function DataTable({ data, ingredients }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);

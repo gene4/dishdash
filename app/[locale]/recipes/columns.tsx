@@ -4,6 +4,7 @@ import { formatDate } from "@/lib/utils/format-date";
 import { RecipeDataReceived } from "./data-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
+import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
 
 export const columns: ColumnDef<RecipeDataReceived>[] = [
     {
@@ -45,18 +46,8 @@ export const columns: ColumnDef<RecipeDataReceived>[] = [
                 </Button>
             );
         },
-        cell: ({ row }) => {
-            const totalPrice = row.original.ingredients.reduce(
-                (acc: number, ingredient: any) => {
-                    const { amount } = ingredient;
-                    const ingredientPrice = ingredient.ingredient?.price || 0;
-                    return acc + amount * ingredientPrice;
-                },
-                0
-            );
-
-            return formatPrice(totalPrice);
-        },
+        cell: ({ row }) =>
+            formatPrice(calculateRecipePrice(row.original.ingredients)),
     },
     {
         accessorKey: "pricePer",
@@ -74,16 +65,9 @@ export const columns: ColumnDef<RecipeDataReceived>[] = [
             );
         },
         cell: ({ row }) => {
-            const totalPrice = row.original.ingredients.reduce(
-                (acc: number, ingredient: any) => {
-                    const { amount } = ingredient;
-                    const ingredientPrice = ingredient.ingredient?.price || 0;
-                    return acc + amount * ingredientPrice;
-                },
-                0
-            );
-
+            const totalPrice = calculateRecipePrice(row.original.ingredients);
             const pricePerUnit = totalPrice / row.original.yield;
+
             return formatPrice(pricePerUnit);
         },
     },
