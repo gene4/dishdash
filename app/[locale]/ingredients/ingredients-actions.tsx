@@ -61,7 +61,7 @@ function IngredientsActions({ row }: Props) {
 
     return (
         <>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 bg-slate-400">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger>
@@ -69,7 +69,7 @@ function IngredientsActions({ row }: Props) {
                                 onClick={() => {
                                     setIsFormOpen(true);
                                 }}
-                                className="w-4 h-4 text-gray-500"
+                                className="w-4 h-4 text-muted-foreground hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
@@ -83,7 +83,7 @@ function IngredientsActions({ row }: Props) {
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                    <Trash2 className="w-4 h-4 text-red-500 hover:scale-110 transition-all" />
                                 </TooltipTrigger>
                                 <TooltipContent className="bg-red-600 text-white rounded-3xl">
                                     <p>Delete ingredient</p>

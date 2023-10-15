@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Loader2, Trash2 } from "lucide-react";
+import { Edit, Loader2, Trash2, FileText } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -21,14 +21,16 @@ import {
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { RecipeIngredients } from "./data-table";
-import EditRecipeIngredientForm from "@/components/recipes/edit-recipeIngredient-form";
+import { InvoiceT } from "./data-table";
+import InvoiceForm from "@/components/invoices/invoice-form";
+import { Supplier } from "@prisma/client";
 
 interface Props {
-    recipeIngredient: RecipeIngredients;
+    invoice: InvoiceT;
+    suppliers: Supplier[];
 }
 
-function RecipeActions({ recipeIngredient }: Props) {
+export default function InvoiceActions({ invoice, suppliers }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -39,13 +41,11 @@ function RecipeActions({ recipeIngredient }: Props) {
     const onDelete = useCallback(async () => {
         setIsLoading(true);
         try {
-            await axios.delete(
-                `/api/recipeIngredient/${recipeIngredient.recipeIngredientId}`
-            );
+            await axios.delete(`/api/invoice/${invoice.id}`);
             setOpenDialog(false);
             setIsLoading(false);
             toast({
-                description: `Recipe ${recipeIngredient.name} was deleted.`,
+                description: `Invoice was deleted.`,
             });
             router.refresh();
         } catch (error) {
@@ -56,26 +56,35 @@ function RecipeActions({ recipeIngredient }: Props) {
                 description: "Something went wrong.",
             });
         }
-    }, [
-        recipeIngredient.name,
-        recipeIngredient.recipeIngredientId,
-        router,
-        toast,
-    ]);
+    }, [invoice.id, router, toast]);
 
     return (
         <>
-            <div className="flex space-x-2">
+            <div className="flex space-x-3 w-fit">
+                {invoice.fileUrl && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <a target="_blank" href={invoice.fileUrl}>
+                                    <FileText className="h-4 w-4 text-muted-foreground hover:scale-110 transition-all" />
+                                </a>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-primary text-white rounded-3xl">
+                                <p>Open file</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Edit
                                 onClick={() => setIsEditFormOpen(true)}
-                                className="w-4 h-4 text-muted-foreground hover:scale-110 transition-all"
+                                className="w-4 h-4 text-muted-foreground cursor-pointer hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
-                            <p>Edit amount</p>
+                            <p>Edit invoice</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -84,11 +93,11 @@ function RecipeActions({ recipeIngredient }: Props) {
                         <TooltipTrigger asChild>
                             <Trash2
                                 onClick={() => setOpenDialog(true)}
-                                className="w-4 h-4 text-red-500 hover:scale-110 transition-all"
+                                className="w-4 h-4 text-red-500 cursor-pointer hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
-                        <TooltipContent className="bg-red-600 text-white rounded-3xl">
-                            <p>Remove ingredient</p>
+                        <TooltipContent className="bg-red-600 text-white rounded-3xl ">
+                            <p>Delete invoice</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -100,8 +109,7 @@ function RecipeActions({ recipeIngredient }: Props) {
                             Are you absolutely sure?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will remove {recipeIngredient.name} from this
-                            recipe.
+                            This will delete this invoice permanently.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -119,13 +127,12 @@ function RecipeActions({ recipeIngredient }: Props) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <EditRecipeIngredientForm
-                recipeIngredient={recipeIngredient}
+            <InvoiceForm
+                suppliers={suppliers}
                 isOpen={isEditFormOpen}
                 setIsOpen={setIsEditFormOpen}
+                initialInvoice={invoice}
             />
         </>
     );
 }
-
-export default RecipeActions;

@@ -66,7 +66,7 @@ export default function DishActions({ dishIngredient }: Props) {
                         <TooltipTrigger asChild>
                             <Edit
                                 onClick={() => setIsEditFormOpen(true)}
-                                className="w-4 h-4 text-gray-500"
+                                className="w-4 h-4 text-muted-foreground hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
@@ -79,7 +79,7 @@ export default function DishActions({ dishIngredient }: Props) {
                         <TooltipTrigger asChild>
                             <Trash2
                                 onClick={() => setOpenDialog(true)}
-                                className="w-4 h-4 text-red-500"
+                                className="w-4 h-4 text-red-500 hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-red-600 text-white rounded-3xl">

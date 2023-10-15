@@ -95,9 +95,13 @@ model Invoice {
   supplierId  String
   supplier    Supplier    @relation(fields: [supplierId], references: [id])
 
+
+  invoiceNr   String
   date        DateTime 
+  status      String
   amount      Float
-  imageUrl   String?
+  fileUrl     String? @db.Text
+  fileRef     String? @db.Text
   createdAt DateTime    @default(now())
 
   @@index([supplierId])

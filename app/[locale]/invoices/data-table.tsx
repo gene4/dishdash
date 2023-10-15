@@ -7,7 +7,6 @@ import {
     getPaginationRowModel,
     useReactTable,
     SortingState,
-    ColumnFiltersState,
     getFilteredRowModel,
     getSortedRowModel,
 } from "@tanstack/react-table";
@@ -23,15 +22,7 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-    ArrowUpDown,
-    Plus,
-    Search,
-    File,
-    ChevronsUpDown,
-    Check,
-} from "lucide-react";
-import IngredientForm from "@/components/ingredients/table/ingredient-form";
+import { ArrowUpDown, Plus, File, ChevronsUpDown, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils/format-date";
 import { formatPrice } from "@/lib/utils/format-price";
 import {
@@ -56,15 +47,25 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@prisma/client";
+import InvoiceForm from "@/components/invoices/invoice-form";
+import InvoiceActions from "./invoice-actions";
+import {
+    CheckCircledIcon,
+    CircleIcon,
+    QuestionMarkCircledIcon,
+} from "@radix-ui/react-icons";
 
 export type InvoiceT = {
     supplier: string;
     id: string;
     userId: string;
     supplierId: string;
+    invoiceNr: string;
     date: Date;
+    status: "paid" | "pending" | "to-pay";
     amount: number;
-    imageUrl: string | null;
+    fileUrl: string | null;
+    fileRef: string | null;
     createdAt: Date;
 };
 
@@ -73,6 +74,25 @@ interface DataTableProps {
     suppliers: Supplier[];
 }
 
+export const statuses = [
+    {
+        value: "open",
+        label: "Open",
+        icon: CircleIcon,
+    },
+    {
+        value: "pending",
+        label: "Pending",
+        icon: QuestionMarkCircledIcon,
+    },
+
+    {
+        value: "paid",
+        label: "Paid",
+        icon: CheckCircledIcon,
+    },
+];
+
 export function DataTable({ data, suppliers }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [date, setDate] = useState<DateRange | undefined>();
@@ -80,6 +100,22 @@ export function DataTable({ data, suppliers }: DataTableProps) {
     const [isFormOpen, setIsFormOpen] = useState(false);
 
     const columns: ColumnDef<InvoiceT>[] = [
+        {
+            accessorKey: "invoiceNr",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 font-bold group hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        INVOICE NUMBER
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+        },
         {
             accessorKey: "supplier",
             header: ({ column }) => {
@@ -132,35 +168,49 @@ export function DataTable({ data, suppliers }: DataTableProps) {
             },
             cell: ({ row }) => formatPrice(row.original.amount),
         },
-
         {
-            accessorKey: "imageUrl",
-            header: "IMAGE",
-            cell: ({ row }) => {
+            accessorKey: "status",
+            header: ({ column }) => {
                 return (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button size={"icon"} variant="ghost">
-                                    <File className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-primary text-white rounded-3xl">
-                                <p>Open image</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        STATUS
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+            cell: ({ row }) => {
+                const status = statuses.find(
+                    (status) => status.value === row.getValue("status")
+                );
+
+                if (!status) {
+                    return null;
+                }
+
+                return (
+                    <div className="flex w-[100px] items-center">
+                        <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <span>{status.label}</span>
+                    </div>
                 );
             },
         },
 
-        // {
-        //     id: "actions",
-        //     cell: ({ row }) => <IngredientsActions row={row} />,
-        // },
+        {
+            id: "actions",
+            cell: ({ row }) => (
+                <InvoiceActions suppliers={suppliers} invoice={row.original} />
+            ),
+        },
     ];
 
     const filteredInvoices = useMemo(() => {
+        // Filter invoices by date and supplier
         if (!data || !data.length) {
             return [];
         }
@@ -311,7 +361,11 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <IngredientForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
+            <InvoiceForm
+                suppliers={suppliers}
+                isOpen={isFormOpen}
+                setIsOpen={setIsFormOpen}
+            />
         </>
     );
 }
