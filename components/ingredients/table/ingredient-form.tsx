@@ -89,8 +89,11 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                 }.`,
                 duration: 3000,
             });
-            form.reset();
-            !isMultiple && setIsOpen(false);
+
+            if (!isMultiple) {
+                setIsOpen(false);
+                form.reset();
+            }
 
             router.refresh();
         } catch (error) {
@@ -108,11 +111,13 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
             <SheetContent side={"left"}>
                 <SheetHeader>
                     <SheetTitle className="text-3xl font-semibold">
-                        Add Ingredient
+                        {initialIngredient ? "Update" : "Add"} Ingredient
                     </SheetTitle>
-                    <SheetDescription>
-                        Add a new ingredient to your list
-                    </SheetDescription>
+                    {!initialIngredient && (
+                        <SheetDescription>
+                            Add a new ingredient to your list
+                        </SheetDescription>
+                    )}
                 </SheetHeader>
                 <div>
                     <Form {...form}>
@@ -250,17 +255,18 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                 )}
                             />
                             <div className="flex justify-between pt-5">
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        checked={isMultiple}
-                                        onCheckedChange={setIsMultiple}
-                                        id="multiple"
-                                    />
-                                    <Label htmlFor="multiple">
-                                        Add multiple
-                                    </Label>
-                                </div>
-
+                                {!initialIngredient && (
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                            checked={isMultiple}
+                                            onCheckedChange={setIsMultiple}
+                                            id="multiple"
+                                        />
+                                        <Label htmlFor="multiple">
+                                            Add multiple
+                                        </Label>
+                                    </div>
+                                )}
                                 <Button
                                     className="rounded-lg"
                                     disabled={isLoading}

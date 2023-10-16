@@ -9,7 +9,7 @@ import MobileSidebar from "./mobile-sidbar";
 
 export const Navbar = () => {
     return (
-        <header className="flex items-center justify-between px-3 md:px-5 py-2 h-13 border-b shadow-sm">
+        <header className="flex sticky z-50 top-0 bg-background/95 backdrop-blur items-center justify-between container h-14 border-b shadow-sm">
             <NextLink
                 className="flex justify-start items-center gap-1"
                 href="/">

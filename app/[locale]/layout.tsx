@@ -68,16 +68,16 @@ export default async function RootLayout({
                             defaultTheme="system"
                             enableSystem
                             disableTransitionOnChange>
-                            <div className="relative flex flex-col h-screen">
+                            <div className="relative flex flex-col min-h-screen">
                                 <NextIntlClientProvider
                                     locale={locale}
                                     messages={messages}>
                                     <Navbar />
-                                    <div className="flex h-full">
-                                        <div className="hidden md:flex w-fit flex-col h-full">
+                                    <div className="flex">
+                                        <div className="hidden top-14 fixed md:sticky md:flex w-fit flex-col h-[calc(100vh-3.5rem)]">
                                             <Sidebar />
                                         </div>
-                                        <main className="container mx-auto max-w-7xl py-6 px-3 md:px-7 flex-grow">
+                                        <main className="mx-auto max-w-7xl py-6 px-3 md:px-7 flex-grow">
                                             {children}
                                         </main>
                                     </div>
