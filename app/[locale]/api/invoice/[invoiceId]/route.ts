@@ -21,6 +21,7 @@ export async function PATCH(
         const invoiceNr = data.get("invoiceNr")?.toString();
         const amount = Number(data.get("amount"));
         const date = data.get("date")?.toString();
+        const status = data.get("status")?.toString();
         const supplierId = data.get("supplierId")?.toString();
 
         const file: File | null = data.get("file") as unknown as File;
@@ -35,7 +36,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!invoiceNr || !supplierId || !date || !amount) {
+        if (!invoiceNr || !supplierId || !date || !amount || !status) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -84,6 +85,7 @@ export async function PATCH(
                 supplierId,
                 invoiceNr,
                 date: new Date(date),
+                status,
                 amount,
                 fileUrl: file ? newFileUrl : oldFileUrl?.toString(),
                 fileRef: file ? newFileRef : oldFileRef?.toString(),

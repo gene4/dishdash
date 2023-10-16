@@ -22,15 +22,10 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Plus, File, ChevronsUpDown, Check } from "lucide-react";
+import { ArrowUpDown, Plus, Circle, ChevronsUpDown, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils/format-date";
 import { formatPrice } from "@/lib/utils/format-price";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { DatePickerWithRange } from "@/components/date-picker-range";
 import { DateRange } from "react-day-picker";
 import {
@@ -49,11 +44,6 @@ import { cn } from "@/lib/utils";
 import { Supplier } from "@prisma/client";
 import InvoiceForm from "@/components/invoices/invoice-form";
 import InvoiceActions from "./invoice-actions";
-import {
-    CheckCircledIcon,
-    CircleIcon,
-    QuestionMarkCircledIcon,
-} from "@radix-ui/react-icons";
 
 export type InvoiceT = {
     supplier: string;
@@ -62,7 +52,7 @@ export type InvoiceT = {
     supplierId: string;
     invoiceNr: string;
     date: Date;
-    status: "paid" | "pending" | "to-pay";
+    status: string;
     amount: number;
     fileUrl: string | null;
     fileRef: string | null;
@@ -77,19 +67,40 @@ interface DataTableProps {
 export const statuses = [
     {
         value: "open",
-        label: "Open",
-        icon: CircleIcon,
+        label: (
+            <>
+                <Circle
+                    fill="rgb(239 68 68)"
+                    className="mr-2 h-2 w-2 text-red-500"
+                />
+                <span>Open</span>
+            </>
+        ),
     },
     {
         value: "pending",
-        label: "Pending",
-        icon: QuestionMarkCircledIcon,
+        label: (
+            <>
+                <Circle
+                    fill="rgb(250 204 21)"
+                    className="mr-2 h-2 w-2 text-yellow-400"
+                />
+                <span>Pending</span>
+            </>
+        ),
     },
 
     {
         value: "paid",
-        label: "Paid",
-        icon: CheckCircledIcon,
+        label: (
+            <>
+                <Circle
+                    fill="rgb(34 197 94)"
+                    className="mr-2 h-2 w-2 text-green-500"
+                />
+                <span>Paid</span>
+            </>
+        ),
     },
 ];
 
@@ -98,6 +109,8 @@ export function DataTable({ data, suppliers }: DataTableProps) {
     const [date, setDate] = useState<DateRange | undefined>();
     const [supplierValue, setSupplierValue] = useState("");
     const [isFormOpen, setIsFormOpen] = useState(false);
+
+    console.log("invoices", data);
 
     const columns: ColumnDef<InvoiceT>[] = [
         {
@@ -187,6 +200,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                 const status = statuses.find(
                     (status) => status.value === row.getValue("status")
                 );
+                console.log("row.getValue(", row.getValue("status"));
 
                 if (!status) {
                     return null;
@@ -194,8 +208,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
 
                 return (
                     <div className="flex w-[100px] items-center">
-                        <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <span>{status.label}</span>
+                        {status.label}
                     </div>
                 );
             },
@@ -265,8 +278,8 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                                             supplierValue
                                     )?.name
                                 ) : (
-                                    <p className="text-muted-foreground">
-                                        Select supplier...
+                                    <p className="text-muted-foreground font-normal">
+                                        Filter by supplier...
                                     </p>
                                 )}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

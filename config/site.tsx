@@ -1,5 +1,12 @@
 export type SiteConfig = typeof siteConfig;
-import { Home, Banana, Pizza, ClipboardList, Truck } from "lucide-react";
+import {
+    Home,
+    Banana,
+    Pizza,
+    ClipboardList,
+    Truck,
+    CircleDollarSign,
+} from "lucide-react";
 
 export const siteConfig = {
     name: "Dishdash",
@@ -21,10 +28,16 @@ export const siteConfig = {
             href: "/dishes",
             icon: Pizza,
         },
+
+        {
+            label: "suppliers",
+            href: "/suppliers",
+            icon: Truck,
+        },
         {
             label: "invoices",
             href: "/invoices",
-            icon: Truck,
+            icon: CircleDollarSign,
         },
     ],
     mobileNavItems: [

@@ -29,21 +29,23 @@ export function DatePickerWithRange({ className, date, setDate }: Props) {
                         id="date"
                         variant={"outline"}
                         className={cn(
-                            "w-[290px] justify-start text-left font-normal",
+                            "w-[290px] justify-start text-left font-normal tracking-wide",
                             !date && "text-muted-foreground"
                         )}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
                             date.to ? (
                                 <>
-                                    {format(date.from, "LLL dd, y")} -{" "}
-                                    {format(date.to, "LLL dd, y")}
+                                    {format(date.from, "dd/MM/yyyy")} -{" "}
+                                    {format(date.to, "dd/MM/yyyy")}
                                 </>
                             ) : (
-                                format(date.from, "LLL dd, y")
+                                format(date.from, "dd/MM/yyyy")
                             )
                         ) : (
-                            <span>Pick a date range</span>
+                            <span className="tracking-normal">
+                                Filter by date range
+                            </span>
                         )}
                         {date && (
                             <XCircle

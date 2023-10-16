@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Ingredient } from "@prisma/client";
+import { Supplier } from "@prisma/client";
 import { Edit, Loader2, Trash2 } from "lucide-react";
 import {
     Dialog,
@@ -22,14 +22,14 @@ import {
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import IngredientForm from "@/components/ingredients/table/ingredient-form";
 import { Row } from "@tanstack/react-table";
+import SupplierForm from "@/components/suppliers/supplier-form";
 
 interface Props {
-    row: Row<Ingredient>;
+    row: Row<Supplier>;
 }
 
-function IngredientsActions({ row }: Props) {
+export default function SupplierActions({ row }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -37,16 +37,16 @@ function IngredientsActions({ row }: Props) {
     const { toast } = useToast();
     const router = useRouter();
 
-    const ingredient = row.original;
+    const supplier = row.original;
 
     const onDelete = useCallback(async () => {
         setIsLoading(true);
         try {
-            await axios.delete(`/api/ingredient/${ingredient.id}`);
+            await axios.delete(`/api/supplier/${supplier.id}`);
             setOpenDialog(false);
             setIsLoading(false);
             toast({
-                description: `Ingredient ${ingredient.name} was deleted.`,
+                description: `Supplier ${supplier.name} was deleted.`,
             });
             router.refresh();
         } catch (error) {
@@ -57,7 +57,7 @@ function IngredientsActions({ row }: Props) {
                 description: "Something went wrong.",
             });
         }
-    }, [ingredient.id, ingredient.name, router, toast]);
+    }, [router, supplier.id, supplier.name, toast]);
 
     return (
         <>
@@ -73,7 +73,7 @@ function IngredientsActions({ row }: Props) {
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
-                            <p>Edit ingredient</p>
+                            <p>Edit supplier</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -86,7 +86,7 @@ function IngredientsActions({ row }: Props) {
                                     <Trash2 className="w-4 h-4 text-red-500 hover:scale-110 transition-all" />
                                 </TooltipTrigger>
                                 <TooltipContent className="bg-red-600 text-white rounded-3xl">
-                                    <p>Delete ingredient</p>
+                                    <p>Delete supplier</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -95,7 +95,7 @@ function IngredientsActions({ row }: Props) {
                         <DialogHeader>
                             <DialogTitle>Are you absolutely sure?</DialogTitle>
                             <DialogDescription>
-                                This ingredient will be removed from recipes or
+                                This supplier will be removed from recipes or
                                 dishes where it might have been included.{" "}
                             </DialogDescription>
                         </DialogHeader>
@@ -115,14 +115,12 @@ function IngredientsActions({ row }: Props) {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-                <IngredientForm
+                <SupplierForm
                     isOpen={isFormOpen}
                     setIsOpen={setIsFormOpen}
-                    initialIngredient={ingredient}
+                    initialSupplier={supplier}
                 />
             </div>
         </>
     );
 }
-
-export default IngredientsActions;

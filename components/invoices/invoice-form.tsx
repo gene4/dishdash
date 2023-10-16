@@ -65,7 +65,7 @@ const recipeSchema = z.object({
     supplierId: z.string().min(1, { message: "Supplier is required" }),
     date: z.date({ required_error: "Date is required" }),
     amount: z.coerce.number({ required_error: "Amount is required" }),
-    status: z.string().email(),
+    status: z.string(),
     file: z
         .any()
         .refine(
@@ -117,6 +117,7 @@ export default function InvoiceForm({
             formData.append("supplierId", values.supplierId);
             formData.append("amount", values.amount.toString());
             formData.append("date", values.date.toString());
+            formData.append("status", values.status.toString());
 
             if (initialInvoice && initialInvoice.fileRef) {
                 formData.append("fileUrl", initialInvoice.fileUrl!);
@@ -359,8 +360,6 @@ export default function InvoiceForm({
                                                         key={status.value}
                                                         value={status.value}>
                                                         <span className="flex items-center">
-                                                            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-
                                                             {status.label}
                                                         </span>
                                                     </SelectItem>

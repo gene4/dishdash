@@ -11,6 +11,7 @@ export async function POST(req: Request) {
         const data = await req.formData();
         const amount = Number(data.get("amount"));
         const date = data.get("date")?.toString();
+        const status = data.get("status")?.toString();
         const supplierId = data.get("supplierId")?.toString();
         const invoiceNr = data.get("invoiceNr")?.toString();
 
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!invoiceNr || !supplierId || !date || !amount) {
+        if (!invoiceNr || !supplierId || !date || !amount || !status) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
                 invoiceNr,
                 supplierId,
                 date: new Date(date),
+                status,
                 amount,
                 fileUrl,
                 fileRef,

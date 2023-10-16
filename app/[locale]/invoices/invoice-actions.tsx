@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Loader2, Trash2, FileText } from "lucide-react";
+import { Edit, Loader2, Trash2, Camera, ExternalLink } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { InvoiceT } from "./data-table";
 import InvoiceForm from "@/components/invoices/invoice-form";
 import { Supplier } from "@prisma/client";
+import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
 
 interface Props {
     invoice: InvoiceT;
@@ -60,13 +61,13 @@ export default function InvoiceActions({ invoice, suppliers }: Props) {
 
     return (
         <>
-            <div className="flex space-x-3 w-fit">
+            <div className="flex justify-end w-[75px] space-x-3">
                 {invoice.fileUrl && (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <a target="_blank" href={invoice.fileUrl}>
-                                    <FileText className="h-4 w-4 text-muted-foreground hover:scale-110 transition-all" />
+                                    <ExternalLink className="h-4 w-4 text-muted-foreground hover:scale-110 transition-all" />
                                 </a>
                             </TooltipTrigger>
                             <TooltipContent className="bg-primary text-white rounded-3xl">

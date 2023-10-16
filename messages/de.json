@@ -12,6 +12,7 @@
         "ingredients": "Zutaten",
         "recipes": "Rezepte",
         "dishes": "Gerichte",
-        "invoices": "Rechnungen"
+        "invoices": "Rechnungen",
+        "suppliers": "Lieferanten"
     }
 }

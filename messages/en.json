@@ -12,6 +12,7 @@
         "ingredients": "Ingredients",
         "recipes": "Recipes",
         "dishes": "Dishes",
-        "invoices": "Invoices"
+        "invoices": "Invoices",
+        "suppliers": "Suppliers"
     }
 }
