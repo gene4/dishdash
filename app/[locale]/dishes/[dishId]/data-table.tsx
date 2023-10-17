@@ -57,9 +57,10 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { formatPrice } from "@/lib/utils/format-price";
 import { IngredientsAndRecipes } from "../data-table";
-import EditDishForm from "@/components/dishes/edit-dish-form";
 import AddDishIngredientForm from "@/components/dishes/add-dishIngredient-form";
 import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
+import DishForm from "@/components/dishes/dish-form";
+import { toast } from "sonner";
 
 export type DishIngredients = {
     amount: number;
@@ -98,12 +99,9 @@ export function DataTable({
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isAddIngredientFormOpen, setIsAddIngredientFormOpen] =
         useState(false);
-
-    const { toast } = useToast();
 
     const router = useRouter();
 
@@ -218,25 +216,21 @@ export function DataTable({
     });
 
     const onDelete = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            await axios.delete(`/api/dish/${dish.id}`);
-            setIsDeleteDialogOpen(false);
-            setIsLoading(false);
+        setIsDeleteDialogOpen(false);
+
+        const response = axios.delete(`/api/dish/${dish.id}`).then(() => {
             router.push("/dishes");
-            toast({
-                description: `Dish ${dish.name} was deleted.`,
-            });
             router.refresh();
-        } catch (error) {
-            setIsLoading(false);
-            setIsDeleteDialogOpen(false);
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-            });
-        }
-    }, [dish.id, dish.name, router, toast]);
+        });
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Dish ${dish.name} was deleted.`;
+            },
+            error: "Error",
+        });
+    }, [dish.id, dish.name, router]);
 
     return (
         <>
@@ -346,11 +340,7 @@ export function DataTable({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <EditDishForm
-                isOpen={isFormOpen}
-                setIsOpen={setIsFormOpen}
-                initialDish={dish}
-            />
+
             <AlertDialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}>
@@ -367,17 +357,18 @@ export function DataTable({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <Button
-                            disabled={isLoading}
                             onClick={onDelete}
                             className="bg-red-500 hover:bg-red-500/90">
-                            {isLoading && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
                             Delete
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            <DishForm
+                isOpen={isFormOpen}
+                setIsOpen={setIsFormOpen}
+                initialDish={dish}
+            />
             <AddDishIngredientForm
                 dishId={dish.id}
                 ingredientsAndRecipes={ingredientsAndRecipes}

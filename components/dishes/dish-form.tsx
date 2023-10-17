@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
+
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { Unit } from "@/config/constants";
 import {
     Form,
     FormControl,
@@ -18,20 +18,12 @@ import {
 
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-
 import {
     Command,
     CommandEmpty,
@@ -39,8 +31,6 @@ import {
     CommandInput,
     CommandItem,
 } from "@/components/ui/command";
-
-import { Ingredient, Recipe } from "@prisma/client";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import {
     Popover,
@@ -50,41 +40,46 @@ import {
 import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { IngredientsAndRecipes } from "@/app/[locale]/dishes/data-table";
+import { Dish } from "@prisma/client";
 import { toast } from "sonner";
 
 const recipeSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    unit: z.string().min(1, { message: "Unit is required" }),
-    yield: z.coerce.number({ required_error: "Yield is required" }),
+    multiplier: z.coerce.number({ required_error: "Multiplier is required" }),
+    targetPrice: z.coerce.number({ required_error: "Targe price is required" }),
     ingredients: z
         .array(
-            z.object({
-                id: z.string().min(1, { message: "Ingredient is required" }),
-                amount: z.coerce.number(),
-            })
+            z
+                .object({
+                    id: z.string().min(1, { message: "Name is required" }),
+                    type: z.string(),
+                    amount: z.coerce.number(),
+                })
+                .optional()
         )
         .optional(),
 });
 
 interface Props {
-    initialRecipe?: Recipe;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    ingredients?: Ingredient[];
+    ingredientsAndRecipes?: IngredientsAndRecipes;
+    initialDish?: Dish;
 }
 
-export default function RecipeForm({
-    initialRecipe,
+export default function DishForm({
     isOpen,
     setIsOpen,
-    ingredients,
+    ingredientsAndRecipes,
+    initialDish,
 }: Props) {
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
-        defaultValues: initialRecipe || {
+        defaultValues: initialDish || {
             name: "",
-            unit: "",
-            yield: 0,
+            targetPrice: 0,
+            multiplier: 0,
             ingredients: [],
         },
     });
@@ -98,11 +93,10 @@ export default function RecipeForm({
 
     async function onSubmit(values: z.infer<typeof recipeSchema>) {
         setIsOpen(false);
-        const formattedValues = { ...values, recipeYield: values.yield };
 
-        const response = initialRecipe
-            ? axios.patch(`/api/recipe/${initialRecipe.id}`, formattedValues)
-            : axios.post("/api/recipe", formattedValues);
+        const response = initialDish
+            ? axios.patch(`/api/dish/${initialDish.id}`, values)
+            : axios.post("/api/dish", values);
 
         response.then(() => {
             router.refresh();
@@ -112,7 +106,7 @@ export default function RecipeForm({
             loading: "Loading...",
             success: () => {
                 return `${values.name}  has been ${
-                    initialRecipe ? "updated" : "added"
+                    initialDish ? "updated" : "added"
                 }`;
             },
             error: "Error",
@@ -125,11 +119,11 @@ export default function RecipeForm({
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
                     <DialogTitle>
-                        {initialRecipe ? "Update" : "Add"} Recipe
+                        {initialDish ? "Update" : "Add"} Dish
                     </DialogTitle>
-                    {!initialRecipe && (
+                    {!initialDish && (
                         <DialogDescription>
-                            Add a new recipe to your list
+                            Add a new dish to your list
                         </DialogDescription>
                     )}
                 </DialogHeader>
@@ -149,7 +143,6 @@ export default function RecipeForm({
                                         <FormControl>
                                             <Input {...field} />
                                         </FormControl>
-
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -157,44 +150,11 @@ export default function RecipeForm({
 
                             <FormField
                                 control={form.control}
-                                name="unit"
-                                render={({ field }) => (
-                                    <FormItem className="flex-1">
-                                        <FormLabel className={labelStyle}>
-                                            Unit
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger className="rounded-lg">
-                                                        <SelectValue placeholder="Select" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {Unit.map((unit) => (
-                                                        <SelectItem
-                                                            key={unit}
-                                                            value={unit}>
-                                                            {unit}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="yield"
+                                name="targetPrice"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className={labelStyle}>
-                                            Yield
+                                            Target price
                                         </FormLabel>
                                         <FormControl>
                                             <Input
@@ -203,13 +163,31 @@ export default function RecipeForm({
                                                 {...field}
                                             />
                                         </FormControl>
-
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="multiplier"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            Multiplier
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                step={0.1}
+                                                {...field}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         </div>
-                        {ingredients && (
+                        {ingredientsAndRecipes && (
                             <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
                                 {fields.length ? (
                                     fields.map((field, index) => (
@@ -233,7 +211,7 @@ export default function RecipeForm({
                                                                                     "text-muted-foreground"
                                                                             )}>
                                                                             {field.value
-                                                                                ? ingredients.find(
+                                                                                ? ingredientsAndRecipes.find(
                                                                                       (
                                                                                           ingredient
                                                                                       ) =>
@@ -246,9 +224,7 @@ export default function RecipeForm({
                                                                         </Button>
                                                                     </FormControl>
                                                                 </PopoverTrigger>
-                                                                <PopoverContent
-                                                                    side="bottom"
-                                                                    className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
+                                                                <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
                                                                     <Command>
                                                                         <CommandInput placeholder="Search ingredient..." />
                                                                         <CommandEmpty>
@@ -257,7 +233,7 @@ export default function RecipeForm({
                                                                             found.
                                                                         </CommandEmpty>
                                                                         <CommandGroup>
-                                                                            {ingredients.map(
+                                                                            {ingredientsAndRecipes.map(
                                                                                 (
                                                                                     ingredient
                                                                                 ) => (
@@ -272,6 +248,13 @@ export default function RecipeForm({
                                                                                             form.setValue(
                                                                                                 `ingredients.${index}.id`,
                                                                                                 ingredient.id
+                                                                                            );
+                                                                                            form.setValue(
+                                                                                                `ingredients.${index}.type`,
+                                                                                                "yield" in
+                                                                                                    ingredient
+                                                                                                    ? "recipe"
+                                                                                                    : "ingredient"
                                                                                             );
                                                                                         }}>
                                                                                         <CheckIcon
@@ -336,16 +319,19 @@ export default function RecipeForm({
                                 )}
                             </ol>
                         )}
-                        {ingredients && (
+                        {ingredientsAndRecipes && (
                             <>
                                 <Button
                                     type="button"
                                     size="sm"
-                                    defaultValue={undefined}
                                     variant={"outline"}
-                                    className=" rounded-lg"
+                                    className="rounded-lg"
                                     onClick={() =>
-                                        append({ id: "", amount: 0 })
+                                        append({
+                                            id: "",
+                                            type: "",
+                                            amount: 0,
+                                        })
                                     }>
                                     <Plus className="mr-2 w-4 h-4" /> Add
                                     ingredient
@@ -357,7 +343,7 @@ export default function RecipeForm({
                         )}
                         <div className="flex justify-end pt-5">
                             <Button type="submit">
-                                {initialRecipe ? "Update" : "Add"}
+                                {initialDish ? "Update" : "Add"}
                             </Button>
                         </div>
                     </form>

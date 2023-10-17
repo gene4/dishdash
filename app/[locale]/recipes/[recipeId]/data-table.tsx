@@ -36,7 +36,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/components/ui/use-toast";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Input } from "@/components/ui/input";
 import { useCallback, useState } from "react";
@@ -57,6 +56,7 @@ import axios from "axios";
 import { formatPrice } from "@/lib/utils/format-price";
 import RecipeForm from "@/components/recipes/recipe-form";
 import RecipeIngredientForm from "@/components/recipes/recipeIngredient-form";
+import { toast } from "sonner";
 
 export type RecipeIngredients = {
     amount: number;
@@ -86,12 +86,9 @@ export function DataTable({
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isAddIngredientFormOpen, setIsAddIngredientFormOpen] =
         useState(false);
-
-    const { toast } = useToast();
 
     const router = useRouter();
 
@@ -139,7 +136,7 @@ export function DataTable({
         },
 
         {
-            accessorKey: "supplier",
+            accessorKey: "supplier.name",
             header: ({ column }) => {
                 return (
                     <Button
@@ -221,25 +218,21 @@ export function DataTable({
     });
 
     const onDelete = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            await axios.delete(`/api/recipe/${recipe.id}`);
-            setIsDeleteDialogOpen(false);
-            setIsLoading(false);
+        setIsDeleteDialogOpen(false);
+
+        const response = axios.delete(`/api/recipe/${recipe.id}`).then(() => {
             router.push("/recipes");
-            toast({
-                description: `Recipe ${recipe.name} was deleted.`,
-            });
             router.refresh();
-        } catch (error) {
-            setIsLoading(false);
-            setIsDeleteDialogOpen(false);
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-            });
-        }
-    }, [recipe.id, recipe.name, router, toast]);
+        });
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Recipe ${recipe.name} was deleted.`;
+            },
+            error: "Error",
+        });
+    }, [recipe.id, recipe.name, router]);
 
     return (
         <>
@@ -372,12 +365,8 @@ export function DataTable({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <Button
-                            disabled={isLoading}
                             onClick={onDelete}
                             className="bg-red-500 hover:bg-red-500/90">
-                            {isLoading && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
                             Delete
                         </Button>
                     </AlertDialogFooter>

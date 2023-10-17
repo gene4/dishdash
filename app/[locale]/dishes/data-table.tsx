@@ -26,7 +26,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import { Dish, Ingredient, Recipe } from "@prisma/client";
-import AddDishForm from "@/components/dishes/add-dish-form";
+import AddDishForm from "@/components/dishes/dish-form";
 import { columns } from "./columns";
 import { useRouter } from "next/navigation";
 

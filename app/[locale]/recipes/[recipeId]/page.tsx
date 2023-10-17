@@ -25,7 +25,13 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
             userId,
         },
         include: {
-            ingredients: { include: { ingredient: true } },
+            ingredients: {
+                include: {
+                    ingredient: {
+                        include: { supplier: { select: { name: true } } },
+                    },
+                },
+            },
         },
     });
 
