@@ -9,7 +9,7 @@ import { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { notFound } from "next/navigation";
 import { deDE } from "@clerk/localizations";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 
 import clsx from "clsx";
 import { Sidebar } from "@/components/sidebar";
@@ -81,7 +81,7 @@ export default async function RootLayout({
                                             {children}
                                         </main>
                                     </div>
-                                    <Toaster />
+                                    <Toaster richColors />
                                     {/* <footer className="w-full flex items-center justify-center py-3">
                                     <span className="text-default-600">
                                         © DishDash

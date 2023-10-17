@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
-import RecipesForm from "@/components/recipes/add-recipe-form";
+import RecipesForm from "@/components/recipes/recipe-form";
 import { Ingredient } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";

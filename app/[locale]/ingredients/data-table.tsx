@@ -24,21 +24,127 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { ArrowUpDown, Plus, Search } from "lucide-react";
 import IngredientForm from "@/components/ingredients/table/ingredient-form";
+import { Ingredient, Supplier } from "@prisma/client";
+import { formatDate } from "@/lib/utils/format-date";
+import IngredientsActions from "./ingredients-actions";
+import { formatPrice } from "@/lib/utils/format-price";
 
-interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
+interface DataTableProps {
+    data: Ingredient[];
+    suppliers: Supplier[];
 }
 
-export function DataTable<TData, TValue>({
-    data,
-    columns,
-}: DataTableProps<TData, TValue>) {
+export function DataTable({ data, suppliers }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
+
+    const columns: ColumnDef<Ingredient>[] = [
+        {
+            accessorKey: "name",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 font-bold group hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        NAME
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+        },
+        {
+            accessorKey: "unit",
+            header: "UNIT",
+        },
+        {
+            accessorKey: "amount",
+            header: "AMOUNT",
+        },
+        {
+            accessorKey: "price",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        PRICE
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+            cell: ({ row }) => formatPrice(row.original.price),
+        },
+        {
+            accessorKey: "pricePerUnit",
+            header: "PRICE PER UNIT",
+            cell: ({ row }) =>
+                formatPrice(row.original.price / row.original.amount),
+        },
+        {
+            accessorKey: "supplier.name",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        SUPPLIER
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+        },
+        {
+            accessorKey: "category",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        CATEGORY
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+        },
+        {
+            accessorKey: "updatedAt",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        UPDATED AT
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+            cell: ({ row }) => formatDate(row.getValue("updatedAt")),
+        },
+        {
+            id: "actions",
+            cell: ({ row }) => (
+                <IngredientsActions suppliers={suppliers} row={row} />
+            ),
+        },
+    ];
 
     const table = useReactTable({
         data,
@@ -132,7 +238,11 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <IngredientForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
+            <IngredientForm
+                suppliers={suppliers}
+                isOpen={isFormOpen}
+                setIsOpen={setIsFormOpen}
+            />
         </>
     );
 }

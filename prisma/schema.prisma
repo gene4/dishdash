@@ -16,12 +16,16 @@ model Ingredient {
   amount    Float
   price     Float
   createdAt DateTime @default(now())
-  supplier    String
   category    String
+
   recipes     RecipeIngredient[]
   dishes      DishIngredient[]
+
+  supplier    Supplier    @relation(fields: [supplierId], references: [id])
+  supplierId  String
   updatedAt DateTime @updatedAt
 
+  @@index([supplierId])
 }
 
 model Recipe {
@@ -85,6 +89,7 @@ model Supplier {
   name      String
   userId    String
   bills     Invoice[]
+  ingredients Ingredient[]
   createdAt DateTime    @default(now())
 }
 
@@ -92,9 +97,9 @@ model Invoice {
   id          String      @id @default(uuid()) 
   userId      String
 
-  supplierId  String
+ 
   supplier    Supplier    @relation(fields: [supplierId], references: [id])
-
+  supplierId  String
 
   invoiceNr   String
   date        DateTime 
@@ -102,7 +107,7 @@ model Invoice {
   amount      Float
   fileUrl     String? @db.Text
   fileRef     String? @db.Text
-  createdAt DateTime    @default(now())
+  createdAt   DateTime    @default(now())
 
   @@index([supplierId])
 }

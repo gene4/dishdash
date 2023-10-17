@@ -11,7 +11,6 @@ import {
     getFilteredRowModel,
     getSortedRowModel,
 } from "@tanstack/react-table";
-
 import {
     Table,
     TableBody,
@@ -55,9 +54,9 @@ import { Ingredient, Recipe } from "@prisma/client";
 import RecipeActions from "./recipe-actions";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import EditRecipeForm from "@/components/recipes/edit-recipe-form";
-import AddRecipeIngredientForm from "@/components/recipes/add-recipeIngredient-form";
 import { formatPrice } from "@/lib/utils/format-price";
+import RecipeForm from "@/components/recipes/recipe-form";
+import RecipeIngredientForm from "@/components/recipes/recipeIngredient-form";
 
 export type RecipeIngredients = {
     amount: number;
@@ -67,7 +66,7 @@ export type RecipeIngredients = {
     unit: string;
     price: number;
     createdAt: Date;
-    supplier: string;
+    supplierId: string;
     category: string;
     updatedAt: Date;
     recipeIngredientId: string;
@@ -196,7 +195,12 @@ export function DataTable({
             id: "actions",
             cell: ({ row }) => {
                 const recipeIngredient = row.original;
-                return <RecipeActions recipeIngredient={recipeIngredient} />;
+                return (
+                    <RecipeActions
+                        ingredients={ingredients}
+                        recipeIngredient={recipeIngredient}
+                    />
+                );
             },
         },
     ];
@@ -347,7 +351,7 @@ export function DataTable({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <EditRecipeForm
+            <RecipeForm
                 isOpen={isFormOpen}
                 setIsOpen={setIsFormOpen}
                 initialRecipe={recipe}
@@ -379,7 +383,7 @@ export function DataTable({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <AddRecipeIngredientForm
+            <RecipeIngredientForm
                 recipeId={recipe.id}
                 ingredients={ingredients}
                 isOpen={isAddIngredientFormOpen}

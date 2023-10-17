@@ -8,8 +8,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Ingredient } from "@prisma/client";
-import { Edit, Loader2, Trash2 } from "lucide-react";
+import { Ingredient, Supplier } from "@prisma/client";
+import { Edit, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -20,44 +20,40 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import axios from "axios";
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import IngredientForm from "@/components/ingredients/table/ingredient-form";
 import { Row } from "@tanstack/react-table";
+import { toast } from "sonner";
 
 interface Props {
     row: Row<Ingredient>;
+    suppliers: Supplier[];
 }
 
-function IngredientsActions({ row }: Props) {
-    const [isLoading, setIsLoading] = useState(false);
+function IngredientsActions({ row, suppliers }: Props) {
     const [openDialog, setOpenDialog] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const { toast } = useToast();
     const router = useRouter();
-
     const ingredient = row.original;
 
     const onDelete = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            await axios.delete(`/api/ingredient/${ingredient.id}`);
-            setOpenDialog(false);
-            setIsLoading(false);
-            toast({
-                description: `Ingredient ${ingredient.name} was deleted.`,
+        setOpenDialog(false);
+
+        const response = axios
+            .delete(`/api/ingredient/${ingredient.id}`)
+            .then(() => {
+                router.refresh();
             });
-            router.refresh();
-        } catch (error) {
-            setIsLoading(false);
-            setOpenDialog(false);
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-            });
-        }
-    }, [ingredient.id, ingredient.name, router, toast]);
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Ingredient ${ingredient.name} was deleted.`;
+            },
+            error: "Error",
+        });
+    }, [ingredient.id, ingredient.name, router]);
 
     return (
         <>
@@ -104,18 +100,15 @@ function IngredientsActions({ row }: Props) {
                                 Cancel
                             </Button>
                             <Button
-                                disabled={isLoading}
                                 onClick={onDelete}
                                 className="bg-red-500 hover:bg-red-500/90">
-                                {isLoading && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
                                 Delete
                             </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
                 <IngredientForm
+                    suppliers={suppliers}
                     isOpen={isFormOpen}
                     setIsOpen={setIsFormOpen}
                     initialIngredient={ingredient}

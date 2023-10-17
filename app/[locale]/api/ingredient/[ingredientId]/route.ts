@@ -10,7 +10,7 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, unit, price, amount, supplier, category } = body;
+        const { name, unit, price, amount, supplierId, category } = body;
 
         if (!params.ingredientId) {
             return new NextResponse("Ingredient ID required", { status: 400 });
@@ -20,7 +20,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!name || !unit || !price || !supplier || !category) {
+        if (!name || !unit || !price || !supplierId || !category) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -35,7 +35,7 @@ export async function PATCH(
                 unit,
                 amount,
                 price: parseInt(price),
-                supplier,
+                supplierId,
                 category,
             },
         });

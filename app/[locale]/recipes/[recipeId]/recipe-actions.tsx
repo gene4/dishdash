@@ -22,13 +22,15 @@ import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { RecipeIngredients } from "./data-table";
-import EditRecipeIngredientForm from "@/components/recipes/edit-recipeIngredient-form";
+import RecipeIngredientForm from "@/components/recipes/recipeIngredient-form";
+import { Ingredient } from "@prisma/client";
 
 interface Props {
     recipeIngredient: RecipeIngredients;
+    ingredients: Ingredient[];
 }
 
-function RecipeActions({ recipeIngredient }: Props) {
+function RecipeActions({ recipeIngredient, ingredients }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -119,9 +121,10 @@ function RecipeActions({ recipeIngredient }: Props) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <EditRecipeIngredientForm
-                recipeIngredient={recipeIngredient}
+            <RecipeIngredientForm
+                initialRecipeIngredient={recipeIngredient}
                 isOpen={isEditFormOpen}
+                ingredients={ingredients}
                 setIsOpen={setIsEditFormOpen}
             />
         </>

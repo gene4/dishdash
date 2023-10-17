@@ -1,32 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-
+import React from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { Unit } from "@/config/constants";
 import {
     Form,
     FormControl,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
 } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import {
     Dialog,
     DialogContent,
@@ -43,7 +31,7 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 
-import { Ingredient, Recipe, RecipeIngredient } from "@prisma/client";
+import { Ingredient } from "@prisma/client";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import {
     Popover,
@@ -51,18 +39,19 @@ import {
     PopoverTrigger,
 } from "@radix-ui/react-popover";
 import { Button } from "../ui/button";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RecipeIngredients } from "@/app/[locale]/recipes/[recipeId]/data-table";
+import { toast } from "sonner";
 
 const recipeSchema = z.object({
-    name: z.string().min(1, { message: "Name is required" }),
-    unit: z.string().min(1, { message: "Unit is required" }),
-    yield: z.coerce.number({ required_error: "Yield is required" }),
     ingredients: z
         .array(
             z.object({
                 id: z.string().min(1, { message: "Ingredient is required" }),
-                amount: z.coerce.number(),
+                amount: z.coerce.number({
+                    required_error: "Amount is required",
+                }),
             })
         )
         .nonempty({
@@ -71,29 +60,35 @@ const recipeSchema = z.object({
 });
 
 interface Props {
-    initialRecipe?: Recipe & {
-        ingredients: RecipeIngredient[];
-    };
-
+    initialRecipeIngredient?: RecipeIngredients;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
     ingredients: Ingredient[];
+    recipeId?: string;
 }
 
-function AddRecipeForm({
-    initialRecipe,
+export default function RecipeIngredientForm({
     isOpen,
     setIsOpen,
     ingredients,
+    recipeId,
+    initialRecipeIngredient,
 }: Props) {
+    const initialDefaultValue = {
+        ingredients: [
+            {
+                id: initialRecipeIngredient?.id,
+                amount: initialRecipeIngredient?.amount,
+            },
+        ],
+    };
+
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
-        defaultValues: initialRecipe || {
-            name: "",
-            unit: "",
-            yield: 0,
-            ingredients: [],
+        defaultValues: initialDefaultValue || {
+            ingredients: [{ id: "", amount: 0 }],
         },
+        mode: "onTouched",
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -101,134 +96,56 @@ function AddRecipeForm({
         control: form.control,
     });
 
-    const { toast } = useToast();
     const router = useRouter();
-    const isLoading = form.formState.isSubmitting;
 
     async function onSubmit(values: z.infer<typeof recipeSchema>) {
-        let response;
-        const formattedValues = { ...values, recipeYield: values.yield };
+        setIsOpen(false);
 
-        try {
-            if (initialRecipe) {
-                response = await axios.patch(
-                    `/api/recipe/${initialRecipe.id}`,
-                    formattedValues
-                );
-            } else {
-                response = await axios.post("/api/recipe", formattedValues);
-            }
-            setIsOpen(false);
-            toast({
-                description: `${response.data.name} was ${
-                    initialRecipe ? "updated" : "added"
-                }.`,
-                duration: 3000,
-            });
-            form.reset();
+        const response = initialRecipeIngredient
+            ? axios.patch(
+                  `/api/recipeIngredient/${initialRecipeIngredient.recipeIngredientId}`,
+                  values
+              )
+            : axios.post(`/api/recipeIngredient`, {
+                  ...values,
+                  recipeId,
+              });
+
+        response.then(() => {
             router.refresh();
-        } catch (error) {
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-                duration: 3000,
-            });
-        }
+        });
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `${
+                    initialRecipeIngredient
+                        ? "Ingredient wes updated."
+                        : "Ingredients were added to the recipe."
+                }`;
+            },
+            error: "Error",
+        });
     }
 
-    const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
-                    <DialogTitle>Add Recipe</DialogTitle>
-                    <DialogDescription>
-                        {" "}
-                        Add a new recipe to your list
-                    </DialogDescription>
+                    <DialogTitle>
+                        {initialRecipeIngredient ? "Update" : "Add"} Ingredients
+                    </DialogTitle>
+                    {!initialRecipeIngredient && (
+                        <DialogDescription>
+                            Add a new ingredients to your recipe
+                        </DialogDescription>
+                    )}
                 </DialogHeader>
                 <Form {...form}>
                     <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-6">
-                        <div className="flex justify-between space-x-4">
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Name
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={isLoading}
-                                                {...field}
-                                            />
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="unit"
-                                render={({ field }) => (
-                                    <FormItem className="flex-1">
-                                        <FormLabel className={labelStyle}>
-                                            Unit
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Select
-                                                disabled={isLoading}
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger className="rounded-lg">
-                                                        <SelectValue placeholder="Select" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {Unit.map((unit) => (
-                                                        <SelectItem
-                                                            key={unit}
-                                                            value={unit}>
-                                                            {unit}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="yield"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Yield
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={isLoading}
-                                                type="number"
-                                                step={0.1}
-                                                {...field}
-                                            />
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
+                        className="space-y-6"
+                        onSubmit={form.handleSubmit(onSubmit)}>
+                        <ol className="min-h-3 p-1 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
                             {fields.length ? (
                                 fields.map((field, index) => (
                                     <li className="ml-4" key={field.id}>
@@ -279,7 +196,7 @@ function AddRecipeForm({
                                                                             ) => (
                                                                                 <CommandItem
                                                                                     value={
-                                                                                        ingredient.name
+                                                                                        ingredient.id
                                                                                     }
                                                                                     key={
                                                                                         ingredient.id
@@ -320,9 +237,6 @@ function AddRecipeForm({
                                                     <FormItem>
                                                         <FormControl>
                                                             <Input
-                                                                disabled={
-                                                                    isLoading
-                                                                }
                                                                 type="number"
                                                                 step={0.1}
                                                                 autoFocus={
@@ -352,26 +266,28 @@ function AddRecipeForm({
                                 </p>
                             )}
                         </ol>
-                        <div>
-                            <Button
-                                type="button"
-                                size="sm"
-                                defaultValue={undefined}
-                                variant={"outline"}
-                                className=" rounded-lg"
-                                onClick={() => append({ id: "", amount: 0 })}>
-                                <Plus className="mr-2 w-4 h-4" /> Add ingredient
-                            </Button>
-                            <p className="text-red-500 text-sm mt-2">
-                                {form.formState.errors.ingredients?.message}
-                            </p>
-                        </div>
+                        {!initialRecipeIngredient && (
+                            <>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    defaultValue={undefined}
+                                    variant={"outline"}
+                                    className=" rounded-lg"
+                                    onClick={() =>
+                                        append({ id: "", amount: 0 })
+                                    }>
+                                    <Plus className="mr-2 w-4 h-4" /> Add
+                                    ingredient
+                                </Button>
+                                <p className="text-red-500 text-sm mt-2">
+                                    {form.formState.errors.ingredients?.message}
+                                </p>
+                            </>
+                        )}
                         <div className="flex justify-end pt-5">
-                            <Button disabled={isLoading} type="submit">
-                                {isLoading && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
-                                {initialRecipe ? "Update" : "Add"}
+                            <Button type="submit">
+                                {initialRecipeIngredient ? "Update" : "Add"}
                             </Button>
                         </div>
                     </form>
@@ -380,5 +296,3 @@ function AddRecipeForm({
         </Dialog>
     );
 }
-
-export default AddRecipeForm;

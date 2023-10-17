@@ -12,8 +12,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { useToast } from "@/components/ui/use-toast";
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
 import { Unit } from "@/config/constants";
 import {
@@ -32,30 +31,51 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-
-import { Ingredient } from "@prisma/client";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@radix-ui/react-popover";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+} from "@/components/ui/command";
+import { toast } from "sonner";
+import { Ingredient, Supplier } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    unit: z.string().min(1, { message: "Unit is required" }),
+    unit: z.string({ required_error: "Unit is required" }),
     amount: z.coerce.number(),
     price: z.coerce.number(),
     category: z.string().min(1, { message: "Category is required" }),
-    supplier: z.string().min(1, { message: "Supplier is required" }),
+    supplierId: z.string().min(1, { message: "Supplier is required" }),
 });
 
 interface Props {
     initialIngredient?: Ingredient;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
+    suppliers: Supplier[];
 }
 
-function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
+function IngredientForm({
+    initialIngredient,
+    isOpen,
+    setIsOpen,
+    suppliers,
+}: Props) {
     const [isMultiple, setIsMultiple] = useState(false);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -63,46 +83,45 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
             name: "",
             price: undefined,
             category: "",
-            supplier: "",
+            supplierId: "",
         },
     });
-    const { toast } = useToast();
+
     const router = useRouter();
-    const isLoading = form.formState.isSubmitting;
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         let response;
-
-        try {
-            if (initialIngredient) {
-                response = await axios.patch(
-                    `/api/ingredient/${initialIngredient.id}`,
-                    values
-                );
-            } else {
-                response = await axios.post("/api/ingredient", values);
-            }
-
-            toast({
-                description: `${response.data.name} was ${
-                    initialIngredient ? "updated" : "added"
-                }.`,
-                duration: 3000,
-            });
-
-            if (!isMultiple) {
-                setIsOpen(false);
-                form.reset();
-            }
-
-            router.refresh();
-        } catch (error) {
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-                duration: 3000,
-            });
+        setIsLoading(true);
+        if (initialIngredient) {
+            response = axios.patch(
+                `/api/ingredient/${initialIngredient.id}`,
+                values
+            );
+        } else {
+            response = axios.post("/api/ingredient", values);
         }
+
+        if (!isMultiple) {
+            setIsOpen(false);
+        }
+        response
+            .then(() => {
+                router.refresh();
+                !isMultiple && form.reset();
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `${values.name}  has been ${
+                    initialIngredient ? "updated" : "added"
+                }`;
+            },
+            error: "Error",
+        });
     }
 
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
@@ -134,8 +153,8 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                         </FormLabel>
                                         <FormControl>
                                             <Input
-                                                disabled={isLoading}
                                                 {...field}
+                                                disabled={isLoading}
                                             />
                                         </FormControl>
 
@@ -218,19 +237,83 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                             />
                             <FormField
                                 control={form.control}
-                                name="supplier"
+                                name={`supplierId`}
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="flex flex-col pt-[10px]">
                                         <FormLabel className={labelStyle}>
                                             Supplier
                                         </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={isLoading}
-                                                {...field}
-                                            />
-                                        </FormControl>
-
+                                        <Popover
+                                            open={isPopoverOpen}
+                                            onOpenChange={setIsPopoverOpen}>
+                                            <PopoverTrigger asChild>
+                                                <FormControl>
+                                                    <Button
+                                                        variant="outline"
+                                                        role="combobox"
+                                                        className={cn(
+                                                            "justify-between",
+                                                            !field.value &&
+                                                                "text-muted-foreground"
+                                                        )}>
+                                                        {field.value
+                                                            ? suppliers.find(
+                                                                  (supplier) =>
+                                                                      supplier.id ===
+                                                                      field.value
+                                                              )?.name
+                                                            : "Select supplier"}
+                                                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                    </Button>
+                                                </FormControl>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
+                                                <Command>
+                                                    <CommandInput
+                                                        disabled={isLoading}
+                                                        placeholder="Search supplier..."
+                                                    />
+                                                    <CommandEmpty>
+                                                        No supplier found.
+                                                    </CommandEmpty>
+                                                    <CommandGroup>
+                                                        {suppliers.map(
+                                                            (supplier) => (
+                                                                <CommandItem
+                                                                    value={
+                                                                        supplier.id
+                                                                    }
+                                                                    key={
+                                                                        supplier.id
+                                                                    }
+                                                                    onSelect={() => {
+                                                                        form.setValue(
+                                                                            `supplierId`,
+                                                                            supplier.id
+                                                                        );
+                                                                        setIsPopoverOpen(
+                                                                            false
+                                                                        );
+                                                                    }}>
+                                                                    <CheckIcon
+                                                                        className={cn(
+                                                                            "mr-2 h-4 w-4",
+                                                                            supplier.id ===
+                                                                                field.value
+                                                                                ? "opacity-100"
+                                                                                : "opacity-0"
+                                                                        )}
+                                                                    />
+                                                                    {
+                                                                        supplier.name
+                                                                    }
+                                                                </CommandItem>
+                                                            )
+                                                        )}
+                                                    </CommandGroup>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -245,8 +328,8 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                         </FormLabel>
                                         <FormControl>
                                             <Input
-                                                disabled={isLoading}
                                                 {...field}
+                                                disabled={isLoading}
                                             />
                                         </FormControl>
 
@@ -268,8 +351,8 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                     </div>
                                 )}
                                 <Button
-                                    className="rounded-lg"
                                     disabled={isLoading}
+                                    className="rounded-lg"
                                     type="submit">
                                     {isLoading && (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

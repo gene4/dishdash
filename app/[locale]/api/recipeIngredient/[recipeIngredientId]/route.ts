@@ -10,7 +10,7 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { amount } = body;
+        const { ingredients } = body;
         if (!params.recipeIngredientId) {
             return new NextResponse("recipeIngredient ID required", {
                 status: 400,
@@ -21,7 +21,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!amount) {
+        if (!ingredients) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -30,7 +30,8 @@ export async function PATCH(
                 id: params.recipeIngredientId,
             },
             data: {
-                amount,
+                ingredientId: ingredients[0].id,
+                amount: ingredients[0].amount,
             },
         });
 
