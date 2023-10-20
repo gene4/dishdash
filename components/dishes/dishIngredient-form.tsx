@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import {
     Form,
@@ -40,9 +38,11 @@ import {
     PopoverTrigger,
 } from "@radix-ui/react-popover";
 import { Button } from "../ui/button";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IngredientsAndRecipes } from "@/app/[locale]/dishes/data-table";
+import { toast } from "sonner";
+import { DishIngredients } from "@/app/[locale]/dishes/[dishId]/data-table";
 
 const recipeSchema = z.object({
     ingredients: z
@@ -59,21 +59,35 @@ const recipeSchema = z.object({
 });
 
 interface Props {
+    initialDishIngredient?: DishIngredients;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
     ingredientsAndRecipes: IngredientsAndRecipes;
-    dishId: string;
+    dishId?: string;
 }
 
-export default function AddDishIngredientForm({
+export default function DishIngredientForm({
     isOpen,
     setIsOpen,
     ingredientsAndRecipes,
     dishId,
+    initialDishIngredient,
 }: Props) {
+    const initialDefaultValue = {
+        ingredients: [
+            {
+                id: initialDishIngredient?.id,
+                amount: initialDishIngredient?.amount,
+                type:
+                    initialDishIngredient && "yield" in initialDishIngredient
+                        ? "recipe"
+                        : "ingredient",
+            },
+        ],
+    };
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
-        defaultValues: {
+        defaultValues: initialDefaultValue || {
             ingredients: [{ id: "", amount: 0, type: "" }],
         },
         mode: "onTouched",
@@ -84,41 +98,50 @@ export default function AddDishIngredientForm({
         control: form.control,
     });
 
-    const { toast } = useToast();
     const router = useRouter();
-    const isLoading = form.formState.isSubmitting;
 
     async function onSubmit(values: z.infer<typeof recipeSchema>) {
-        try {
-            await axios.post(`/api/dishIngredient`, {
-                ...values,
-                dishId,
-            });
-            setIsOpen(false);
-            toast({
-                description: "Ingredients were added to the recipe.",
-                duration: 3000,
-            });
-            form.reset();
+        setIsOpen(false);
+
+        const response = initialDishIngredient
+            ? axios.patch(
+                  `/api/dishIngredient/${initialDishIngredient?.dishIngredientId}`,
+                  values
+              )
+            : axios.post(`/api/dishIngredient`, {
+                  ...values,
+                  dishId,
+              });
+
+        response.then(() => {
             router.refresh();
-        } catch (error) {
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-                duration: 3000,
-            });
-        }
+        });
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `${
+                    initialDishIngredient
+                        ? "Ingredient wes updated."
+                        : "Ingredients were added to the recipe."
+                }`;
+            },
+            error: "Error",
+        });
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
-                    <DialogTitle>Add Ingredients</DialogTitle>
-                    <DialogDescription>
-                        {" "}
-                        Add a new ingredients to your dish
-                    </DialogDescription>
+                    <DialogTitle>
+                        {initialDishIngredient ? "Update" : "Add"} Ingredients
+                    </DialogTitle>
+                    {!initialDishIngredient && (
+                        <DialogDescription>
+                            Add a new ingredients to your dish
+                        </DialogDescription>
+                    )}
                 </DialogHeader>
                 <Form {...form}>
                     <form
@@ -175,7 +198,7 @@ export default function AddDishIngredientForm({
                                                                             ) => (
                                                                                 <CommandItem
                                                                                     value={
-                                                                                        ingredient.name
+                                                                                        ingredient.id
                                                                                     }
                                                                                     key={
                                                                                         ingredient.id
@@ -223,9 +246,6 @@ export default function AddDishIngredientForm({
                                                     <FormItem>
                                                         <FormControl>
                                                             <Input
-                                                                disabled={
-                                                                    isLoading
-                                                                }
                                                                 type="number"
                                                                 step={0.1}
                                                                 autoFocus={
@@ -255,28 +275,27 @@ export default function AddDishIngredientForm({
                                 </p>
                             )}
                         </ol>
-                        <div>
-                            <Button
-                                type="button"
-                                size="sm"
-                                defaultValue={undefined}
-                                variant={"outline"}
-                                className=" rounded-lg"
-                                onClick={() =>
-                                    append({ id: "", amount: 0, type: "" })
-                                }>
-                                <Plus className="mr-2 w-4 h-4" /> Add ingredient
-                            </Button>
-                            <p className="text-red-500 text-sm mt-2">
-                                {form.formState.errors.ingredients?.message}
-                            </p>
-                        </div>
+                        {!initialDishIngredient && (
+                            <>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant={"outline"}
+                                    className=" rounded-lg"
+                                    onClick={() =>
+                                        append({ id: "", amount: 0, type: "" })
+                                    }>
+                                    <Plus className="mr-2 w-4 h-4" /> Add
+                                    ingredient
+                                </Button>
+                                <p className="text-red-500 text-sm mt-2">
+                                    {form.formState.errors.ingredients?.message}
+                                </p>
+                            </>
+                        )}
                         <div className="flex justify-end pt-5">
-                            <Button disabled={isLoading} type="submit">
-                                {isLoading && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
-                                Add
+                            <Button type="submit">
+                                {initialDishIngredient ? "Update" : "Add"}
                             </Button>
                         </div>
                     </form>

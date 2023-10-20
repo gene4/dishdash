@@ -57,7 +57,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { formatPrice } from "@/lib/utils/format-price";
 import { IngredientsAndRecipes } from "../data-table";
-import AddDishIngredientForm from "@/components/dishes/add-dishIngredient-form";
+import DishIngredientForm from "@/components/dishes/dishIngredient-form";
 import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
 import DishForm from "@/components/dishes/dish-form";
 import { toast } from "sonner";
@@ -195,7 +195,12 @@ export function DataTable({
             id: "actions",
             cell: ({ row }) => {
                 const dishIngredient = row.original;
-                return <RecipeActions dishIngredient={dishIngredient} />;
+                return (
+                    <RecipeActions
+                        ingredientsAndRecipes={ingredientsAndRecipes}
+                        dishIngredient={dishIngredient}
+                    />
+                );
             },
         },
     ];
@@ -369,7 +374,7 @@ export function DataTable({
                 setIsOpen={setIsFormOpen}
                 initialDish={dish}
             />
-            <AddDishIngredientForm
+            <DishIngredientForm
                 dishId={dish.id}
                 ingredientsAndRecipes={ingredientsAndRecipes}
                 isOpen={isAddIngredientFormOpen}

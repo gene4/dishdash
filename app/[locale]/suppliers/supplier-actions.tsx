@@ -9,7 +9,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Supplier } from "@prisma/client";
-import { Edit, Loader2, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -20,44 +20,39 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import axios from "axios";
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { Row } from "@tanstack/react-table";
 import SupplierForm from "@/components/suppliers/supplier-form";
+import { toast } from "sonner";
 
 interface Props {
     row: Row<Supplier>;
 }
 
 export default function SupplierActions({ row }: Props) {
-    const [isLoading, setIsLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const { toast } = useToast();
     const router = useRouter();
-
     const supplier = row.original;
 
     const onDelete = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            await axios.delete(`/api/supplier/${supplier.id}`);
-            setOpenDialog(false);
-            setIsLoading(false);
-            toast({
-                description: `Supplier ${supplier.name} was deleted.`,
+        setOpenDialog(false);
+
+        const response = axios
+            .delete(`/api/supplier/${supplier.id}`)
+            .then(() => {
+                router.refresh();
             });
-            router.refresh();
-        } catch (error) {
-            setIsLoading(false);
-            setOpenDialog(false);
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-            });
-        }
-    }, [router, supplier.id, supplier.name, toast]);
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Supplier ${supplier.name} was deleted.`;
+            },
+            error: "Error",
+        });
+    }, [router, supplier.id, supplier.name]);
 
     return (
         <>
@@ -104,12 +99,8 @@ export default function SupplierActions({ row }: Props) {
                                 Cancel
                             </Button>
                             <Button
-                                disabled={isLoading}
                                 onClick={onDelete}
                                 className="bg-red-500 hover:bg-red-500/90">
-                                {isLoading && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
                                 Delete
                             </Button>
                         </DialogFooter>

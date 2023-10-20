@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Loader2, Trash2, Camera, ExternalLink } from "lucide-react";
+import { Edit, Trash2, ExternalLink } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -19,12 +19,11 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import axios from "axios";
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { InvoiceT } from "./data-table";
 import InvoiceForm from "@/components/invoices/invoice-form";
 import { Supplier } from "@prisma/client";
-import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
+import { toast } from "sonner";
 
 interface Props {
     invoice: InvoiceT;
@@ -32,32 +31,26 @@ interface Props {
 }
 
 export default function InvoiceActions({ invoice, suppliers }: Props) {
-    const [isLoading, setIsLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
-    const { toast } = useToast();
     const router = useRouter();
 
     const onDelete = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            await axios.delete(`/api/invoice/${invoice.id}`);
-            setOpenDialog(false);
-            setIsLoading(false);
-            toast({
-                description: `Invoice was deleted.`,
-            });
+        setOpenDialog(false);
+
+        const response = axios.delete(`/api/invoice/${invoice.id}`).then(() => {
             router.refresh();
-        } catch (error) {
-            setIsLoading(false);
-            setOpenDialog(false);
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-            });
-        }
-    }, [invoice.id, router, toast]);
+        });
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Invoice was deleted.`;
+            },
+            error: "Error",
+        });
+    }, [invoice.id, router]);
 
     return (
         <>
@@ -115,14 +108,9 @@ export default function InvoiceActions({ invoice, suppliers }: Props) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-
                         <Button
-                            disabled={isLoading}
                             onClick={onDelete}
                             className="bg-red-500 hover:bg-red-500/90">
-                            {isLoading && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
                             Delete
                         </Button>
                     </AlertDialogFooter>

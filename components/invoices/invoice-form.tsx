@@ -1,12 +1,10 @@
 "use client";
 
 import React from "react";
-
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import {
     Select,
@@ -46,11 +44,12 @@ import {
     PopoverTrigger,
 } from "@radix-ui/react-popover";
 import { Button } from "../ui/button";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "../ui/calendar";
 import { InvoiceT, statuses } from "@/app/[locale]/invoices/data-table";
+import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 500000;
 const ACCEPTED_IMAGE_TYPES = [
@@ -104,51 +103,40 @@ export default function InvoiceForm({
         },
     });
 
-    const { toast } = useToast();
     const router = useRouter();
-    const isLoading = form.formState.isSubmitting;
 
     async function onSubmit(values: z.infer<typeof recipeSchema>) {
-        try {
-            const formData = new FormData();
+        setIsOpen(false);
+        const formData = new FormData();
 
-            values.file && formData.append("file", values.file[0]);
-            formData.append("invoiceNr", values.invoiceNr);
-            formData.append("supplierId", values.supplierId);
-            formData.append("amount", values.amount.toString());
-            formData.append("date", values.date.toString());
-            formData.append("status", values.status.toString());
+        values.file && formData.append("file", values.file[0]);
+        formData.append("invoiceNr", values.invoiceNr);
+        formData.append("supplierId", values.supplierId);
+        formData.append("amount", values.amount.toString());
+        formData.append("date", values.date.toString());
+        formData.append("status", values.status.toString());
 
-            if (initialInvoice && initialInvoice.fileRef) {
-                formData.append("fileUrl", initialInvoice.fileUrl!);
-                formData.append("fileRef", initialInvoice.fileRef);
-            }
-
-            initialInvoice
-                ? await axios.patch(
-                      `/api/invoice/${initialInvoice.id}`,
-                      formData
-                  )
-                : await axios.post("/api/invoice", formData);
-
-            setIsOpen(false);
-            toast({
-                description: `Invoice was ${
-                    initialInvoice ? "updated" : "added"
-                }`,
-                duration: 3000,
-            });
-            form.reset();
-            router.refresh();
-        } catch (error) {
-            console.log(error);
-
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-                duration: 3000,
-            });
+        if (initialInvoice && initialInvoice.fileRef) {
+            formData.append("fileUrl", initialInvoice.fileUrl!);
+            formData.append("fileRef", initialInvoice.fileRef);
         }
+
+        const response = initialInvoice
+            ? axios.patch(`/api/invoice/${initialInvoice.id}`, formData)
+            : axios.post("/api/invoice", formData);
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Invoice was ${initialInvoice ? "updated" : "added"}`;
+            },
+            error: "Error",
+        });
+
+        response.then(() => {
+            router.refresh();
+            !initialInvoice && form.reset();
+        });
     }
 
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
@@ -175,10 +163,7 @@ export default function InvoiceForm({
                                             Invoice number
                                         </FormLabel>
                                         <FormControl>
-                                            <Input
-                                                disabled={isLoading}
-                                                {...field}
-                                            />
+                                            <Input {...field} />
                                         </FormControl>
 
                                         <FormMessage />
@@ -195,7 +180,6 @@ export default function InvoiceForm({
                                         </FormLabel>
                                         <FormControl>
                                             <Input
-                                                disabled={isLoading}
                                                 type="number"
                                                 step={0.1}
                                                 {...field}
@@ -379,7 +363,6 @@ export default function InvoiceForm({
                                         <FormLabel>PDF / Image</FormLabel>
                                         <FormControl>
                                             <Input
-                                                disabled={isLoading}
                                                 type="file"
                                                 accept=".jpg, .jpeg, .png, .pdf"
                                                 onChange={(event) =>
@@ -395,10 +378,7 @@ export default function InvoiceForm({
                             />
                         </div>
                         <div className="flex justify-end pt-5">
-                            <Button disabled={isLoading} type="submit">
-                                {isLoading && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
+                            <Button type="submit">
                                 {initialInvoice ? "Update" : "Add"}
                             </Button>
                         </div>

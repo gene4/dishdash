@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Loader2, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -19,44 +19,43 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import axios from "axios";
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import DishIngredientForm from "@/components/dishes/dishIngredient-form";
+import { IngredientsAndRecipes } from "../data-table";
 import { DishIngredients } from "./data-table";
-import EditDishIngredientForm from "@/components/dishes/edit-dishIngredient-form";
+import { toast } from "sonner";
 
 interface Props {
     dishIngredient: DishIngredients;
+    ingredientsAndRecipes: IngredientsAndRecipes;
 }
 
-export default function DishActions({ dishIngredient }: Props) {
-    const [isLoading, setIsLoading] = useState(false);
+export default function DishActions({
+    dishIngredient,
+    ingredientsAndRecipes,
+}: Props) {
     const [openDialog, setOpenDialog] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
-    const { toast } = useToast();
     const router = useRouter();
 
     const onDelete = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            await axios.delete(
-                `/api/dishIngredient/${dishIngredient.dishIngredientId}`
-            );
-            setOpenDialog(false);
-            setIsLoading(false);
-            toast({
-                description: `Recipe ${dishIngredient.name} was deleted.`,
+        setOpenDialog(false);
+
+        const response = axios
+            .delete(`/api/dishIngredient/${dishIngredient.dishIngredientId}`)
+            .then(() => {
+                router.refresh();
             });
-            router.refresh();
-        } catch (error) {
-            setIsLoading(false);
-            setOpenDialog(false);
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-            });
-        }
-    }, [dishIngredient.dishIngredientId, dishIngredient.name, router, toast]);
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Ingredient ${dishIngredient.name} was deleted.`;
+            },
+            error: "Error",
+        });
+    }, [dishIngredient.dishIngredientId, dishIngredient.name, router]);
 
     return (
         <>
@@ -103,19 +102,16 @@ export default function DishActions({ dishIngredient }: Props) {
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
 
                         <Button
-                            disabled={isLoading}
                             onClick={onDelete}
                             className="bg-red-500 hover:bg-red-500/90">
-                            {isLoading && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
                             Delete
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <EditDishIngredientForm
-                dishIngredient={dishIngredient}
+            <DishIngredientForm
+                initialDishIngredient={dishIngredient}
+                ingredientsAndRecipes={ingredientsAndRecipes}
                 isOpen={isEditFormOpen}
                 setIsOpen={setIsEditFormOpen}
             />

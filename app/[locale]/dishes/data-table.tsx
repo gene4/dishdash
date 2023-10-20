@@ -60,7 +60,7 @@ export type IngredientsAndRecipes = (
           unit: string;
           price: number;
           createdAt: Date;
-          supplier: string;
+          supplierId: string;
           category: string;
           updatedAt: Date;
       }

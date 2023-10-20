@@ -110,8 +110,6 @@ export function DataTable({ data, suppliers }: DataTableProps) {
     const [supplierValue, setSupplierValue] = useState("");
     const [isFormOpen, setIsFormOpen] = useState(false);
 
-    console.log("invoices", data);
-
     const columns: ColumnDef<InvoiceT>[] = [
         {
             accessorKey: "invoiceNr",
@@ -263,14 +261,13 @@ export function DataTable({ data, suppliers }: DataTableProps) {
         <>
             <div className="flex items-center py-4 justify-between">
                 <div className="flex space-x-4">
-                    {" "}
                     <DatePickerWithRange date={date} setDate={setDate} />
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
                                 variant="outline"
                                 role="combobox"
-                                className="w-[200px] justify-between">
+                                className="w-[200px] justify-between group">
                                 {supplierValue ? (
                                     suppliers.find(
                                         (supplier) =>
@@ -278,7 +275,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                                             supplierValue
                                     )?.name
                                 ) : (
-                                    <p className="text-muted-foreground font-normal">
+                                    <p className="text-muted-foreground group-hover:text-foreground font-normal">
                                         Filter by supplier...
                                     </p>
                                 )}
@@ -287,7 +284,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                         </PopoverTrigger>
                         <PopoverContent className="w-[200px] p-0">
                             <Command>
-                                <CommandInput placeholder="Search supplier..." />
+                                <CommandInput />
                                 <CommandEmpty>No supplier found.</CommandEmpty>
                                 <CommandGroup>
                                     {suppliers.map((supplier) => (

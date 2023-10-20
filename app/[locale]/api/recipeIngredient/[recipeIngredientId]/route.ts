@@ -25,7 +25,7 @@ export async function PATCH(
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
-        const recipe = await prismadb.recipeIngredient.update({
+        const recipeIngredients = await prismadb.recipeIngredient.update({
             where: {
                 id: params.recipeIngredientId,
             },
@@ -35,7 +35,7 @@ export async function PATCH(
             },
         });
 
-        return NextResponse.json(recipe);
+        return NextResponse.json(recipeIngredients);
     } catch (error) {
         console.log("[RECIPE_PATCH]", error);
         return new NextResponse("Internal Error", { status: 500 });

@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import {
     Form,
@@ -25,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Supplier } from "@prisma/client";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const recipeSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
@@ -49,37 +48,29 @@ export default function SupplierForm({
         },
     });
 
-    const { toast } = useToast();
     const router = useRouter();
-    const isLoading = form.formState.isSubmitting;
 
     async function onSubmit(values: z.infer<typeof recipeSchema>) {
-        try {
-            initialSupplier
-                ? await axios.patch(
-                      `/api/supplier/${initialSupplier.id}`,
-                      values
-                  )
-                : await axios.post("/api/supplier", values);
+        setIsOpen(false);
 
-            setIsOpen(false);
-            toast({
-                description: `Supplier ${values.name} was ${
+        const response = initialSupplier
+            ? axios.patch(`/api/supplier/${initialSupplier.id}`, values)
+            : axios.post("/api/supplier", values);
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Supplier ${values.name} was ${
                     initialSupplier ? "updated" : "added"
-                }`,
-                duration: 3000,
-            });
-            form.reset();
-            router.refresh();
-        } catch (error) {
-            console.log(error);
+                }`;
+            },
+            error: "Error",
+        });
 
-            toast({
-                variant: "danger",
-                description: "Something went wrong.",
-                duration: 3000,
-            });
-        }
+        response.then(() => {
+            router.refresh();
+            !initialSupplier && form.reset();
+        });
     }
 
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
@@ -105,10 +96,7 @@ export default function SupplierForm({
                                         Name
                                     </FormLabel>
                                     <FormControl>
-                                        <Input
-                                            disabled={isLoading}
-                                            {...field}
-                                        />
+                                        <Input {...field} />
                                     </FormControl>
 
                                     <FormMessage />
@@ -117,10 +105,7 @@ export default function SupplierForm({
                         />
 
                         <div className="flex justify-end pt-5">
-                            <Button disabled={isLoading} type="submit">
-                                {isLoading && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
+                            <Button type="submit">
                                 {initialSupplier ? "Update" : "Add"}
                             </Button>
                         </div>
