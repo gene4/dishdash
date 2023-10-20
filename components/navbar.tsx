@@ -32,9 +32,8 @@ export const Navbar = () => {
                     <LocaleSwitcher />
                     <ThemeSwitch />
                 </div>
-                {/* <OrganizationSwitcher
-                    appearance={theme === "dark" ? dark : undefined}
-                /> */}
+
+                {/* @ts-ignore */}
                 <UserButton appearance={theme === "dark" ? dark : undefined} />
                 <MobileSidebar />
             </div>
