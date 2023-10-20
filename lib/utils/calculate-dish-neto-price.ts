@@ -1,6 +1,4 @@
 import { DishDataReceived } from "@/app/[locale]/dishes/data-table";
-import { calculateRecipePrice } from "./calculate-recipe-price";
-import { RecipeDataReceived } from "@/app/[locale]/recipes/data-table";
 
 export function calculateNetoDishPrice(dish: DishDataReceived) {
     let netoPrice = 0;

@@ -1,5 +1,3 @@
-import { RecipeDataReceived } from "@/app/[locale]/recipes/data-table";
-
 export function calculateRecipePrice(ingredients: any) {
     const totalPrice = ingredients.reduce((acc: number, ingredient: any) => {
         const { amount } = ingredient;

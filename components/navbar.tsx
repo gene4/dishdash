@@ -1,13 +1,24 @@
 "use client";
 
+import { dark } from "@clerk/themes";
 import { ChefHat } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import {
+    UserButton,
+    OrganizationSwitcher,
+    useOrganization,
+} from "@clerk/nextjs";
 import NextLink from "next/link";
 import LocaleSwitcher from "./locale-switch";
 import { ThemeSwitch } from "./theme-switch";
 import MobileSidebar from "./mobile-sidbar";
+import { useTheme } from "next-themes";
 
 export const Navbar = () => {
+    const { theme } = useTheme();
+    const { organization } = useOrganization();
+
+    console.log({ organization });
+
     return (
         <header className="flex sticky z-50 top-0 bg-background/95 backdrop-blur items-center justify-between container h-14 border-b shadow-sm">
             <NextLink
@@ -21,7 +32,10 @@ export const Navbar = () => {
                     <LocaleSwitcher />
                     <ThemeSwitch />
                 </div>
-                <UserButton />
+                {/* <OrganizationSwitcher
+                    appearance={theme === "dark" ? dark : undefined}
+                /> */}
+                <UserButton appearance={theme === "dark" ? dark : undefined} />
                 <MobileSidebar />
             </div>
         </header>
