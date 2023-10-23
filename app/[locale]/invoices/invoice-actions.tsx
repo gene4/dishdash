@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Trash2, ExternalLink } from "lucide-react";
+import { Edit, Trash2, FileText } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -60,7 +60,7 @@ export default function InvoiceActions({ invoice, suppliers }: Props) {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <a target="_blank" href={invoice.fileUrl}>
-                                    <ExternalLink className="h-4 w-4 text-muted-foreground hover:scale-110 transition-all" />
+                                    <FileText className="h-4 w-4 text-muted-foreground hover:scale-110 transition-all" />
                                 </a>
                             </TooltipTrigger>
                             <TooltipContent className="bg-primary text-white rounded-3xl">

@@ -10,7 +10,7 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name } = body;
+        const { name, paymentInfo, paymentDay } = body;
 
         if (!params.supplierId) {
             return new NextResponse("Ingredient ID required", { status: 400 });
@@ -31,6 +31,8 @@ export async function PATCH(
             },
             data: {
                 name,
+                paymentInfo,
+                paymentDay,
             },
         });
 

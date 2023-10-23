@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Plus, Circle, ChevronsUpDown, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils/format-date";
 import { formatPrice } from "@/lib/utils/format-price";
-
 import { DatePickerWithRange } from "@/components/date-picker-range";
 import { DateRange } from "react-day-picker";
 import {
@@ -44,6 +43,9 @@ import { cn } from "@/lib/utils";
 import { Supplier } from "@prisma/client";
 import InvoiceForm from "@/components/invoices/invoice-form";
 import InvoiceActions from "./invoice-actions";
+import { Checkbox } from "@/components/ui/checkbox";
+import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";
+import { getNextPaymentDate } from "@/lib/utils/get-next-payment-date";
 
 export type InvoiceT = {
     supplier: string;
@@ -109,8 +111,34 @@ export function DataTable({ data, suppliers }: DataTableProps) {
     const [date, setDate] = useState<DateRange | undefined>();
     const [supplierValue, setSupplierValue] = useState("");
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [rowSelection, setRowSelection] = useState({});
 
     const columns: ColumnDef<InvoiceT>[] = [
+        {
+            id: "select",
+            header: ({ table }) => (
+                <div className="flex justify-center items-center">
+                    <Checkbox
+                        checked={table.getIsAllPageRowsSelected()}
+                        onCheckedChange={(value) =>
+                            table.toggleAllPageRowsSelected(!!value)
+                        }
+                        aria-label="Select all"
+                    />
+                </div>
+            ),
+            cell: ({ row }) => (
+                <div className="flex justify-center items-center">
+                    <Checkbox
+                        checked={row.getIsSelected()}
+                        onCheckedChange={(value) => row.toggleSelected(!!value)}
+                        aria-label="Select row"
+                    />
+                </div>
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
         {
             accessorKey: "invoiceNr",
             header: ({ column }) => {
@@ -198,7 +226,6 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                 const status = statuses.find(
                     (status) => status.value === row.getValue("status")
                 );
-                console.log("row.getValue(", row.getValue("status"));
 
                 if (!status) {
                     return null;
@@ -252,13 +279,33 @@ export function DataTable({ data, suppliers }: DataTableProps) {
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
+        onRowSelectionChange: setRowSelection,
         state: {
             sorting,
+            rowSelection,
         },
     });
 
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+
+    const TotalInvoicesPrice = useMemo(() => {
+        return calculateTotalInvoicesPrice(selectedRows);
+    }, [selectedRows]);
+
     return (
         <>
+            <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
+                <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+                    Invoices
+                </h1>
+                <h1 className="text-3xl  border-b">
+                    Total:{" "}
+                    <span className="font-semibold tracking-tight">
+                        {formatPrice(TotalInvoicesPrice)}
+                    </span>
+                </h1>
+            </div>
+
             <div className="flex items-center py-4 justify-between">
                 <div className="flex space-x-4">
                     <DatePickerWithRange date={date} setDate={setDate} />

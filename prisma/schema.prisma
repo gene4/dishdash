@@ -85,12 +85,14 @@ model DishIngredient {
 }
 
 model Supplier {
-  id        String      @id @default(uuid()) 
-  name      String
-  userId    String
-  bills     Invoice[]
+  id          String      @id @default(uuid()) 
+  name        String
+  userId      String
+  paymentInfo String? @db.Text
+  paymentDay  Int?
+  bills       Invoice[] 
   ingredients Ingredient[]
-  createdAt DateTime    @default(now())
+  createdAt   DateTime    @default(now())
 }
 
 model Invoice {
