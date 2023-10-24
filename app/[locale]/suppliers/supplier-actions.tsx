@@ -9,7 +9,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Supplier } from "@prisma/client";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, BarChart3 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -60,6 +60,21 @@ export default function SupplierActions({ row }: Props) {
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger>
+                            <BarChart3
+                                onClick={() =>
+                                    router.push(`/suppliers/${supplier.id}`)
+                                }
+                                className="w-4 h-4 text-muted-foreground hover:scale-110 transition-all"
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-muted text-foreground rounded-3xl">
+                            <p>Overview</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger>
                             <Edit
                                 onClick={() => {
                                     setIsFormOpen(true);
@@ -106,6 +121,7 @@ export default function SupplierActions({ row }: Props) {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
                 <SupplierForm
                     isOpen={isFormOpen}
                     setIsOpen={setIsFormOpen}

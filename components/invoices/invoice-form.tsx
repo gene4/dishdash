@@ -36,7 +36,7 @@ import {
     CommandInput,
     CommandItem,
 } from "@/components/ui/command";
-import { Supplier } from "@prisma/client";
+import { Invoice, Supplier } from "@prisma/client";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import {
     Popover,
@@ -79,7 +79,7 @@ const recipeSchema = z.object({
 });
 
 interface Props {
-    initialInvoice?: InvoiceT;
+    initialInvoice?: InvoiceT | Invoice;
     suppliers: Supplier[];
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
