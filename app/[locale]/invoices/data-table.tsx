@@ -324,8 +324,14 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                                 <CommandGroup>
                                     {suppliers.map((supplier) => (
                                         <CommandItem
+                                            value={supplier.id}
                                             key={supplier.id}
                                             onSelect={(currentValue) => {
+                                                console.log(
+                                                    "currentValue",
+                                                    currentValue
+                                                );
+
                                                 setSupplierValue(
                                                     currentValue ===
                                                         supplierValue
