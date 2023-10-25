@@ -1,10 +1,7 @@
-import { InvoiceT } from "@/app/[locale]/invoices/data-table";
 import { Invoice } from "@prisma/client";
 import { Row } from "@tanstack/react-table";
 
-export function calculateTotalInvoicesPrice(
-    selectedRows: Row<InvoiceT>[] | Row<Invoice>[]
-) {
+export function calculateTotalInvoicesPrice(selectedRows: Row<Invoice>[]) {
     if (!selectedRows || selectedRows.length === 0) {
         return 0; // No rows selected, so the total price is 0
     }

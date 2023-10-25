@@ -79,7 +79,7 @@ const recipeSchema = z.object({
 });
 
 interface Props {
-    initialInvoice?: InvoiceT | Invoice;
+    initialInvoice?: Invoice;
     suppliers: Supplier[];
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;

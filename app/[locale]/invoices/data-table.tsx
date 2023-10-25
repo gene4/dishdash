@@ -40,25 +40,15 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { Supplier } from "@prisma/client";
+import { Invoice, Supplier } from "@prisma/client";
 import InvoiceForm from "@/components/invoices/invoice-form";
 import InvoiceActions from "./invoice-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";
 import { getNextPaymentDate } from "@/lib/utils/get-next-payment-date";
 
-export type InvoiceT = {
+export type InvoiceT = Invoice & {
     supplier: string;
-    id: string;
-    userId: string;
-    supplierId: string;
-    invoiceNr: string;
-    date: Date;
-    status: string;
-    amount: number;
-    fileUrl: string | null;
-    fileRef: string | null;
-    createdAt: Date;
 };
 
 interface DataTableProps {
@@ -113,7 +103,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [rowSelection, setRowSelection] = useState({});
 
-    const columns: ColumnDef<InvoiceT>[] = [
+    const columns: ColumnDef<Invoice>[] = [
         {
             id: "select",
             header: ({ table }) => (
