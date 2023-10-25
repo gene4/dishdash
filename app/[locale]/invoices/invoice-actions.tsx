@@ -22,11 +22,11 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { InvoiceT } from "./data-table";
 import InvoiceForm from "@/components/invoices/invoice-form";
-import { Supplier } from "@prisma/client";
+import { Invoice, Supplier } from "@prisma/client";
 import { toast } from "sonner";
 
 interface Props {
-    invoice: InvoiceT;
+    invoice: Invoice;
     suppliers: Supplier[];
 }
 
