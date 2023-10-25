@@ -45,14 +45,13 @@ import InvoiceForm from "@/components/invoices/invoice-form";
 import InvoiceActions from "./invoice-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";
-import { getNextPaymentDate } from "@/lib/utils/get-next-payment-date";
 
 export type InvoiceT = Invoice & {
     supplier: string;
 };
 
 interface DataTableProps {
-    data: InvoiceT[];
+    data: Invoice[];
     suppliers: Supplier[];
 }
 
@@ -254,7 +253,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
 
         if (supplierValue) {
             filtered = filtered.filter((invoice) => {
-                return invoice.supplier.toLocaleLowerCase() === supplierValue;
+                return invoice.id === supplierValue;
             });
         }
 
@@ -308,8 +307,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                                 {supplierValue ? (
                                     suppliers.find(
                                         (supplier) =>
-                                            supplier.name.toLocaleLowerCase() ===
-                                            supplierValue
+                                            supplier.id === supplierValue
                                     )?.name
                                 ) : (
                                     <p className="text-muted-foreground group-hover:text-foreground font-normal">
@@ -326,7 +324,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                                 <CommandGroup>
                                     {suppliers.map((supplier) => (
                                         <CommandItem
-                                            key={supplier.name}
+                                            key={supplier.id}
                                             onSelect={(currentValue) => {
                                                 setSupplierValue(
                                                     currentValue ===
@@ -339,7 +337,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                                                 className={cn(
                                                     "mr-2 h-4 w-4",
                                                     supplierValue ===
-                                                        supplier.name.toLocaleLowerCase()
+                                                        supplier.id
                                                         ? "opacity-100"
                                                         : "opacity-0"
                                                 )}
