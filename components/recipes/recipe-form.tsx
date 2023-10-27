@@ -251,6 +251,16 @@ export default function RecipeForm({
                                                                         }
                                                                         placeholder="Amount"
                                                                         {...field}
+                                                                        onKeyDown={(
+                                                                            event
+                                                                        ) => {
+                                                                            if (
+                                                                                event.key ===
+                                                                                "Enter"
+                                                                            ) {
+                                                                                event.preventDefault();
+                                                                            }
+                                                                        }}
                                                                     />
                                                                 </FormControl>
                                                                 <FormMessage />

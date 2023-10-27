@@ -68,7 +68,7 @@ export default function DishForm({
 
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
-        defaultValues: initialDish || {
+        defaultValues: { ...initialDish, ingredients: [] } || {
             name: "",
             targetPrice: 0,
             multiplier: 0,
@@ -235,6 +235,16 @@ export default function DishForm({
                                                                         }
                                                                         placeholder="Amount"
                                                                         {...field}
+                                                                        onKeyDown={(
+                                                                            event
+                                                                        ) => {
+                                                                            if (
+                                                                                event.key ===
+                                                                                "Enter"
+                                                                            ) {
+                                                                                event.preventDefault();
+                                                                            }
+                                                                        }}
                                                                     />
                                                                 </FormControl>
                                                                 <FormMessage />

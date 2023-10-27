@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
@@ -73,6 +73,8 @@ export default function DishIngredientForm({
     dishId,
     initialDishIngredient,
 }: Props) {
+    const submitRef = useRef<HTMLButtonElement>(null);
+
     const initialDefaultValue = {
         ingredients: [
             {
@@ -131,7 +133,9 @@ export default function DishIngredientForm({
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
                     <DialogTitle>
@@ -150,7 +154,9 @@ export default function DishIngredientForm({
                         <ol className="min-h-3 p-1 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
                             {fields.length ? (
                                 fields.map((field, index) => (
-                                    <li className="ml-4" key={field.id}>
+                                    <li
+                                        className="ml-4"
+                                        key={field.id}>
                                         <div className="flex justify-between items-center ml-3">
                                             <FormField
                                                 control={form.control}
@@ -282,7 +288,7 @@ export default function DishIngredientForm({
                                     type="button"
                                     size="sm"
                                     variant={"outline"}
-                                    className=" rounded-lg"
+                                    className="rounded-lg"
                                     onClick={() =>
                                         append({ id: "", amount: 0, type: "" })
                                     }>
@@ -295,7 +301,9 @@ export default function DishIngredientForm({
                             </>
                         )}
                         <div className="flex justify-end pt-5">
-                            <Button type="submit">
+                            <Button
+                                ref={submitRef}
+                                type="submit">
                                 {initialDishIngredient ? "Update" : "Add"}
                             </Button>
                         </div>

@@ -80,7 +80,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
     return dish ? (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
-                <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0">
                     Dish: <span className="font-normal">{dish?.name}</span>
                 </h1>
                 <div className="text-xl flex flex-wrap text-center font-bold space-y-4 md:space-y-0 md:space-x-10">

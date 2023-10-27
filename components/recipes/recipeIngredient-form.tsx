@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
@@ -63,6 +63,7 @@ export default function RecipeIngredientForm({
     suppliers,
 }: Props) {
     const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
+    const submitRef = useRef<HTMLButtonElement>(null);
 
     const initialDefaultValue = {
         ingredients: [
@@ -183,6 +184,17 @@ export default function RecipeIngredientForm({
                                                                     }
                                                                     placeholder="Amount"
                                                                     {...field}
+                                                                    onKeyDown={(
+                                                                        event
+                                                                    ) => {
+                                                                        if (
+                                                                            event.key ===
+                                                                            "Enter"
+                                                                        ) {
+                                                                            event.preventDefault();
+                                                                            submitRef.current?.click();
+                                                                        }
+                                                                    }}
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
@@ -215,7 +227,7 @@ export default function RecipeIngredientForm({
                                     size="sm"
                                     defaultValue={undefined}
                                     variant={"outline"}
-                                    className=" rounded-lg"
+                                    className="rounded-lg"
                                     onClick={() =>
                                         append({ id: "", amount: 0 })
                                     }>
@@ -228,7 +240,9 @@ export default function RecipeIngredientForm({
                             </>
                         )}
                         <div className="flex justify-end pt-5">
-                            <Button type="submit">
+                            <Button
+                                ref={submitRef}
+                                type="submit">
                                 {initialRecipeIngredient ? "Update" : "Add"}
                             </Button>
                         </div>
