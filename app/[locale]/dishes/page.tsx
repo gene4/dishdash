@@ -47,6 +47,12 @@ export default async function RecipesPage() {
         },
     });
 
+    const suppliers = await prismadb.supplier.findMany({
+        where: {
+            userId,
+        },
+    });
+
     const ingredientsAndRecipes = [...ingredients, ...recipes];
 
     return (
@@ -57,6 +63,7 @@ export default async function RecipesPage() {
             <DataTable
                 data={dishes}
                 ingredientsAndRecipes={ingredientsAndRecipes}
+                suppliers={suppliers}
             />
         </div>
     );

@@ -2,7 +2,6 @@ import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
 import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
-import { RecipeDataReceived } from "../data-table";
 import { formatPrice } from "@/lib/utils/format-price";
 
 interface RecipeIdPageProps {
@@ -51,10 +50,16 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
         },
     });
 
+    const suppliers = await prismadb.supplier.findMany({
+        where: {
+            userId,
+        },
+    });
+
     return recipeIngredients ? (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
-                <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0">
                     Recipe: <span className="font-normal">{recipe?.name}</span>
                 </h1>
                 <div className="text-xl flex flex-wrap text-center font-bold space-y-4 md:space-y-0">
@@ -80,6 +85,7 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                 recipeIngredients={recipeIngredients}
                 ingredients={ingredients}
                 recipe={recipe}
+                suppliers={suppliers}
             />
         </>
     ) : (

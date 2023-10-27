@@ -25,7 +25,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import RecipesForm from "@/components/recipes/recipe-form";
-import { Ingredient } from "@prisma/client";
+import { Ingredient, Supplier } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 
@@ -54,9 +54,10 @@ export type RecipeDataReceived = {
 interface DataTableProps {
     data: RecipeDataReceived[];
     ingredients: Ingredient[];
+    suppliers: Supplier[];
 }
 
-export function DataTable({ data, ingredients }: DataTableProps) {
+export function DataTable({ data, ingredients, suppliers }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -166,6 +167,7 @@ export function DataTable({ data, ingredients }: DataTableProps) {
                 isOpen={isFormOpen}
                 setIsOpen={setIsFormOpen}
                 ingredients={ingredients}
+                suppliers={suppliers}
             />
         </>
     );

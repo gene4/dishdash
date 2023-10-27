@@ -57,7 +57,7 @@ export default function SupplierActions({ row }: Props) {
     return (
         <>
             <div className="flex space-x-2">
-                <TooltipProvider>
+                {/* <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger>
                             <BarChart3
@@ -71,7 +71,7 @@ export default function SupplierActions({ row }: Props) {
                             <p>Overview</p>
                         </TooltipContent>
                     </Tooltip>
-                </TooltipProvider>
+                </TooltipProvider> */}
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger>
@@ -88,7 +88,9 @@ export default function SupplierActions({ row }: Props) {
                     </Tooltip>
                 </TooltipProvider>
 
-                <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                <Dialog
+                    open={openDialog}
+                    onOpenChange={setOpenDialog}>
                     <DialogTrigger>
                         <TooltipProvider>
                             <Tooltip>

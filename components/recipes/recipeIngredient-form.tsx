@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
@@ -13,7 +13,6 @@ import {
     FormItem,
     FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import {
     Dialog,
@@ -22,36 +21,23 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
-
-import { Ingredient } from "@prisma/client";
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@radix-ui/react-popover";
+import { Ingredient, Supplier } from "@prisma/client";
 import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { RecipeIngredients } from "@/app/[locale]/recipes/[recipeId]/data-table";
 import { toast } from "sonner";
+import IngredientsCommandBox from "../ingredients-command-box";
+import IngredientForm from "../ingredients/table/ingredient-form";
 
 const recipeSchema = z.object({
     ingredients: z
         .array(
             z.object({
                 id: z.string().min(1, { message: "Ingredient is required" }),
-                amount: z.coerce.number({
-                    required_error: "Amount is required",
-                }),
+                amount: z.preprocess(
+                    (a) => parseFloat(z.string().parse(a)),
+                    z.number().optional()
+                ),
             })
         )
         .nonempty({
@@ -65,6 +51,7 @@ interface Props {
     setIsOpen: (open: boolean) => void;
     ingredients: Ingredient[];
     recipeId?: string;
+    suppliers?: Supplier[];
 }
 
 export default function RecipeIngredientForm({
@@ -73,7 +60,10 @@ export default function RecipeIngredientForm({
     ingredients,
     recipeId,
     initialRecipeIngredient,
+    suppliers,
 }: Props) {
+    const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
+
     const initialDefaultValue = {
         ingredients: [
             {
@@ -113,6 +103,7 @@ export default function RecipeIngredientForm({
 
         response.then(() => {
             router.refresh();
+            form.reset();
         });
 
         toast.promise(response, {
@@ -129,7 +120,9 @@ export default function RecipeIngredientForm({
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
                     <DialogTitle>
@@ -145,127 +138,76 @@ export default function RecipeIngredientForm({
                     <form
                         className="space-y-6"
                         onSubmit={form.handleSubmit(onSubmit)}>
-                        <ol className="min-h-3 p-1 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
-                            {fields.length ? (
-                                fields.map((field, index) => (
-                                    <li className="ml-4" key={field.id}>
-                                        <div className="flex justify-between items-center ml-3">
-                                            <FormField
-                                                control={form.control}
-                                                name={`ingredients.${index}.id`}
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-col">
-                                                        <Popover>
-                                                            <PopoverTrigger
-                                                                asChild>
-                                                                <FormControl>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        role="combobox"
-                                                                        className={cn(
-                                                                            "w-[200px] justify-between",
-                                                                            !field.value &&
-                                                                                "text-muted-foreground"
-                                                                        )}>
-                                                                        {field.value
-                                                                            ? ingredients.find(
-                                                                                  (
-                                                                                      ingredient
-                                                                                  ) =>
-                                                                                      ingredient.id ===
-                                                                                      field.value
-                                                                              )
-                                                                                  ?.name
-                                                                            : "Select ingredient"}
-                                                                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                                    </Button>
-                                                                </FormControl>
-                                                            </PopoverTrigger>
-                                                            <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
-                                                                <Command>
-                                                                    <CommandInput placeholder="Search ingredient..." />
-                                                                    <CommandEmpty>
-                                                                        No
-                                                                        ingredient
-                                                                        found.
-                                                                    </CommandEmpty>
-                                                                    <CommandGroup>
-                                                                        {ingredients.map(
-                                                                            (
-                                                                                ingredient
-                                                                            ) => (
-                                                                                <CommandItem
-                                                                                    value={
-                                                                                        ingredient.id
-                                                                                    }
-                                                                                    key={
-                                                                                        ingredient.id
-                                                                                    }
-                                                                                    onSelect={() => {
-                                                                                        form.setValue(
-                                                                                            `ingredients.${index}.id`,
-                                                                                            ingredient.id
-                                                                                        );
-                                                                                    }}>
-                                                                                    <CheckIcon
-                                                                                        className={cn(
-                                                                                            "mr-2 h-4 w-4",
-                                                                                            ingredient.id ===
-                                                                                                field.value
-                                                                                                ? "opacity-100"
-                                                                                                : "opacity-0"
-                                                                                        )}
-                                                                                    />
-                                                                                    {
-                                                                                        ingredient.name
-                                                                                    }
-                                                                                </CommandItem>
-                                                                            )
-                                                                        )}
-                                                                    </CommandGroup>
-                                                                </Command>
-                                                            </PopoverContent>
-                                                        </Popover>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name={`ingredients.${index}.amount`}
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <Input
-                                                                type="number"
-                                                                step={0.1}
-                                                                autoFocus={
-                                                                    false
+                        <>
+                            <ol className="min-h-3 p-1 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
+                                {fields.length ? (
+                                    fields.map((field, index) => (
+                                        <li
+                                            className="ml-4"
+                                            key={field.id}>
+                                            <div className="flex justify-between items-center ml-3">
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.id`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex flex-col">
+                                                            <IngredientsCommandBox
+                                                                field={field}
+                                                                index={index}
+                                                                ingredients={
+                                                                    ingredients
                                                                 }
-                                                                placeholder="Amount"
-                                                                {...field}
+                                                                setValue={
+                                                                    form.setValue
+                                                                }
+                                                                setIsIngredientFormOpen={
+                                                                    setIsIngredientFormOpen
+                                                                }
                                                             />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <Button
-                                                className="rounded-full"
-                                                onClick={() => remove(index)}
-                                                size="icon"
-                                                variant="ghost">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </li>
-                                ))
-                            ) : (
-                                <p className="text-center text-sm">
-                                    No ingredients
-                                </p>
-                            )}
-                        </ol>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.amount`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    step={0.1}
+                                                                    autoFocus={
+                                                                        false
+                                                                    }
+                                                                    placeholder="Amount"
+                                                                    {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <Button
+                                                    className="rounded-full"
+                                                    onClick={() =>
+                                                        remove(index)
+                                                    }
+                                                    size="icon"
+                                                    variant="ghost">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-sm">
+                                        No ingredients
+                                    </p>
+                                )}
+                            </ol>
+                        </>
                         {!initialRecipeIngredient && (
                             <>
                                 <Button
@@ -293,6 +235,13 @@ export default function RecipeIngredientForm({
                     </form>
                 </Form>
             </DialogContent>
+            {suppliers && (
+                <IngredientForm
+                    isOpen={isIngredientFormOpen}
+                    setIsOpen={setIsIngredientFormOpen}
+                    suppliers={suppliers}
+                />
+            )}
         </Dialog>
     );
 }

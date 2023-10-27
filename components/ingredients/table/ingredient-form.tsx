@@ -204,6 +204,7 @@ function IngredientForm({
                                         <FormControl>
                                             <Input
                                                 disabled={isLoading}
+                                                min={0}
                                                 type="number"
                                                 step={0.1}
                                                 {...field}
@@ -225,6 +226,7 @@ function IngredientForm({
                                         <FormControl>
                                             <Input
                                                 disabled={isLoading}
+                                                min={0}
                                                 type="number"
                                                 step={0.1}
                                                 {...field}

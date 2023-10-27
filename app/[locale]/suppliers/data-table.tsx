@@ -25,19 +25,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import SupplierForm from "@/components/suppliers/supplier-form";
+import { useRouter } from "next/navigation";
+import { Supplier } from "@prisma/client";
+import { columns } from "./columns";
 
-interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
+interface DataTableProps {
+    data: Supplier[];
 }
 
-export function DataTable<TData, TValue>({
-    data,
-    columns,
-}: DataTableProps<TData, TValue>) {
+export function DataTable({ data }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
+
+    const router = useRouter();
 
     const table = useReactTable({
         data,
@@ -107,7 +108,14 @@ export function DataTable<TData, TValue>({
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id}>
+                                <TableRow
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                        router.push(
+                                            `/suppliers/${row.original.id}`
+                                        );
+                                    }}
+                                    key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(
@@ -131,7 +139,10 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <SupplierForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
+            <SupplierForm
+                isOpen={isFormOpen}
+                setIsOpen={setIsFormOpen}
+            />
         </>
     );
 }

@@ -56,7 +56,9 @@ export default async function RootLayout({
     return (
         <ClerkProvider localization={locale === "de" ? deDE : undefined}>
             <TanstackProvider>
-                <html lang={locale} suppressHydrationWarning>
+                <html
+                    lang={locale}
+                    suppressHydrationWarning>
                     <head />
                     <body
                         className={clsx(
@@ -73,11 +75,11 @@ export default async function RootLayout({
                                     locale={locale}
                                     messages={messages}>
                                     <Navbar />
-                                    <div className="flex">
+                                    <div className="md:flex">
                                         <div className="hidden top-14 fixed md:sticky md:flex w-fit flex-col h-[calc(100vh-3.5rem)]">
                                             <Sidebar />
                                         </div>
-                                        <main className="mx-auto max-w-7xl py-6 px-3 md:px-7 flex-grow">
+                                        <main className="mx-auto max-w-7xl py-6 px-4 md:px-7 flex-1 flex-grow">
                                             {children}
                                         </main>
                                     </div>

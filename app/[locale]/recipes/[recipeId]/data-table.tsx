@@ -49,7 +49,7 @@ import {
     Trash2,
     Edit,
 } from "lucide-react";
-import { Ingredient, Recipe } from "@prisma/client";
+import { Ingredient, Recipe, Supplier } from "@prisma/client";
 import RecipeActions from "./recipe-actions";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -76,12 +76,14 @@ interface DataTableProps {
     recipeIngredients: RecipeIngredients[];
     ingredients: Ingredient[];
     recipe: Recipe;
+    suppliers: Supplier[];
 }
 
 export function DataTable({
     recipeIngredients,
     ingredients,
     recipe,
+    suppliers,
 }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -262,7 +264,9 @@ export function DataTable({
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant={"outline"} size={"icon"}>
+                            <Button
+                                variant={"outline"}
+                                size={"icon"}>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -377,6 +381,7 @@ export function DataTable({
                 ingredients={ingredients}
                 isOpen={isAddIngredientFormOpen}
                 setIsOpen={setIsAddIngredientFormOpen}
+                suppliers={suppliers}
             />
         </>
     );
