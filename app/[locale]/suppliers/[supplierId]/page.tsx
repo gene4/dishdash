@@ -3,6 +3,8 @@ import prismadb from "@/lib/prismadb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Overview } from "./overview";
 import { DataTable } from "./data-table";
+import { IngredientsTable } from "./ingredients-table";
+import InfoCard from "./info-card";
 
 interface RecipeIdPageProps {
     params: {
@@ -40,6 +42,13 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
         },
     });
 
+    const ingredients = await prismadb.ingredient.findMany({
+        where: {
+            userId,
+            supplierId: params.supplierId,
+        },
+    });
+
     return supplier ? (
         <>
             <div className="flex flex-col mb-8 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
@@ -52,6 +61,7 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                 <TabsList>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="invoices">Invoices</TabsTrigger>
+                    <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
                     <TabsTrigger value="info">Information</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview">
@@ -60,11 +70,26 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                         yearsFromInvoices={yearsFromInvoices.reverse()}
                     />
                 </TabsContent>
-                <TabsContent className="relative h-full" value="invoices">
-                    <DataTable data={invoices} supplier={supplier} />
+                <TabsContent
+                    className="relative h-full"
+                    value="invoices">
+                    <DataTable
+                        data={invoices}
+                        supplier={supplier}
+                    />
                 </TabsContent>
-                <TabsContent className="relative h-full" value="info">
-                    Info
+                <TabsContent
+                    className="relative h-full"
+                    value="ingredients">
+                    <IngredientsTable
+                        data={ingredients}
+                        supplier={supplier}
+                    />
+                </TabsContent>
+                <TabsContent
+                    className="relative h-full"
+                    value="info">
+                    <InfoCard supplier={supplier} />
                 </TabsContent>
             </Tabs>
         </>
