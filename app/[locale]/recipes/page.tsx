@@ -1,13 +1,15 @@
+"use client";
+
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
 
-export default async function RecipesPage() {
-    const { userId } = auth();
+export default function RecipesPage() {
+    // const { userId } = auth();
 
-    if (!userId) {
-        return redirectToSignIn();
-    }
+    // if (!userId) {
+    //     return redirectToSignIn();
+    // }
     // const recipes = await prismadb.recipe.findMany({
     //     where: {
     //         userId,
