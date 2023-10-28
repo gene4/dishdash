@@ -1,7 +1,7 @@
 "use client";
 
 import { formatPrice } from "@/lib/utils/format-price";
-import { Invoice, Supplier } from "@prisma/client";
+import { Invoice } from "@prisma/client";
 import { BarChart, Card, Subtitle, Title } from "@tremor/react";
 import { useMemo, useState } from "react";
 import {
@@ -67,7 +67,9 @@ export function Overview({ invoices, yearsFromInvoices }: Props) {
                     </SelectTrigger>
                     <SelectContent>
                         {yearsFromInvoices.map((year) => (
-                            <SelectItem value={year} key={year}>
+                            <SelectItem
+                                value={year}
+                                key={year}>
                                 {year}
                             </SelectItem>
                         ))}
