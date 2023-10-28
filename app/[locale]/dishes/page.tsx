@@ -56,7 +56,7 @@ export default async function RecipesPage() {
     const ingredientsAndRecipes = [...ingredients, ...recipes];
 
     return (
-        <div>
+        <>
             <h1 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0  mb-5">
                 Dishes
             </h1>
@@ -65,6 +65,6 @@ export default async function RecipesPage() {
                 ingredientsAndRecipes={ingredientsAndRecipes}
                 suppliers={suppliers}
             />
-        </div>
+        </>
     );
 }
