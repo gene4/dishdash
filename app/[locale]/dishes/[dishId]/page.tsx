@@ -65,7 +65,6 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
             userId,
         },
     });
-    console.log(dishIngredients);
 
     const recipes = await prismadb.recipe.findMany({
         where: {
