@@ -35,6 +35,7 @@ export const metadata: Metadata = {
         shortcut: "/favicon-16x16.png",
         apple: "/apple-touch-icon.png",
     },
+    viewport: "width=device-width, user-scalable=no",
 };
 
 async function getMessages(locale: string) {
@@ -56,9 +57,7 @@ export default async function RootLayout({
     return (
         <ClerkProvider localization={locale === "de" ? deDE : undefined}>
             <TanstackProvider>
-                <html
-                    lang={locale}
-                    suppressHydrationWarning>
+                <html lang={locale} suppressHydrationWarning>
                     <head />
                     <body
                         className={clsx(
