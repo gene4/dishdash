@@ -126,7 +126,9 @@ function IngredientForm({
 
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <Sheet
+            open={isOpen}
+            onOpenChange={setIsOpen}>
             <SheetContent side={"left"}>
                 <SheetHeader>
                     <SheetTitle className="text-3xl font-semibold">
@@ -283,7 +285,7 @@ function IngredientForm({
                                                             (supplier) => (
                                                                 <CommandItem
                                                                     value={
-                                                                        supplier.id
+                                                                        supplier.name
                                                                     }
                                                                     key={
                                                                         supplier.id
