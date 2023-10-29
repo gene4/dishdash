@@ -36,9 +36,7 @@ export default function IngredientsCommandBox({
 }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     return (
-        <Popover
-            open={isOpen}
-            onOpenChange={setIsOpen}>
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
                 <FormControl>
                     <Button
@@ -80,7 +78,7 @@ export default function IngredientsCommandBox({
                     <CommandGroup className="max-h-52 overflow-y-scroll">
                         {ingredients.map((ingredient: any) => (
                             <CommandItem
-                                value={ingredient.id}
+                                value={ingredient.name}
                                 key={ingredient.id}
                                 onSelect={() => {
                                     setValue(
