@@ -29,7 +29,7 @@ export const columns: ColumnDef<DishDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent font-bold"
+                    className="px-0 group hover:bg-transparent font-bold w-max"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -51,7 +51,7 @@ export const columns: ColumnDef<DishDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent font-bold"
+                    className="px-0 group hover:bg-transparent font-bold w-max"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -64,7 +64,8 @@ export const columns: ColumnDef<DishDataReceived>[] = [
         cell: ({ row }) => formatPrice(row.original.targetPrice),
     },
     {
-        header: "TOTAL PRICE",
+        accessorKey: "totalPrice",
+        header: () => <div className="w-max">TOTAL PRICE</div>,
         cell: ({ row }) => {
             const netoPrice = calculateNetoDishPrice(row.original);
             const multiplier = row.getValue("multiplier") as number;

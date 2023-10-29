@@ -111,7 +111,7 @@ export function DataTable({
     return (
         <>
             <div className="flex items-center py-4 justify-between">
-                <div className="relative w-80">
+                <div className="relative w-48 md:w-80">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search dish..."

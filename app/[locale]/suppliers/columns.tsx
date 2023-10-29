@@ -36,7 +36,7 @@ export const columns: ColumnDef<Supplier>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group font-bold hover:bg-transparent"
+                    className="px-0 group font-bold hover:bg-transparent w-max"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -53,7 +53,7 @@ export const columns: ColumnDef<Supplier>[] = [
     },
     {
         accessorKey: "paymentInfo",
-        header: "PAYMENT INFO",
+        header: () => <div className="w-max">PAYMENT INFO</div>,
         cell: ({ row }) => {
             const paymentInfo = row.getValue("paymentInfo") as
                 | string

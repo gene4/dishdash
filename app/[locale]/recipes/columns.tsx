@@ -36,7 +36,7 @@ export const columns: ColumnDef<RecipeDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent font-bold"
+                    className="px-0 group hover:bg-transparent font-bold w-max"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -54,7 +54,7 @@ export const columns: ColumnDef<RecipeDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent font-bold"
+                    className="px-0 group hover:bg-transparent font-bold w-max"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
@@ -76,7 +76,7 @@ export const columns: ColumnDef<RecipeDataReceived>[] = [
         header: ({ column }) => {
             return (
                 <Button
-                    className="px-0 group hover:bg-transparent font-bold"
+                    className="px-0 group hover:bg-transparent font-bold w-max"
                     variant="ghost"
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")

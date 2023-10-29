@@ -85,7 +85,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
         },
         {
             accessorKey: "pricePerUnit",
-            header: "PRICE PER UNIT",
+            header: () => <div className="w-max">PRICE PER UNIT</div>,
             cell: ({ row }) =>
                 formatPrice(row.original.price / row.original.amount),
         },
@@ -126,7 +126,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group font-bold hover:bg-transparent"
+                        className="px-0 group font-bold hover:bg-transparent w-max"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")

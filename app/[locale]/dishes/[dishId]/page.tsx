@@ -79,20 +79,20 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
     return dish ? (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
-                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0">
+                <h1 className="scroll-m-20 border-b md:border-none text-2xl font-semibold tracking-tight transition-colors first:mt-0">
                     Dish: <span className="font-normal">{dish?.name}</span>
                 </h1>
-                <div className="text-xl flex flex-wrap text-center font-bold space-y-4 md:space-y-0 md:space-x-10">
+                <div className="text-lg md:text:xl flex flex-wrap text-center font-bold space-y-4 md:space-y-0 md:space-x-10">
                     <div className="flex justify-around w-full md:w-fit md:space-x-10">
                         <div>
                             <h2 className="border-b mb-1">Neto Price </h2>
-                            <span className="font-normal text-2xl">
+                            <span className="font-normal text-xl md:text-2xl">
                                 {netoPrice && formatPrice(netoPrice)}
                             </span>
                         </div>
                         <div>
                             <h2 className="border-b mb-1">Multiplier </h2>
-                            <span className="font-normal text-2xl">
+                            <span className="font-normal text-xl md:text-2xl">
                                 {dish.multiplier}
                             </span>
                         </div>
@@ -100,7 +100,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                     <div className="flex justify-around w-full md:w-fit md:space-x-10">
                         <div>
                             <h2 className="border-b mb-1">Target Price </h2>
-                            <span className="font-normal text-2xl">
+                            <span className="font-normal text-xl md:text-2xl">
                                 {formatPrice(dish.targetPrice)}
                             </span>
                         </div>
@@ -109,7 +109,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                             <h2 className="border-b mb-1">Total Price </h2>
                             <span
                                 className={clsx(
-                                    "text-2xl font-semibold",
+                                    "text-xl md:text-2xl font-semibold",
                                     netoPrice &&
                                         netoPrice * dish.multiplier >
                                             dish.targetPrice &&

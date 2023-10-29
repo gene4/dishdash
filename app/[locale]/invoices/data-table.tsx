@@ -133,7 +133,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 font-bold group hover:bg-transparent"
+                        className="px-0 font-bold group hover:bg-transparent w-max"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -283,27 +283,27 @@ export function DataTable({ data, suppliers }: DataTableProps) {
 
     return (
         <>
-            <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
+            <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start overflow-y-scroll">
                 <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
                     Invoices
                 </h1>
-                <h1 className="text-3xl  border-b">
-                    Total:{" "}
+                <h1 className="text-2xl md:border-b">
+                    Selected total:{" "}
                     <span className="font-semibold tracking-tight">
                         {formatPrice(TotalInvoicesPrice)}
                     </span>
                 </h1>
             </div>
 
-            <div className="flex items-center py-4 justify-between">
-                <div className="flex space-x-4">
-                    <DatePickerWithRange date={date} setDate={setDate} />
+            <div className="flex flex-col-reverse md:flex-row md:items-center py-4 md:space-x-4">
+                <DatePickerWithRange date={date} setDate={setDate} />
+                <div className="flex justify-between mb-4 md:mb-0 w-full">
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
                                 variant="outline"
                                 role="combobox"
-                                className="w-[200px] justify-between group">
+                                className="w-[180px] justify-between group">
                                 {supplierValue ? (
                                     suppliers.find(
                                         (supplier) =>
@@ -355,14 +355,15 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                             </Command>
                         </PopoverContent>
                     </Popover>
+
+                    <Button
+                        onClick={() => {
+                            setIsFormOpen(true);
+                        }}
+                        className="rounded-lg md:ml-auto">
+                        Add New <Plus className="ml-2 w-4 h-4" />
+                    </Button>
                 </div>
-                <Button
-                    onClick={() => {
-                        setIsFormOpen(true);
-                    }}
-                    className="rounded-lg">
-                    Add New <Plus className="ml-2 w-4 h-4" />
-                </Button>
             </div>
             <div className="rounded-lg border shadow-md">
                 <Table>

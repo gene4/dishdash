@@ -134,7 +134,7 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent font-bold"
+                        className="px-0 group hover:bg-transparent font-bold w-max"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -163,7 +163,7 @@ export function DataTable({
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group hover:bg-transparent font-bold"
+                        className="px-0 group hover:bg-transparent font-bold w-max"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
@@ -238,8 +238,8 @@ export function DataTable({
 
     return (
         <>
-            <div className="flex items-center py-4 justify-between">
-                <div className="relative w-80">
+            <div className="flex flex-col-reverse md:flex-row items-center py-4 justify-between">
+                <div className="relative w-full md:w-80">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search ingredient..."
@@ -256,7 +256,7 @@ export function DataTable({
                         className="pl-9 pr-4"
                     />
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex justify-between w-full md:w-fit space-x-2 mb-4 md:mb-0">
                     <Button
                         onClick={() => setIsAddIngredientFormOpen(true)}
                         className="rounded-lg">
