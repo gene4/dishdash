@@ -36,6 +36,7 @@ export const metadata: Metadata = {
         apple: "/apple-touch-icon.png",
     },
     viewport: "width=device-width, user-scalable=no",
+    manifest: "/site.webmanifest",
 };
 
 async function getMessages(locale: string) {
