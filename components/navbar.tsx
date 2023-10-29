@@ -4,8 +4,8 @@ import { dark } from "@clerk/themes";
 import { ChefHat } from "lucide-react";
 import {
     UserButton,
-    OrganizationSwitcher,
-    useOrganization,
+    // OrganizationSwitcher,
+    // useOrganization,
 } from "@clerk/nextjs";
 import NextLink from "next/link";
 import LocaleSwitcher from "./locale-switch";
@@ -15,7 +15,7 @@ import { useTheme } from "next-themes";
 
 export const Navbar = () => {
     const { theme } = useTheme();
-    const { organization } = useOrganization();
+    // const { organization } = useOrganization();
 
     return (
         <header className="flex sticky z-50 top-0 bg-background/95 backdrop-blur items-center justify-between px-3 md:px-6 h-14 border-b shadow-sm">
