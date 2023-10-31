@@ -1,1 +1,1 @@
-export const Unit = ["Kg", "Liter", "Piece"];
+export const Unit = ["Kg", "Liter", "Piece", "Box"];
