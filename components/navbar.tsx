@@ -18,7 +18,7 @@ export const Navbar = () => {
     // const { organization } = useOrganization();
 
     return (
-        <header className="flex sticky z-50 top-0 bg-background/95 backdrop-blur items-center justify-between px-3 md:px-6 h-14 border-b shadow-md">
+        <header className="flex sticky z-50 top-0 bg-background/95 backdrop-blur items-center justify-between px-3 md:px-6 h-14 border-b shadow-sm">
             <NextLink
                 className="flex justify-start items-center gap-1"
                 href="/">
