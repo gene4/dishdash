@@ -121,9 +121,7 @@ export default function RecipeIngredientForm({
     }
 
     return (
-        <Dialog
-            open={isOpen}
-            onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
                     <DialogTitle>
@@ -143,9 +141,7 @@ export default function RecipeIngredientForm({
                             <ol className="min-h-3 p-1 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
                                 {fields.length ? (
                                     fields.map((field, index) => (
-                                        <li
-                                            className="ml-4"
-                                            key={field.id}>
+                                        <li className="ml-4" key={field.id}>
                                             <div className="flex justify-between items-center ml-3">
                                                 <FormField
                                                     control={form.control}
@@ -178,7 +174,7 @@ export default function RecipeIngredientForm({
                                                                 <Input
                                                                     type="number"
                                                                     min={0}
-                                                                    step={0.1}
+                                                                    step={0.01}
                                                                     autoFocus={
                                                                         false
                                                                     }
@@ -240,9 +236,7 @@ export default function RecipeIngredientForm({
                             </>
                         )}
                         <div className="flex justify-end pt-5">
-                            <Button
-                                ref={submitRef}
-                                type="submit">
+                            <Button ref={submitRef} type="submit">
                                 {initialRecipeIngredient ? "Update" : "Add"}
                             </Button>
                         </div>

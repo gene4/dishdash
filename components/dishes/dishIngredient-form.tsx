@@ -133,9 +133,7 @@ export default function DishIngredientForm({
     }
 
     return (
-        <Dialog
-            open={isOpen}
-            onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
                     <DialogTitle>
@@ -154,9 +152,7 @@ export default function DishIngredientForm({
                         <ol className="min-h-3 p-1 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
                             {fields.length ? (
                                 fields.map((field, index) => (
-                                    <li
-                                        className="ml-4"
-                                        key={field.id}>
+                                    <li className="ml-4" key={field.id}>
                                         <div className="flex justify-between items-center ml-3">
                                             <FormField
                                                 control={form.control}
@@ -254,7 +250,7 @@ export default function DishIngredientForm({
                                                             <Input
                                                                 type="number"
                                                                 min={0}
-                                                                step={0.1}
+                                                                step={0.01}
                                                                 autoFocus={
                                                                     false
                                                                 }
@@ -301,9 +297,7 @@ export default function DishIngredientForm({
                             </>
                         )}
                         <div className="flex justify-end pt-5">
-                            <Button
-                                ref={submitRef}
-                                type="submit">
+                            <Button ref={submitRef} type="submit">
                                 {initialDishIngredient ? "Update" : "Add"}
                             </Button>
                         </div>

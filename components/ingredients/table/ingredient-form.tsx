@@ -126,9 +126,7 @@ function IngredientForm({
 
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
-        <Sheet
-            open={isOpen}
-            onOpenChange={setIsOpen}>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetContent side={"left"}>
                 <SheetHeader>
                     <SheetTitle className="text-3xl font-semibold">
@@ -208,7 +206,7 @@ function IngredientForm({
                                                 disabled={isLoading}
                                                 min={0}
                                                 type="number"
-                                                step={0.1}
+                                                step={0.01}
                                                 {...field}
                                             />
                                         </FormControl>
@@ -230,7 +228,7 @@ function IngredientForm({
                                                 disabled={isLoading}
                                                 min={0}
                                                 type="number"
-                                                step={0.1}
+                                                step={0.01}
                                                 {...field}
                                             />
                                         </FormControl>

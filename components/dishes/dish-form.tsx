@@ -107,9 +107,7 @@ export default function DishForm({
 
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
-        <Dialog
-            open={isOpen}
-            onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[250px]">
                 <DialogHeader className="mb-5">
                     <DialogTitle>
@@ -154,7 +152,7 @@ export default function DishForm({
                                             <Input
                                                 type="number"
                                                 min={0}
-                                                step={0.1}
+                                                step={0.01}
                                                 {...field}
                                             />
                                         </FormControl>
@@ -174,7 +172,7 @@ export default function DishForm({
                                             <Input
                                                 type="number"
                                                 min={0}
-                                                step={0.1}
+                                                step={0.01}
                                                 {...field}
                                             />
                                         </FormControl>
@@ -188,9 +186,7 @@ export default function DishForm({
                                 <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[300px] overflow-y-scroll">
                                     {fields.length ? (
                                         fields.map((field, index) => (
-                                            <li
-                                                className="ml-6"
-                                                key={field.id}>
+                                            <li className="ml-6" key={field.id}>
                                                 <div className="flex justify-between items-center space-x-4 ml-2">
                                                     <FormField
                                                         control={form.control}
