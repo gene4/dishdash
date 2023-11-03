@@ -26,8 +26,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Plus, Search } from "lucide-react";
 import IngredientForm from "@/components/ingredients/table/ingredient-form";
-import { Ingredient, Supplier } from "@prisma/client";
-import { formatDate } from "@/lib/utils/format-date";
+import { DeliveryPrice, Ingredient, Supplier } from "@prisma/client";
 import IngredientsActions from "./ingredients-actions";
 import { formatPrice } from "@/lib/utils/format-price";
 
@@ -40,6 +39,8 @@ export function DataTable({ data, suppliers }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
+
+    console.log(data);
 
     const columns: ColumnDef<Ingredient>[] = [
         {
@@ -58,16 +59,9 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                 );
             },
         },
+
         {
-            accessorKey: "unit",
-            header: "UNIT",
-        },
-        {
-            accessorKey: "amount",
-            header: "AMOUNT",
-        },
-        {
-            accessorKey: "price",
+            accessorKey: "vat",
             header: ({ column }) => {
                 return (
                     <Button
@@ -76,30 +70,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }>
-                        PRICE
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-            cell: ({ row }) => formatPrice(row.original.price),
-        },
-        {
-            accessorKey: "pricePerUnit",
-            header: () => <div className="w-max">PRICE PER UNIT</div>,
-            cell: ({ row }) =>
-                formatPrice(row.original.price / row.original.amount),
-        },
-        {
-            accessorKey: "supplier.name",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        SUPPLIER
+                        VAT
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
@@ -122,21 +93,19 @@ export function DataTable({ data, suppliers }: DataTableProps) {
             },
         },
         {
-            accessorKey: "updatedAt",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent w-max"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        UPDATED AT
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+            accessorKey: "selectedDeliveryPrice",
+            header: () => <div className="w-max">SELECTED PRICE</div>,
+            cell: ({ row }) => {
+                const selectedDeliveryPrice = row.getValue(
+                    "selectedDeliveryPrice"
+                ) as DeliveryPrice;
+                return selectedDeliveryPrice
+                    ? `${formatPrice(
+                          selectedDeliveryPrice.price /
+                              selectedDeliveryPrice.amount
+                      )} / ${selectedDeliveryPrice.unit}`
+                    : "No price available";
             },
-            cell: ({ row }) => formatDate(row.getValue("updatedAt")),
         },
         {
             id: "actions",

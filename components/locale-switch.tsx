@@ -21,19 +21,21 @@ export default function LocaleSwitcher() {
     }
 
     return (
-        <Select
-            defaultValue={locale}
-            onValueChange={(value) => onSelectChange(value)}>
-            <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Theme" />
-            </SelectTrigger>
-            <SelectContent>
-                {["en", "de"].map((cur) => (
-                    <SelectItem value={cur} key={cur}>
-                        {t("locale", { locale: cur })}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        <>
+            <Select
+                defaultValue={locale}
+                onValueChange={(value) => onSelectChange(value)}>
+                <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Theme" />
+                </SelectTrigger>
+                <SelectContent>
+                    {["en", "de"].map((cur) => (
+                        <SelectItem value={cur} key={cur}>
+                            {t("locale", { locale: cur })}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </>
     );
 }

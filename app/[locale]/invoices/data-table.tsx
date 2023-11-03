@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { Invoice, Supplier } from "@prisma/client";
-import InvoiceForm from "@/components/invoices/invoice-form";
+import InvoiceForm from "@/components/delivery/delivery-form";
 import InvoiceActions from "./invoice-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";

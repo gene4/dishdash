@@ -10,7 +10,7 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, unit, price, amount, supplierId, category } = body;
+        const { name, vat, category, selectedDeliveryPriceId } = body;
 
         if (!params.ingredientId) {
             return new NextResponse("Ingredient ID required", { status: 400 });
@@ -20,7 +20,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!name || !unit || !price || !supplierId || !category) {
+        if (!name || !vat || !category) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -30,13 +30,10 @@ export async function PATCH(
                 userId: user.id,
             },
             data: {
-                userId: user.id,
                 name,
-                unit,
-                amount,
-                price: parseInt(price),
-                supplierId,
+                vat,
                 category,
+                selectedDeliveryPriceId,
             },
         });
 
@@ -67,6 +64,13 @@ export async function DELETE(
 
         // Delete all DishIngredient records associated with the ingredient
         await prismadb.dishIngredient.deleteMany({
+            where: {
+                ingredientId: params.ingredientId,
+            },
+        });
+
+        // Delete all DeliveryPrice records associated with the ingredient
+        await prismadb.deliveryPrice.deleteMany({
             where: {
                 ingredientId: params.ingredientId,
             },

@@ -9,46 +9,68 @@ generator client {
 }
 
 model Ingredient {
-  id        String      @id @default(uuid())
-  name      String
-  userId    String
-  unit      String
-  amount    Float
-  price     Float
-  createdAt DateTime @default(now())
-  category    String
+  id                       String      @id @default(uuid())
+  name                     String
+  userId                   String
+  vat                      String
+  category                 String
 
-  recipes     RecipeIngredient[]
-  dishes      DishIngredient[]
+  deliveryPrices             DeliveryPrice[] @relation("deliveryPrices")
+  
+  selectedDeliveryPrice      DeliveryPrice?   @relation("selecteDelivery", fields: [selectedDeliveryPriceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  selectedDeliveryPriceId    String?    @unique
 
-  supplier    Supplier    @relation(fields: [supplierId], references: [id])
-  supplierId  String
-  updatedAt DateTime @updatedAt
+  recipes      RecipeIngredient[]
+  dishes       DishIngredient[]
 
-  @@index([supplierId])
+}
+
+model DeliveryPrice {
+  id           String      @id @default(uuid()) 
+  unit         String
+  weight       Float?
+  amount       Float
+  price        Float
+  bruttoPrice  Float?
+  date         DateTime 
+
+  delivery     Delivery?    @relation(fields: [deliveryId], references: [id])
+  deliveryId   String?
+
+  supplier    Supplier?    @relation(fields: [supplierId], references: [id])
+  supplierId  String?
+
+  ingredient   Ingredient @relation("deliveryPrices",fields: [ingredientId], references: [id])
+  ingredientId String
+
+  selectedFor   Ingredient?   @relation("selecteDelivery") 
+  
+@@index([deliveryId])
+@@index([ingredientId])
+@@index([supplierId])
 }
 
 model Recipe {
-  id        String      @id @default(uuid()) 
-  name      String
-  userId    String
-  unit      String
-  yield     Float
+  id              String      @id @default(uuid()) 
+  name            String
+  userId          String
+  unit            String
+  yield           Float
   ingredients     RecipeIngredient[]
-  dishes      DishIngredient[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  dishes          DishIngredient[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model RecipeIngredient {
-  id        String      @id @default(uuid()) 
-  amount    Float
+  id              String      @id @default(uuid()) 
+  amount          Float
 
-  recipe    Recipe   @relation(fields: [recipeId], references: [id])
-  recipeId   String
+  recipe          Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId        String
 
-  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
-  ingredientId String
+  ingredient      Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId    String
 
 @@index([recipeId])
 @@index([ingredientId])
@@ -56,28 +78,30 @@ model RecipeIngredient {
 
 
 model Dish {
-  id        String      @id @default(uuid()) 
-  name      String
-  userId    String
-  targetPrice Float
-  multiplier Float
+  id              String      @id @default(uuid()) 
+  name            String
+  userId          String
+  menuPrice       Float
+  vat             String
+  multiplier      Float
   ingredients     DishIngredient[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model DishIngredient {
-  id        String      @id @default(uuid()) 
-  amount    Float
+  id              String      @id @default(uuid()) 
+  amount          Float
 
-  dish     Dish   @relation(fields: [dishId], references: [id])
-  dishId   String
+  dish            Dish   @relation(fields: [dishId], references: [id])
+  dishId          String
 
-  ingredient Ingredient? @relation(fields: [ingredientId], references: [id])
-  ingredientId String?
+  ingredient      Ingredient? @relation(fields: [ingredientId], references: [id])
+  ingredientId    String?
 
-  recipe Recipe? @relation(fields: [recipeId], references: [id])
-  recipeId String?
+  recipe          Recipe? @relation(fields: [recipeId], references: [id])
+  recipeId        String?
 
 @@index([dishId])
 @@index([ingredientId])
@@ -90,25 +114,24 @@ model Supplier {
   userId      String
   paymentInfo String? @db.Text
   paymentDay  Int?
-  bills       Invoice[] 
-  ingredients Ingredient[]
+  deliveries  Delivery[] 
+  deliveryPrices DeliveryPrice[]
+
   createdAt   DateTime    @default(now())
 }
 
-model Invoice {
+model Delivery {
   id          String      @id @default(uuid()) 
   userId      String
-
+  items       DeliveryPrice[]
+  invoiceNr   String?
+  date        DateTime 
+  fileUrl     String? @db.Text
+  fileRef     String? @db.Text
  
   supplier    Supplier    @relation(fields: [supplierId], references: [id])
   supplierId  String
 
-  invoiceNr   String
-  date        DateTime 
-  status      String
-  amount      Float
-  fileUrl     String? @db.Text
-  fileRef     String? @db.Text
   createdAt   DateTime    @default(now())
 
   @@index([supplierId])

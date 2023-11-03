@@ -7,13 +7,13 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, unit, price, amount, supplierId, category } = body;
+        const { name, vat, category } = body;
 
         if (!user || !user.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!name || !unit || !price || !supplierId || !category || !amount) {
+        if (!name || !vat || !category) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -21,10 +21,7 @@ export async function POST(req: Request) {
             data: {
                 userId: user.id,
                 name,
-                unit,
-                amount,
-                price,
-                supplierId,
+                vat,
                 category,
             },
         });

@@ -14,7 +14,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
-import { Unit } from "@/config/constants";
+import { UNIT, VAT } from "@/config/constants";
 import {
     Form,
     FormControl,
@@ -50,14 +50,17 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    unit: z.string({ required_error: "Unit is required" }),
-    amount: z.coerce.number(),
-    price: z.coerce.number(),
+    vat: z.string().min(1, { message: "Vat is required" }),
     category: z.string().min(1, { message: "Category is required" }),
-    supplierId: z.string().min(1, { message: "Supplier is required" }),
+    unit: z.string().min(1, { message: "Unit is required" }),
+    amount: z.coerce.number().positive({ message: "Amount is required" }),
+    weight: z.coerce.number(),
+    price: z.coerce.number().positive({ message: "Price is required" }),
+    supplierId: z.string(),
 });
 
 interface Props {
@@ -81,13 +84,17 @@ function IngredientForm({
         resolver: zodResolver(formSchema),
         defaultValues: initialIngredient || {
             name: "",
-            price: undefined,
+            vat: "",
             category: "",
-            supplierId: "",
+            unit: "",
+            price: 0,
+            amount: 0,
+            weight: 0,
         },
     });
 
     const router = useRouter();
+    const unit = form.watch("unit");
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         let response;
@@ -98,7 +105,7 @@ function IngredientForm({
                 values
             );
         } else {
-            response = axios.post("/api/ingredient", values);
+            response = axios.post("/api/ingredientWithPrice", values);
         }
 
         if (!isMultiple) {
@@ -107,7 +114,7 @@ function IngredientForm({
         response
             .then(() => {
                 router.refresh();
-                !isMultiple && form.reset();
+                form.reset();
             })
             .finally(() => {
                 setIsLoading(false);
@@ -129,7 +136,7 @@ function IngredientForm({
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetContent side={"left"}>
                 <SheetHeader>
-                    <SheetTitle className="text-3xl font-semibold">
+                    <SheetTitle className="text-2xl font-semibold">
                         {initialIngredient ? "Update" : "Add"} Ingredient
                     </SheetTitle>
                     {!initialIngredient && (
@@ -142,7 +149,7 @@ function IngredientForm({
                     <Form {...form}>
                         <form
                             onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-3 mt-5">
+                            className="flex flex-col gap-3 mt-5">
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -157,91 +164,70 @@ function IngredientForm({
                                                 disabled={isLoading}
                                             />
                                         </FormControl>
-
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="unit"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Unit
-                                        </FormLabel>
-                                        <Select
-                                            disabled={isLoading}
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}>
+                            <div className="flex space-x-6">
+                                <FormField
+                                    control={form.control}
+                                    name="vat"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                VAT
+                                            </FormLabel>
+                                            <Select
+                                                defaultValue={field.value}
+                                                disabled={isLoading}
+                                                onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-[130px]">
+                                                        <SelectValue placeholder="Select VAT" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {VAT.map((unit) => (
+                                                        <SelectItem
+                                                            key={unit}
+                                                            value={unit}>
+                                                            {unit}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="category"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-1">
+                                            <FormLabel className={labelStyle}>
+                                                Category
+                                            </FormLabel>
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a unit" />
-                                                </SelectTrigger>
+                                                <Input
+                                                    {...field}
+                                                    disabled={isLoading}
+                                                />
                                             </FormControl>
-                                            <SelectContent>
-                                                {Unit.map((unit) => (
-                                                    <SelectItem
-                                                        key={unit}
-                                                        value={unit}>
-                                                        {unit}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="amount"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Amount
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={isLoading}
-                                                min={0}
-                                                type="number"
-                                                step={0.01}
-                                                {...field}
-                                            />
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="price"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Price
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={isLoading}
-                                                min={0}
-                                                type="number"
-                                                step={0.01}
-                                                {...field}
-                                            />
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <Separator className="my-2" />
+                            <SheetDescription className="mb-3">
+                                Enter a delivery price:
+                            </SheetDescription>
                             <FormField
                                 control={form.control}
                                 name={`supplierId`}
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-col pt-[10px]">
+                                    <FormItem className="flex flex-col">
                                         <FormLabel className={labelStyle}>
                                             Supplier
                                         </FormLabel>
@@ -254,7 +240,7 @@ function IngredientForm({
                                                         variant="outline"
                                                         role="combobox"
                                                         className={cn(
-                                                            "justify-between",
+                                                            "w-[200px] justify-between",
                                                             !field.value &&
                                                                 "text-muted-foreground"
                                                         )}>
@@ -271,10 +257,7 @@ function IngredientForm({
                                             </PopoverTrigger>
                                             <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
                                                 <Command>
-                                                    <CommandInput
-                                                        disabled={isLoading}
-                                                        placeholder="Search supplier..."
-                                                    />
+                                                    <CommandInput placeholder="Search supplier..." />
                                                     <CommandEmpty>
                                                         No supplier found.
                                                     </CommandEmpty>
@@ -320,25 +303,110 @@ function IngredientForm({
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="category"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Category
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
+                            <div className="flex space-x-6">
+                                <FormField
+                                    control={form.control}
+                                    name="unit"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                Unit
+                                            </FormLabel>
+                                            <Select
+                                                value={field.value}
                                                 disabled={isLoading}
-                                            />
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
+                                                onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-[130px]">
+                                                        <SelectValue
+                                                            className="text-muted-foreground"
+                                                            placeholder="Select a unit"
+                                                        />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {UNIT.map((unit) => (
+                                                        <SelectItem
+                                                            key={unit}
+                                                            value={unit}>
+                                                            {unit}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {unit === "Piece" && (
+                                    <FormField
+                                        control={form.control}
+                                        name="weight"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>
+                                                    Weight per unit
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        disabled={isLoading}
+                                                        min={0}
+                                                        type="number"
+                                                        step={0.01}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 )}
-                            />
+                            </div>
+                            <div className="flex space-x-6">
+                                <FormField
+                                    control={form.control}
+                                    name="amount"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                Amount
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    disabled={isLoading}
+                                                    min={0}
+                                                    type="number"
+                                                    step={0.01}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="price"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                Price
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    disabled={isLoading}
+                                                    min={0}
+                                                    type="number"
+                                                    step={0.01}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
                             <div className="flex justify-between pt-5">
                                 {!initialIngredient && (
                                     <div className="flex items-center space-x-2">

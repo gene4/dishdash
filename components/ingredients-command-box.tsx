@@ -85,13 +85,14 @@ export default function IngredientsCommandBox({
                                         `ingredients.${index}.id`,
                                         ingredient.id
                                     );
-                                    // if (ingredients instanceof IngredientsAndRecipes)
                                     setValue(
                                         `ingredients.${index}.type`,
                                         "yield" in ingredient
                                             ? "recipe"
                                             : "ingredient"
                                     );
+
+                                    setValue(`ingredientsId`, ingredient.id);
                                     setIsOpen(false);
                                 }}>
                                 <CheckIcon

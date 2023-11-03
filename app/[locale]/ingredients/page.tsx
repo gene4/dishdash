@@ -8,28 +8,27 @@ export default async function IngredientsPage() {
     if (!userId) {
         return redirectToSignIn();
     }
-    const ingredients = await prismadb.ingredient.findMany({
+    const ingredients = prismadb.ingredient.findMany({
         where: {
             userId,
         },
-        include: { supplier: { select: { name: true } } },
+        include: { selectedDeliveryPrice: true, deliveryPrices: true },
     });
 
-    const suppliers = await prismadb.supplier.findMany({
+    const suppliers = prismadb.supplier.findMany({
         where: {
             userId,
         },
     });
+
+    const data = await Promise.all([ingredients, suppliers]);
 
     return (
         <>
             <h1 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-5">
                 Ingredients
             </h1>
-            <DataTable
-                suppliers={suppliers}
-                data={ingredients}
-            />
+            <DataTable suppliers={data[1]} data={data[0]} />
         </>
     );
 }

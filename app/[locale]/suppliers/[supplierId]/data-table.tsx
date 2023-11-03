@@ -35,7 +35,7 @@ import { formatPrice } from "@/lib/utils/format-price";
 import { DatePickerWithRange } from "@/components/date-picker-range";
 import { DateRange } from "react-day-picker";
 import { Invoice, Supplier } from "@prisma/client";
-import InvoiceForm from "@/components/invoices/invoice-form";
+import InvoiceForm from "@/components/delivery/delivery-form";
 import InvoiceActions from "./invoice-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";

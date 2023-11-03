@@ -1,1 +1,3 @@
-export const Unit = ["Kg", "Liter", "Piece", "Box"];
+export const UNIT = ["Kg", "Liter", "Piece", "Box"];
+
+export const VAT = ["7%", "19%"];

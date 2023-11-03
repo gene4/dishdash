@@ -198,90 +198,82 @@ export default function RecipeForm({
                             />
                         </div>
                         {ingredients && (
-                            <>
-                                <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[300px] overflow-y-scroll">
-                                    {fields.length ? (
-                                        fields.map((field, index) => (
-                                            <li className="ml-6" key={field.id}>
-                                                <div className="flex justify-between items-center space-x-4 ml-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name={`ingredients.${index}.id`}
-                                                        render={({ field }) => (
-                                                            <FormItem className="flex flex-col">
-                                                                <IngredientsCommandBox
-                                                                    field={
-                                                                        field
+                            <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[300px] overflow-y-scroll">
+                                {fields.length ? (
+                                    fields.map((field, index) => (
+                                        <li className="ml-6" key={field.id}>
+                                            <div className="flex justify-between items-center space-x-4 ml-2">
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.id`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex flex-col">
+                                                            <IngredientsCommandBox
+                                                                field={field}
+                                                                index={index}
+                                                                ingredients={
+                                                                    ingredients
+                                                                }
+                                                                setValue={
+                                                                    form.setValue
+                                                                }
+                                                                setIsIngredientFormOpen={
+                                                                    setIsIngredientFormOpen
+                                                                }
+                                                            />
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.amount`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    step={0.1}
+                                                                    min={0}
+                                                                    autoFocus={
+                                                                        false
                                                                     }
-                                                                    index={
-                                                                        index
-                                                                    }
-                                                                    ingredients={
-                                                                        ingredients
-                                                                    }
-                                                                    setValue={
-                                                                        form.setValue
-                                                                    }
-                                                                    setIsIngredientFormOpen={
-                                                                        setIsIngredientFormOpen
-                                                                    }
+                                                                    placeholder="Amount"
+                                                                    {...field}
+                                                                    onKeyDown={(
+                                                                        event
+                                                                    ) => {
+                                                                        if (
+                                                                            event.key ===
+                                                                            "Enter"
+                                                                        ) {
+                                                                            event.preventDefault();
+                                                                        }
+                                                                    }}
                                                                 />
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                    <FormField
-                                                        control={form.control}
-                                                        name={`ingredients.${index}.amount`}
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormControl>
-                                                                    <Input
-                                                                        type="number"
-                                                                        step={
-                                                                            0.1
-                                                                        }
-                                                                        min={0}
-                                                                        autoFocus={
-                                                                            false
-                                                                        }
-                                                                        placeholder="Amount"
-                                                                        {...field}
-                                                                        onKeyDown={(
-                                                                            event
-                                                                        ) => {
-                                                                            if (
-                                                                                event.key ===
-                                                                                "Enter"
-                                                                            ) {
-                                                                                event.preventDefault();
-                                                                            }
-                                                                        }}
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                    <Button
-                                                        className="rounded-full"
-                                                        onClick={() =>
-                                                            remove(index)
-                                                        }
-                                                        size="icon"
-                                                        variant="ghost">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <p className="text-center text-sm">
-                                            No ingredients
-                                        </p>
-                                    )}
-                                </ol>
-                            </>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <Button
+                                                    className="rounded-full"
+                                                    onClick={() =>
+                                                        remove(index)
+                                                    }
+                                                    size="icon"
+                                                    variant="ghost">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-sm">
+                                        No ingredients
+                                    </p>
+                                )}
+                            </ol>
                         )}
                         {ingredients && (
                             <>

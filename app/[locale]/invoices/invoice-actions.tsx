@@ -21,7 +21,7 @@ import {
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { InvoiceT } from "./data-table";
-import InvoiceForm from "@/components/invoices/invoice-form";
+import InvoiceForm from "@/components/delivery/delivery-form";
 import { Invoice, Supplier } from "@prisma/client";
 import { toast } from "sonner";
 
