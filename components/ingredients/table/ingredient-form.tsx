@@ -51,6 +51,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { getSuppliers } from "@/lib/actions";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
@@ -67,18 +69,17 @@ interface Props {
     initialIngredient?: Ingredient;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    suppliers: Supplier[];
 }
 
-function IngredientForm({
-    initialIngredient,
-    isOpen,
-    setIsOpen,
-    suppliers,
-}: Props) {
+function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
     const [isMultiple, setIsMultiple] = useState(false);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    const { data } = useQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
+    });
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -98,7 +99,7 @@ function IngredientForm({
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         let response;
-        setIsLoading(true);
+        // setIsLoading(true);
         if (initialIngredient) {
             response = axios.patch(
                 `/api/ingredient/${initialIngredient.id}`,
@@ -245,7 +246,8 @@ function IngredientForm({
                                                                 "text-muted-foreground"
                                                         )}>
                                                         {field.value
-                                                            ? suppliers.find(
+                                                            ? data &&
+                                                              data.find(
                                                                   (supplier) =>
                                                                       supplier.id ===
                                                                       field.value
@@ -262,39 +264,40 @@ function IngredientForm({
                                                         No supplier found.
                                                     </CommandEmpty>
                                                     <CommandGroup>
-                                                        {suppliers.map(
-                                                            (supplier) => (
-                                                                <CommandItem
-                                                                    value={
-                                                                        supplier.name
-                                                                    }
-                                                                    key={
-                                                                        supplier.id
-                                                                    }
-                                                                    onSelect={() => {
-                                                                        form.setValue(
-                                                                            `supplierId`,
+                                                        {data &&
+                                                            data.map(
+                                                                (supplier) => (
+                                                                    <CommandItem
+                                                                        value={
+                                                                            supplier.name
+                                                                        }
+                                                                        key={
                                                                             supplier.id
-                                                                        );
-                                                                        setIsPopoverOpen(
-                                                                            false
-                                                                        );
-                                                                    }}>
-                                                                    <CheckIcon
-                                                                        className={cn(
-                                                                            "mr-2 h-4 w-4",
-                                                                            supplier.id ===
-                                                                                field.value
-                                                                                ? "opacity-100"
-                                                                                : "opacity-0"
-                                                                        )}
-                                                                    />
-                                                                    {
-                                                                        supplier.name
-                                                                    }
-                                                                </CommandItem>
-                                                            )
-                                                        )}
+                                                                        }
+                                                                        onSelect={() => {
+                                                                            form.setValue(
+                                                                                `supplierId`,
+                                                                                supplier.id
+                                                                            );
+                                                                            setIsPopoverOpen(
+                                                                                false
+                                                                            );
+                                                                        }}>
+                                                                        <CheckIcon
+                                                                            className={cn(
+                                                                                "mr-2 h-4 w-4",
+                                                                                supplier.id ===
+                                                                                    field.value
+                                                                                    ? "opacity-100"
+                                                                                    : "opacity-0"
+                                                                            )}
+                                                                        />
+                                                                        {
+                                                                            supplier.name
+                                                                        }
+                                                                    </CommandItem>
+                                                                )
+                                                            )}
                                                     </CommandGroup>
                                                 </Command>
                                             </PopoverContent>

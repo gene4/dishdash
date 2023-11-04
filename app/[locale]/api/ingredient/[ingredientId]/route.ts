@@ -69,6 +69,15 @@ export async function DELETE(
             },
         });
 
+        await prismadb.ingredient.update({
+            where: {
+                id: params.ingredientId,
+            },
+            data: {
+                selectedDeliveryPriceId: null,
+            },
+        });
+
         // Delete all DeliveryPrice records associated with the ingredient
         await prismadb.deliveryPrice.deleteMany({
             where: {

@@ -16,9 +16,8 @@ export default async function RecipesPage() {
             ingredients: {
                 include: {
                     ingredient: {
-                        select: {
-                            price: true,
-                            amount: true,
+                        include: {
+                            selectedDeliveryPrice: true,
                         },
                     },
                 },

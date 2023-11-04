@@ -25,34 +25,33 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import RecipesForm from "@/components/recipes/recipe-form";
-import { Ingredient, Supplier } from "@prisma/client";
+import { DeliveryPrice, Ingredient, Recipe, Supplier } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 
-export type RecipeDataReceived = {
-    ingredients: ({
-        ingredient: {
-            price: number;
-            amount: number;
-        };
-    } & {
-        id: string;
-        amount: number;
-        recipeId: string;
-        ingredientId: string;
-    })[];
-} & {
-    id: string;
-    name: string;
-    userId: string;
-    unit: string;
-    yield: number;
-    createdAt: Date;
-    updatedAt: Date;
-};
+// export type Recipe = {
+//     ingredients: ({
+//         ingredient: {
+//             selectedDeliveryPrice: DeliveryPrice;
+//         };
+//     } & {
+//         id: string;
+//         amount: number;
+//         recipeId: string;
+//         ingredientId: string;
+//     })[];
+// } & {
+//     id: string;
+//     name: string;
+//     userId: string;
+//     unit: string;
+//     yield: number;
+//     createdAt: Date;
+//     updatedAt: Date;
+// };
 
 interface DataTableProps {
-    data: RecipeDataReceived[];
+    data: Recipe[];
     ingredients: Ingredient[];
     suppliers: Supplier[];
 }

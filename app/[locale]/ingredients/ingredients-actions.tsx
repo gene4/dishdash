@@ -25,12 +25,7 @@ import IngredientForm from "@/components/ingredients/table/ingredient-form";
 import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-interface Props {
-    row: Row<Ingredient>;
-    suppliers: Supplier[];
-}
-
-function IngredientsActions({ row, suppliers }: Props) {
+function IngredientsActions({ row }: { row: Row<Ingredient> }) {
     const [openDialog, setOpenDialog] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -108,7 +103,6 @@ function IngredientsActions({ row, suppliers }: Props) {
                     </DialogContent>
                 </Dialog>
                 <IngredientForm
-                    suppliers={suppliers}
                     isOpen={isFormOpen}
                     setIsOpen={setIsFormOpen}
                     initialIngredient={ingredient}

@@ -27,7 +27,9 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
             ingredients: {
                 include: {
                     ingredient: {
-                        include: { supplier: { select: { name: true } } },
+                        include: {
+                            selectedDeliveryPrice: true,
+                        },
                     },
                 },
             },
@@ -41,7 +43,10 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
             ...ingredient.ingredient,
             amount: ingredient.amount,
             recipeIngredientId: ingredient.id,
-            price: ingredient.ingredient.price / ingredient.ingredient.amount,
+            price: ingredient.ingredient.selectedDeliveryPrice
+                ? ingredient.ingredient.selectedDeliveryPrice?.price /
+                  ingredient.ingredient.selectedDeliveryPrice?.amount
+                : 0,
         }));
 
     const ingredients = await prismadb.ingredient.findMany({

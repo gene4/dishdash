@@ -26,27 +26,42 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Plus, Search } from "lucide-react";
 import IngredientForm from "@/components/ingredients/table/ingredient-form";
-import { DeliveryPrice, Ingredient, Supplier } from "@prisma/client";
-import IngredientsActions from "./ingredients-actions";
+import { DeliveryPrice } from "@prisma/client";
 import { formatPrice } from "@/lib/utils/format-price";
-import { useQuery } from "@tanstack/react-query";
-import { getIngredients } from "@/lib/actions";
-import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
-export function DataTable() {
+import { formatDate } from "@/lib/utils/format-date";
+
+export function DataTable({
+    data,
+    selectedDeliveryPriceId,
+}: {
+    data: DeliveryPrice[];
+    selectedDeliveryPriceId: string | null;
+}) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const ingredients = useQuery({
-        queryKey: ["ingredients"],
-        queryFn: getIngredients,
-    });
-
-    const { push } = useRouter();
-    const columns: ColumnDef<Ingredient>[] = [
+    const columns: ColumnDef<DeliveryPrice>[] = [
         {
-            accessorKey: "name",
+            accessorKey: "supplier.name",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        SUPPLIER
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+        },
+        {
+            accessorKey: "unit",
             header: ({ column }) => {
                 return (
                     <Button
@@ -55,7 +70,7 @@ export function DataTable() {
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }>
-                        NAME
+                        UNIT
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
@@ -63,7 +78,7 @@ export function DataTable() {
         },
 
         {
-            accessorKey: "vat",
+            accessorKey: "amount",
             header: ({ column }) => {
                 return (
                     <Button
@@ -72,14 +87,14 @@ export function DataTable() {
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }>
-                        VAT
+                        AMOUNT
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
             },
         },
         {
-            accessorKey: "category",
+            accessorKey: "price",
             header: ({ column }) => {
                 return (
                     <Button
@@ -88,35 +103,46 @@ export function DataTable() {
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }>
-                        CATEGORY
+                        PRICE
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
             },
+            cell: ({ row }) => formatPrice(row.original.price),
+        },
+
+        {
+            accessorKey: "date",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        DATE
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+            cell: ({ row }) => formatDate(row.getValue("date")),
         },
         {
             accessorKey: "selectedDeliveryPrice",
-            header: () => <div className="w-max">SELECTED PRICE</div>,
+            header: () => <div className="w-max">PRICE PER UNIT</div>,
             cell: ({ row }) => {
-                const selectedDeliveryPrice = row.getValue(
-                    "selectedDeliveryPrice"
-                ) as DeliveryPrice;
-                return selectedDeliveryPrice
-                    ? `${formatPrice(
-                          selectedDeliveryPrice.price /
-                              selectedDeliveryPrice.amount
-                      )} / ${selectedDeliveryPrice.unit}`
-                    : "No price available";
+                return formatPrice(row.original.price / row.original.amount);
             },
         },
-        {
-            id: "actions",
-            cell: ({ row }) => <IngredientsActions row={row} />,
-        },
+        // {
+        //     id: "actions",
+        //     cell: ({ row }) => <IngredientsActions row={row} />,
+        // },
     ];
 
     const table = useReactTable({
-        data: ingredients.data,
+        data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -184,10 +210,11 @@ export function DataTable() {
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
-                                    className="cursor-pointer"
-                                    onClick={() =>
-                                        push(`/ingredients/${row.original.id}`)
-                                    }
+                                    className={clsx(
+                                        row.original.id ===
+                                            selectedDeliveryPriceId &&
+                                            "bg-muted hover:bg-muted"
+                                    )}
                                     key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
