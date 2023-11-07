@@ -11,7 +11,15 @@ import {
     getFilteredRowModel,
     getSortedRowModel,
 } from "@tanstack/react-table";
-
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import {
     Table,
     TableBody,
@@ -20,28 +28,71 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Plus, Search } from "lucide-react";
-import IngredientForm from "@/components/ingredients/table/ingredient-form";
-import { DeliveryPrice } from "@prisma/client";
+import {
+    ArrowUpDown,
+    Check,
+    ChevronsUpDown,
+    Edit,
+    MoreHorizontal,
+    Plus,
+    Search,
+    Trash2,
+} from "lucide-react";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+} from "@/components/ui/command";
+import { DeliveryPrice, Ingredient } from "@prisma/client";
 import { formatPrice } from "@/lib/utils/format-price";
 import clsx from "clsx";
-
+import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils/format-date";
+import EditIngredientForm from "@/components/ingredients/table/edit-ingredient-form";
+import axios from "axios";
+import { toast } from "sonner";
+import PriceForm from "@/components/ingredients/table/price-form";
+import PriceActions from "./price-actions";
+import { DateRange } from "react-day-picker";
+import { DatePickerWithRange } from "@/components/date-picker-range";
+import { useQuery } from "@tanstack/react-query";
+import { getSuppliers } from "@/lib/actions";
+import { cn } from "@/lib/utils";
 
 export function DataTable({
-    data,
-    selectedDeliveryPriceId,
+    ingredient,
 }: {
-    data: DeliveryPrice[];
-    selectedDeliveryPriceId: string | null;
+    ingredient: Ingredient & { deliveryPrices: DeliveryPrice[] };
 }) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isEditIngredientFormOpen, setIsEditIngredientFormOpen] =
+        useState(false);
+    const [isPriceFormOpen, setIsPriceFormOpen] = useState(false);
+    const [date, setDate] = useState<DateRange | undefined>();
+    const [supplierValue, setSupplierValue] = useState("");
+
+    const { push } = useRouter();
 
     const columns: ColumnDef<DeliveryPrice>[] = [
         {
@@ -129,20 +180,70 @@ export function DataTable({
             cell: ({ row }) => formatDate(row.getValue("date")),
         },
         {
-            accessorKey: "selectedDeliveryPrice",
+            id: "selectedDeliveryPrice",
             header: () => <div className="w-max">PRICE PER UNIT</div>,
             cell: ({ row }) => {
                 return formatPrice(row.original.price / row.original.amount);
             },
         },
-        // {
-        //     id: "actions",
-        //     cell: ({ row }) => <IngredientsActions row={row} />,
-        // },
+        {
+            id: "actions",
+            cell: ({ row }) => {
+                return (
+                    <PriceActions
+                        selectedPriceId={ingredient.selectedDeliveryPriceId}
+                        row={row}
+                    />
+                );
+            },
+        },
     ];
 
+    const processedPrices = useMemo(() => {
+        // Filter invoices by date and supplier
+        if (!ingredient.deliveryPrices || !ingredient.deliveryPrices.length) {
+            return [];
+        }
+
+        // Bring selected price first
+        let deliveryPrices = ingredient.deliveryPrices.sort((a, b) => {
+            if (a.id === ingredient.selectedDeliveryPriceId) {
+                return -1;
+            } else if (a.id === ingredient.selectedDeliveryPriceId) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+
+        if (date?.from && date.to) {
+            deliveryPrices = deliveryPrices.filter((price) => {
+                const invoiceDate = new Date(price.date);
+                return invoiceDate > date.from! && invoiceDate < date.to!;
+            });
+        }
+
+        if (supplierValue) {
+            deliveryPrices = deliveryPrices.filter((price) => {
+                return price.supplierId === supplierValue;
+            });
+        }
+
+        return deliveryPrices;
+    }, [
+        date,
+        ingredient.deliveryPrices,
+        ingredient.selectedDeliveryPriceId,
+        supplierValue,
+    ]);
+
+    const suppliers = useQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
+    });
+
     const table = useReactTable({
-        data,
+        data: processedPrices,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -157,33 +258,120 @@ export function DataTable({
         },
     });
 
+    const onDelete = useCallback(async () => {
+        setIsDeleteDialogOpen(false);
+
+        const response = axios
+            .delete(`/api/ingredient/${ingredient.id}`)
+            .then(() => {
+                push("/ingredients");
+            });
+
+        toast.promise(response, {
+            loading: "Loading...",
+            success: () => {
+                return `Ingredient ${ingredient.name} was deleted.`;
+            },
+            error: "Error",
+        });
+    }, [ingredient.id, ingredient.name, push]);
+
     return (
         <>
-            <div className="flex items-center py-4 justify-between">
-                <div className="relative w-48 md:w-80">
-                    <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
-                    <Input
-                        placeholder="Search ingredients..."
-                        value={
-                            (table
-                                .getColumn("name")
-                                ?.getFilterValue() as string) ?? ""
-                        }
-                        onChange={(event) =>
-                            table
-                                .getColumn("name")
-                                ?.setFilterValue(event.target.value)
-                        }
-                        className="pl-9 pr-4"
-                    />
+            <div className="flex flex-col-reverse md:flex-row md:items-center py-4 md:space-x-4">
+                <DatePickerWithRange date={date} setDate={setDate} />
+                <div className="flex justify-between mb-4 md:mb-0 w-full">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-[180px] justify-between group">
+                                {supplierValue ? (
+                                    suppliers.data &&
+                                    suppliers.data.find(
+                                        (supplier) =>
+                                            supplier.id === supplierValue
+                                    )?.name
+                                ) : (
+                                    <p className="text-muted-foreground group-hover:text-foreground font-normal">
+                                        Filter by supplier...
+                                    </p>
+                                )}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search..." />
+                                <CommandEmpty>No supplier found.</CommandEmpty>
+                                <CommandGroup>
+                                    {suppliers.data &&
+                                        suppliers.data.map((supplier) => (
+                                            <CommandItem
+                                                value={supplier.id}
+                                                key={supplier.id}
+                                                onSelect={(currentValue) => {
+                                                    setSupplierValue(
+                                                        currentValue ===
+                                                            supplierValue
+                                                            ? ""
+                                                            : currentValue
+                                                    );
+                                                }}>
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        supplierValue ===
+                                                            supplier.id
+                                                            ? "opacity-100"
+                                                            : "opacity-0"
+                                                    )}
+                                                />
+                                                {supplier.name}
+                                            </CommandItem>
+                                        ))}
+                                </CommandGroup>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                    <div className="flex justify-between w-full md:w-fit space-x-2 mb-4 md:mb-0">
+                        <Button
+                            onClick={() => setIsPriceFormOpen(true)}
+                            className="rounded-lg">
+                            Add Price <Plus className="ml-2 w-4 h-4" />
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant={"outline"} size={"icon"}>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>
+                                    Ingredient actions
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setIsEditIngredientFormOpen(true);
+                                        document.body.style.pointerEvents = "";
+                                    }}
+                                    className="flex items-center justify-between">
+                                    Edit <Edit className="w-4 h-4" />
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setIsDeleteDialogOpen(true);
+                                        document.body.style.pointerEvents = "";
+                                    }}
+                                    className="flex items-center justify-between text-red-500 focus:text-white focus:bg-red-500">
+                                    Delete <Trash2 className="w-4 h-4" />
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
-                <Button
-                    onClick={() => {
-                        setIsFormOpen(true);
-                    }}
-                    className="rounded-lg">
-                    Add New <Plus className="ml-2 w-4 h-4" />
-                </Button>
             </div>
             <div className="rounded-lg border shadow-md">
                 <Table>
@@ -210,11 +398,11 @@ export function DataTable({
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
-                                    className={clsx(
-                                        row.original.id ===
-                                            selectedDeliveryPriceId &&
-                                            "bg-muted hover:bg-muted"
-                                    )}
+                                    // className={clsx(
+                                    //     row.original.id ===
+                                    //         ingredient.selectedDeliveryPriceId &&
+                                    //         "bg-muted hover:bg-muted"
+                                    // )}
                                     key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
@@ -239,7 +427,39 @@ export function DataTable({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <IngredientForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
+            <EditIngredientForm
+                isOpen={isEditIngredientFormOpen}
+                setIsOpen={setIsEditIngredientFormOpen}
+                initialIngredient={ingredient}
+            />
+            <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Are you absolutely sure?</DialogTitle>
+                        <DialogDescription>
+                            This ingredient will be removed from recipes or
+                            dishes where it might have been included.{" "}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button onClick={() => setIsDeleteDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={onDelete}
+                            className="bg-red-500 hover:bg-red-500/90">
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <PriceForm
+                isOpen={isPriceFormOpen}
+                setIsOpen={setIsPriceFormOpen}
+                ingredientId={ingredient.id}
+            />
         </>
     );
 }

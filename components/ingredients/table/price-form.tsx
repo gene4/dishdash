@@ -2,19 +2,19 @@
 
 import React, { useState } from "react";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
-import { UNIT, VAT } from "@/config/constants";
+import { UNIT } from "@/config/constants";
 import {
     Form,
     FormControl,
@@ -44,37 +44,34 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Ingredient, Supplier } from "@prisma/client";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { DeliveryPrice } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getSuppliers } from "@/lib/actions";
 
 const formSchema = z.object({
-    name: z.string().min(1, { message: "Name is required" }),
-    vat: z.string().min(1, { message: "Vat is required" }),
-    category: z.string().min(1, { message: "Category is required" }),
     unit: z.string().min(1, { message: "Unit is required" }),
     amount: z.coerce.number().positive({ message: "Amount is required" }),
-    weight: z.coerce.number(),
+    weight: z.coerce.number().optional(),
     price: z.coerce.number().positive({ message: "Price is required" }),
-    supplierId: z.string(),
+    supplierId: z.string().min(1, { message: "Supplier is required" }),
 });
 
 interface Props {
-    initialIngredient?: Ingredient;
+    initialPrice?: DeliveryPrice;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
+    ingredientId?: string;
 }
 
-function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
-    const [isMultiple, setIsMultiple] = useState(false);
+export default function PriceForm({
+    initialPrice,
+    isOpen,
+    setIsOpen,
+    ingredientId,
+}: Props) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
 
     const { data } = useQuery({
         queryKey: ["suppliers"],
@@ -83,10 +80,12 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialIngredient || {
-            name: "",
-            vat: "",
-            category: "",
+        defaultValues: {
+            ...initialPrice,
+            weight: initialPrice?.weight || undefined,
+            supplierId: initialPrice?.supplierId || undefined,
+        } || {
+            supplierId: "",
             unit: "",
             price: 0,
             amount: 0,
@@ -98,35 +97,30 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
     const unit = form.watch("unit");
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsOpen(false);
         let response;
-        // setIsLoading(true);
-        if (initialIngredient) {
-            response = axios.patch(
-                `/api/ingredient/${initialIngredient.id}`,
-                values
-            );
+
+        if (initialPrice) {
+            response = axios.patch(`/api/deliveryPrice/${initialPrice.id}`, {
+                ...values,
+                ingredientId: initialPrice.ingredientId,
+            });
         } else {
-            response = axios.post("/api/ingredientWithPrice", values);
+            response = axios.post("/api/deliveryPrice", {
+                ...values,
+                ingredientId,
+            });
         }
 
-        if (!isMultiple) {
-            setIsOpen(false);
-        }
-        response
-            .then(() => {
-                router.refresh();
-                form.reset();
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+        response.then(() => {
+            router.refresh();
+            form.reset();
+        });
 
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `${values.name}  has been ${
-                    initialIngredient ? "updated" : "added"
-                }`;
+                return `Price has been ${initialPrice ? "updated" : "added"}`;
             },
             error: "Error",
         });
@@ -134,96 +128,23 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
 
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetContent side={"left"}>
-                <SheetHeader>
-                    <SheetTitle className="text-2xl font-semibold">
-                        {initialIngredient ? "Update" : "Add"} Ingredient
-                    </SheetTitle>
-                    {!initialIngredient && (
-                        <SheetDescription>
-                            Add a new ingredient to your list
-                        </SheetDescription>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="w-[250px]">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl font-semibold">
+                        {initialPrice ? "Update" : "Add"} Price
+                    </DialogTitle>
+                    {!initialPrice && (
+                        <DialogDescription>
+                            Add a new price to your ingredient
+                        </DialogDescription>
                     )}
-                </SheetHeader>
+                </DialogHeader>
                 <div>
                     <Form {...form}>
                         <form
                             onSubmit={form.handleSubmit(onSubmit)}
                             className="flex flex-col gap-3 mt-5">
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Name
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                disabled={isLoading}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="flex space-x-6">
-                                <FormField
-                                    control={form.control}
-                                    name="vat"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className={labelStyle}>
-                                                VAT
-                                            </FormLabel>
-                                            <Select
-                                                defaultValue={field.value}
-                                                disabled={isLoading}
-                                                onValueChange={field.onChange}>
-                                                <FormControl>
-                                                    <SelectTrigger className="w-[130px]">
-                                                        <SelectValue placeholder="Select VAT" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {VAT.map((unit) => (
-                                                        <SelectItem
-                                                            key={unit}
-                                                            value={unit}>
-                                                            {unit}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="category"
-                                    render={({ field }) => (
-                                        <FormItem className="flex-1">
-                                            <FormLabel className={labelStyle}>
-                                                Category
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    disabled={isLoading}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                            <Separator className="my-2" />
-                            <SheetDescription className="mb-3">
-                                Enter a delivery price:
-                            </SheetDescription>
                             <FormField
                                 control={form.control}
                                 name={`supplierId`}
@@ -317,7 +238,6 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                             </FormLabel>
                                             <Select
                                                 value={field.value}
-                                                disabled={isLoading}
                                                 onValueChange={field.onChange}>
                                                 <FormControl>
                                                     <SelectTrigger className="w-[130px]">
@@ -352,7 +272,6 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Input
-                                                        disabled={isLoading}
                                                         min={0}
                                                         type="number"
                                                         step={0.01}
@@ -376,7 +295,6 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    disabled={isLoading}
                                                     min={0}
                                                     type="number"
                                                     step={0.01}
@@ -397,7 +315,6 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    disabled={isLoading}
                                                     min={0}
                                                     type="number"
                                                     step={0.01}
@@ -409,36 +326,15 @@ function IngredientForm({ initialIngredient, isOpen, setIsOpen }: Props) {
                                     )}
                                 />
                             </div>
-
-                            <div className="flex justify-between pt-5">
-                                {!initialIngredient && (
-                                    <div className="flex items-center space-x-2">
-                                        <Switch
-                                            checked={isMultiple}
-                                            onCheckedChange={setIsMultiple}
-                                            id="multiple"
-                                        />
-                                        <Label htmlFor="multiple">
-                                            Add multiple
-                                        </Label>
-                                    </div>
-                                )}
-                                <Button
-                                    disabled={isLoading}
-                                    className="rounded-lg"
-                                    type="submit">
-                                    {isLoading && (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    )}
-                                    {initialIngredient ? "Update" : "Add"}
+                            <div className="flex justify-end pt-5">
+                                <Button className="rounded-lg" type="submit">
+                                    {initialPrice ? "Update" : "Add"}
                                 </Button>
                             </div>
                         </form>
                     </Form>
                 </div>
-            </SheetContent>
-        </Sheet>
+            </DialogContent>
+        </Dialog>
     );
 }
-
-export default IngredientForm;

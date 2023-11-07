@@ -7,8 +7,7 @@ import {
     HydrationBoundary,
     QueryClient,
 } from "@tanstack/react-query";
-import { getIngredient } from "@/lib/actions";
-import { Ingredient } from "@prisma/client";
+import { getSuppliers } from "@/lib/actions";
 
 interface IngredientIdPageProps {
     params: {
@@ -34,9 +33,19 @@ export default async function IngredientsIdPage({
         },
         include: {
             selectedDeliveryPrice: true,
-            deliveryPrices: { include: { supplier: true } },
+            deliveryPrices: {
+                include: { supplier: true },
+                orderBy: { date: "desc" },
+            },
         },
     });
+
+    const suppliers = queryClient.prefetchQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
+    });
+
+    await Promise.all([ingredient, suppliers]);
 
     return ingredient ? (
         <>
@@ -49,19 +58,19 @@ export default async function IngredientsIdPage({
                     <div className="flex justify-around w-full md:w-fit space-x-10">
                         <div>
                             <h2 className="border-b mb-1">VAT</h2>
-                            <span className="font-normal text-2xl">
+                            <span className="font-normal">
                                 {ingredient.vat}
                             </span>
                         </div>
                         <div>
                             <h2 className="border-b mb-1">Category</h2>
-                            <span className="font-normal text-2xl">
+                            <span className="font-normal">
                                 {ingredient.category}
                             </span>
                         </div>
                         <div>
                             <h2 className="border-b mb-1">Selected price</h2>
-                            <span className="font-normal text-2xl">
+                            <span className="font-normal">
                                 {ingredient.selectedDeliveryPrice
                                     ? `${formatPrice(
                                           ingredient.selectedDeliveryPrice
@@ -78,10 +87,7 @@ export default async function IngredientsIdPage({
                 </div>
             </div>
             <HydrationBoundary state={dehydrate(queryClient)}>
-                <DataTable
-                    data={ingredient.deliveryPrices}
-                    selectedDeliveryPriceId={ingredient.selectedDeliveryPriceId}
-                />
+                <DataTable ingredient={ingredient} />
             </HydrationBoundary>
         </>
     ) : (

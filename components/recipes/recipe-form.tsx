@@ -6,7 +6,7 @@ import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { Unit } from "@/config/constants";
+import { UNIT } from "@/config/constants";
 import {
     Form,
     FormControl,
@@ -36,11 +36,11 @@ import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import IngredientsCommandBox from "../ingredients-command-box";
-import IngredientForm from "../ingredients/table/ingredient-form";
+import IngredientForm from "../ingredients/table/ingredient-price-form";
 
 const recipeSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    unit: z.string().min(1, { message: "Unit is required" }),
+    UNIT: z.string().min(1, { message: "UNIT is required" }),
     yield: z.coerce.number({ required_error: "Yield is required" }),
     ingredients: z
         .array(
@@ -162,7 +162,7 @@ export default function RecipeForm({
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {Unit.map((unit) => (
+                                                    {UNIT.map((unit) => (
                                                         <SelectItem
                                                             key={unit}
                                                             value={unit}>

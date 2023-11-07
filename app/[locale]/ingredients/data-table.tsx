@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Plus, Search } from "lucide-react";
-import IngredientForm from "@/components/ingredients/table/ingredient-form";
+import { IngredientPriceForm } from "@/components/ingredients/table/ingredient-price-form";
 import { DeliveryPrice, Ingredient, Supplier } from "@prisma/client";
 import IngredientsActions from "./ingredients-actions";
 import { formatPrice } from "@/lib/utils/format-price";
@@ -106,12 +106,8 @@ export function DataTable() {
                           selectedDeliveryPrice.price /
                               selectedDeliveryPrice.amount
                       )} / ${selectedDeliveryPrice.unit}`
-                    : "No price available";
+                    : "No price selected";
             },
-        },
-        {
-            id: "actions",
-            cell: ({ row }) => <IngredientsActions row={row} />,
         },
     ];
 
@@ -212,7 +208,10 @@ export function DataTable() {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <IngredientForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
+            <IngredientPriceForm
+                isOpen={isFormOpen}
+                setIsOpen={setIsFormOpen}
+            />
         </>
     );
 }

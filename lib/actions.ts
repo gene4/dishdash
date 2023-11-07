@@ -10,17 +10,13 @@ export async function getIngredients() {
         return redirectToSignIn();
     }
 
-    try {
-        const ingredients = await prismadb.ingredient.findMany({
-            where: {
-                userId,
-            },
-            include: { selectedDeliveryPrice: true, deliveryPrices: true },
-        });
-        return ingredients;
-    } catch (error) {
-        return { error };
-    }
+    const ingredients = await prismadb.ingredient.findMany({
+        where: {
+            userId,
+        },
+        include: { selectedDeliveryPrice: true, deliveryPrices: true },
+    });
+    return ingredients;
 }
 
 export async function getIngredient(id: string) {

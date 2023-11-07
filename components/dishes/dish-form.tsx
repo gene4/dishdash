@@ -30,7 +30,7 @@ import { IngredientsAndRecipes } from "@/app/[locale]/dishes/data-table";
 import { Dish, Supplier } from "@prisma/client";
 import { toast } from "sonner";
 import IngredientsCommandBox from "../ingredients-command-box";
-import IngredientForm from "../ingredients/table/ingredient-form";
+import IngredientForm from "../ingredients/table/ingredient-price-form";
 
 const recipeSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),

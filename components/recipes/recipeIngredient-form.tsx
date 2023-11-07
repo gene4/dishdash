@@ -27,7 +27,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { RecipeIngredients } from "@/app/[locale]/recipes/[recipeId]/data-table";
 import { toast } from "sonner";
 import IngredientsCommandBox from "../ingredients-command-box";
-import IngredientForm from "../ingredients/table/ingredient-form";
+import IngredientForm from "../ingredients/table/ingredient-price-form";
 
 const recipeSchema = z.object({
     ingredients: z

@@ -48,6 +48,15 @@ export async function POST(req: Request) {
             },
         });
 
+        await prismadb.ingredient.update({
+            where: {
+                id: deliveryPrice.ingredientId,
+            },
+            data: {
+                selectedDeliveryPriceId: deliveryPrice.id,
+            },
+        });
+
         return NextResponse.json(deliveryPrice);
     } catch (error) {
         console.log("[INGREDIENT_POST]", error);

@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Plus, Search } from "lucide-react";
-import IngredientForm from "@/components/ingredients/table/ingredient-form";
+import IngredientForm from "@/components/ingredients/table/ingredient-price-form";
 import { Ingredient, Supplier } from "@prisma/client";
 import { formatDate } from "@/lib/utils/format-date";
 import IngredientsActions from "../../ingredients/ingredients-actions";
@@ -127,10 +127,7 @@ export function IngredientsTable({ data, supplier }: DataTableProps) {
         {
             id: "actions",
             cell: ({ row }) => (
-                <IngredientsActions
-                    suppliers={[supplier]}
-                    row={row}
-                />
+                <IngredientsActions suppliers={[supplier]} row={row} />
             ),
         },
     ];

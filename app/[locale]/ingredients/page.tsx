@@ -6,7 +6,6 @@ import {
     HydrationBoundary,
     QueryClient,
 } from "@tanstack/react-query";
-
 export default async function IngredientsPage() {
     const { userId } = auth();
 
