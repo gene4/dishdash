@@ -185,17 +185,18 @@ export function DataTable({ recipe }: DataTableProps) {
                 return formatPrice(pricePerUnit * row.original.amount);
             },
         },
-        // {
-        //     id: "actions",
-        //     cell: ({ row }) => {
-        //         const recipeIngredient = row.original;
-        //         return (
-        //             <RecipeActions
-        //                 recipeIngredient={recipeIngredient}
-        //             />
-        //         );
-        //     },
-        // },
+        {
+            id: "actions",
+            cell: ({ row }) => {
+                const recipeIngredient = row.original;
+                return (
+                    <RecipeActions
+                        recipeIngredient={recipeIngredient}
+                        initialRecipe={recipe}
+                    />
+                );
+            },
+        },
     ];
 
     const table = useReactTable({

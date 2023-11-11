@@ -20,17 +20,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { RecipeIngredients } from "./data-table";
 import RecipeIngredientForm from "@/components/recipes/recipeIngredient-form";
-import { Ingredient } from "@prisma/client";
+import { Recipe, RecipeIngredient } from "@prisma/client";
 import { toast } from "sonner";
 
 interface Props {
-    recipeIngredient: RecipeIngredients;
-    ingredients: Ingredient[];
+    recipeIngredient: RecipeIngredient;
+    initialRecipe: Recipe & { ingredients: RecipeIngredient[] };
 }
 
-function RecipeActions({ recipeIngredient, ingredients }: Props) {
+function RecipeActions({ recipeIngredient, initialRecipe }: Props) {
     const [openDialog, setOpenDialog] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
@@ -40,9 +39,7 @@ function RecipeActions({ recipeIngredient, ingredients }: Props) {
         setOpenDialog(false);
 
         const response = axios
-            .delete(
-                `/api/recipeIngredient/${recipeIngredient.recipeIngredientId}`
-            )
+            .delete(`/api/recipeIngredient/${recipeIngredient.id}`)
             .then(() => {
                 router.refresh();
             });
@@ -50,11 +47,11 @@ function RecipeActions({ recipeIngredient, ingredients }: Props) {
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `Recipe ${recipeIngredient.name} was deleted.`;
+                return `Ingredient was deleted.`;
             },
             error: "Error",
         });
-    }, [recipeIngredient.name, recipeIngredient.recipeIngredientId, router]);
+    }, [recipeIngredient.id, router]);
 
     return (
         <>
@@ -64,7 +61,7 @@ function RecipeActions({ recipeIngredient, ingredients }: Props) {
                         <TooltipTrigger asChild>
                             <Edit
                                 onClick={() => setIsEditFormOpen(true)}
-                                className="w-4 h-4 text-muted-foreground hover:scale-110 transition-all"
+                                className="w-4 h-4 cursor-pointer text-muted-foreground hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
@@ -77,7 +74,7 @@ function RecipeActions({ recipeIngredient, ingredients }: Props) {
                         <TooltipTrigger asChild>
                             <Trash2
                                 onClick={() => setOpenDialog(true)}
-                                className="w-4 h-4 text-red-500 hover:scale-110 transition-all"
+                                className="w-4 h-4 text-red-500 cursor-pointer hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-red-600 text-white rounded-3xl">
@@ -93,8 +90,7 @@ function RecipeActions({ recipeIngredient, ingredients }: Props) {
                             Are you absolutely sure?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will remove {recipeIngredient.name} from this
-                            recipe.
+                            This will remove the ingredient from this recipe.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -111,8 +107,8 @@ function RecipeActions({ recipeIngredient, ingredients }: Props) {
             <RecipeIngredientForm
                 initialRecipeIngredient={recipeIngredient}
                 isOpen={isEditFormOpen}
-                ingredients={ingredients}
                 setIsOpen={setIsEditFormOpen}
+                initialRecipe={initialRecipe}
             />
         </>
     );

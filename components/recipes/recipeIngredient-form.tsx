@@ -60,19 +60,28 @@ export default function RecipeIngredientForm({
     const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
     const submitRef = useRef<HTMLButtonElement>(null);
 
+    const router = useRouter();
+
     const initialDefaultValue = {
         ingredients: [
             {
-                id: initialRecipeIngredient?.id,
-                amount: initialRecipeIngredient?.amount,
+                ...initialRecipeIngredient,
+                id:
+                    initialRecipeIngredient?.recipeIngredientId ||
+                    initialRecipeIngredient?.ingredientId ||
+                    undefined,
+                type: initialRecipeIngredient?.recipeId
+                    ? "recipe"
+                    : "ingredient",
             },
         ],
     };
+    console.log("initialDefaultValue", initialDefaultValue.ingredients[0].id);
 
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
         defaultValues: initialDefaultValue || {
-            ingredients: [{ id: "", amount: 0 }],
+            ingredients: [{ id: "", type: "", amount: 0 }],
         },
         mode: "onTouched",
     });
@@ -94,37 +103,26 @@ export default function RecipeIngredientForm({
     const filteredRecipes = useMemo(() => {
         if (!recipes.data) return [];
 
-        // find if recipe exists as child ingredient
-        const isRecipeExists = (recipe: any): boolean => {
-            for (const item of recipe.ingredients) {
-                if (!item.recipeIngredientId) return false;
-                if (item.recipeIngredientId === initialRecipe.id) return true;
-
-                // Recursively call the function and return the result
-                if (isRecipeExists(item.recipeIngredient)) {
-                    return true;
-                }
-            }
-
-            // If none of the conditions were met, return false
-            return false;
-        };
-
+        const isRecipeExists = (recipe: any) =>
+            recipe.ingredients.some(
+                (item: any) =>
+                    item.recipeIngredientId &&
+                    (item.recipeIngredientId === initialRecipe.id ||
+                        isRecipeExists(item.recipeIngredient))
+            );
         // filter out any recipe that contains the initialRecipe as ingredient and the initialRecipe itself
         return recipes.data.filter(
-            (recipe: Recipe & { ingredients: RecipeIngredient[] }) =>
+            (recipe: any) =>
                 !isRecipeExists(recipe) && recipe.id !== initialRecipe.id
         );
     }, [initialRecipe.id, recipes.data]);
-
-    const router = useRouter();
 
     async function onSubmit(values: z.infer<typeof recipeSchema>) {
         setIsOpen(false);
 
         const response = initialRecipeIngredient
             ? axios.patch(
-                  `/api/recipeIngredient/${initialRecipeIngredient.recipeIngredientId}`,
+                  `/api/recipeIngredient/${initialRecipeIngredient.id}`,
                   values
               )
             : axios.post(`/api/recipeIngredient`, {

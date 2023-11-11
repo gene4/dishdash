@@ -60,7 +60,7 @@ export default function IngredientsCommandBox({
                 side="bottom"
                 className="w-[250px] relative z-50 bg-background border rounded-md shadow-md">
                 <Command>
-                    <CommandInput placeholder="Ingredient" />
+                    <CommandInput placeholder="Search..." />
                     <CommandEmpty>
                         No ingredient found.
                         <Button

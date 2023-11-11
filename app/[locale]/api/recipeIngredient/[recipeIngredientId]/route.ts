@@ -30,7 +30,12 @@ export async function PATCH(
                 id: params.recipeIngredientId,
             },
             data: {
-                ingredientId: ingredients[0].id,
+                ingredientId:
+                    ingredients[0].type === "ingredient"
+                        ? ingredients[0].id
+                        : null,
+                recipeIngredientId:
+                    ingredients[0].type === "recipe" ? ingredients[0].id : null,
                 amount: ingredients[0].amount,
             },
         });
