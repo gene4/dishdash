@@ -1,12 +1,13 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { formatPrice } from "@/lib/utils/format-price";
 import { formatDate } from "@/lib/utils/format-date";
-import { RecipeDataReceived } from "./data-table";
+// import { RecipeDataReceived } from "./data-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
-import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
+import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
+import { Ingredient, Recipe } from "@prisma/client";
 
-export const columns: ColumnDef<RecipeDataReceived>[] = [
+export const columns: ColumnDef<Recipe & { ingredients: Ingredient[] }>[] = [
     {
         accessorKey: "name",
         header: ({ column }) => {
@@ -47,7 +48,7 @@ export const columns: ColumnDef<RecipeDataReceived>[] = [
             );
         },
         cell: ({ row }) =>
-            formatPrice(calculateRecipePrice(row.original.ingredients)),
+            formatPrice(calculateNestedItemPrice(row.original.ingredients)),
     },
     {
         accessorKey: "pricePer",
@@ -65,7 +66,9 @@ export const columns: ColumnDef<RecipeDataReceived>[] = [
             );
         },
         cell: ({ row }) => {
-            const totalPrice = calculateRecipePrice(row.original.ingredients);
+            const totalPrice = calculateNestedItemPrice(
+                row.original.ingredients
+            );
             const pricePerUnit = totalPrice / row.original.yield;
 
             return formatPrice(pricePerUnit);

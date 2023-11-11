@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
@@ -21,23 +21,22 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Ingredient, Supplier } from "@prisma/client";
+import { Ingredient, Recipe, RecipeIngredient, Supplier } from "@prisma/client";
 import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { RecipeIngredients } from "@/app/[locale]/recipes/[recipeId]/data-table";
 import { toast } from "sonner";
 import IngredientsCommandBox from "../ingredients-command-box";
-import IngredientForm from "../ingredients/table/ingredient-price-form";
+import { IngredientPriceForm } from "../ingredients/table/ingredient-price-form";
+import { useQuery } from "@tanstack/react-query";
+import { getIngredients, getRecipes } from "@/lib/actions";
 
 const recipeSchema = z.object({
     ingredients: z
         .array(
             z.object({
                 id: z.string().min(1, { message: "Ingredient is required" }),
-                amount: z.preprocess(
-                    (a) => parseFloat(z.string().parse(a)),
-                    z.number().optional()
-                ),
+                type: z.string(),
+                amount: z.coerce.number(),
             })
         )
         .nonempty({
@@ -46,21 +45,17 @@ const recipeSchema = z.object({
 });
 
 interface Props {
-    initialRecipeIngredient?: RecipeIngredients;
+    initialRecipeIngredient?: RecipeIngredient;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    ingredients: Ingredient[];
-    recipeId?: string;
-    suppliers?: Supplier[];
+    initialRecipe: Recipe & { ingredients: RecipeIngredient[] };
 }
 
 export default function RecipeIngredientForm({
     isOpen,
     setIsOpen,
-    ingredients,
-    recipeId,
+    initialRecipe,
     initialRecipeIngredient,
-    suppliers,
 }: Props) {
     const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
     const submitRef = useRef<HTMLButtonElement>(null);
@@ -82,10 +77,45 @@ export default function RecipeIngredientForm({
         mode: "onTouched",
     });
 
+    const recipes = useQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
+    });
+    const ingredients = useQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
+    });
+
     const { fields, append, remove } = useFieldArray({
         name: "ingredients",
         control: form.control,
     });
+
+    const filteredRecipes = useMemo(() => {
+        if (!recipes.data) return [];
+
+        // find if recipe exists as child ingredient
+        const isRecipeExists = (recipe: any): boolean => {
+            for (const item of recipe.ingredients) {
+                if (!item.recipeIngredientId) return false;
+                if (item.recipeIngredientId === initialRecipe.id) return true;
+
+                // Recursively call the function and return the result
+                if (isRecipeExists(item.recipeIngredient)) {
+                    return true;
+                }
+            }
+
+            // If none of the conditions were met, return false
+            return false;
+        };
+
+        // filter out any recipe that contains the initialRecipe as ingredient and the initialRecipe itself
+        return recipes.data.filter(
+            (recipe: Recipe & { ingredients: RecipeIngredient[] }) =>
+                !isRecipeExists(recipe) && recipe.id !== initialRecipe.id
+        );
+    }, [initialRecipe.id, recipes.data]);
 
     const router = useRouter();
 
@@ -99,7 +129,7 @@ export default function RecipeIngredientForm({
               )
             : axios.post(`/api/recipeIngredient`, {
                   ...values,
-                  recipeId,
+                  recipeId: initialRecipe.id,
               });
 
         response.then(() => {
@@ -151,9 +181,10 @@ export default function RecipeIngredientForm({
                                                             <IngredientsCommandBox
                                                                 field={field}
                                                                 index={index}
-                                                                ingredients={
-                                                                    ingredients
-                                                                }
+                                                                ingredients={[
+                                                                    ...filteredRecipes,
+                                                                    ...ingredients.data,
+                                                                ]}
                                                                 setValue={
                                                                     form.setValue
                                                                 }
@@ -225,7 +256,7 @@ export default function RecipeIngredientForm({
                                     variant={"outline"}
                                     className="rounded-lg"
                                     onClick={() =>
-                                        append({ id: "", amount: 0 })
+                                        append({ id: "", type: "", amount: 0 })
                                     }>
                                     <Plus className="mr-2 w-4 h-4" /> Add
                                     ingredient
@@ -243,13 +274,10 @@ export default function RecipeIngredientForm({
                     </form>
                 </Form>
             </DialogContent>
-            {suppliers && (
-                <IngredientForm
-                    isOpen={isIngredientFormOpen}
-                    setIsOpen={setIsIngredientFormOpen}
-                    suppliers={suppliers}
-                />
-            )}
+            <IngredientPriceForm
+                isOpen={isIngredientFormOpen}
+                setIsOpen={setIsIngredientFormOpen}
+            />
         </Dialog>
     );
 }

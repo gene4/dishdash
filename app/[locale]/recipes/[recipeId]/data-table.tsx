@@ -49,7 +49,7 @@ import {
     Trash2,
     Edit,
 } from "lucide-react";
-import { Ingredient, Recipe, Supplier } from "@prisma/client";
+import { Ingredient, Recipe, RecipeIngredient, Supplier } from "@prisma/client";
 import RecipeActions from "./recipe-actions";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -57,6 +57,7 @@ import { formatPrice } from "@/lib/utils/format-price";
 import RecipeForm from "@/components/recipes/recipe-form";
 import RecipeIngredientForm from "@/components/recipes/recipeIngredient-form";
 import { toast } from "sonner";
+import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 
 export type RecipeIngredients = {
     amount: number;
@@ -71,20 +72,11 @@ export type RecipeIngredients = {
     updatedAt: Date;
     recipeIngredientId: string;
 };
-
 interface DataTableProps {
-    recipeIngredients: RecipeIngredients[];
-    ingredients: Ingredient[];
-    recipe: Recipe;
-    suppliers: Supplier[];
+    recipe: Recipe & { ingredients: RecipeIngredient[] };
 }
 
-export function DataTable({
-    recipeIngredients,
-    ingredients,
-    recipe,
-    suppliers,
-}: DataTableProps) {
+export function DataTable({ recipe }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -94,9 +86,15 @@ export function DataTable({
 
     const router = useRouter();
 
-    const columns: ColumnDef<RecipeIngredients>[] = [
+    console.log(recipe);
+
+    const columns: ColumnDef<RecipeIngredient>[] = [
         {
-            accessorKey: "name",
+            id: "name",
+            accessorFn: (row: any) =>
+                row.ingredientId
+                    ? row.ingredient.name
+                    : row.recipeIngredient.name,
             header: ({ column }) => {
                 return (
                     <Button
@@ -112,7 +110,11 @@ export function DataTable({
             },
         },
         {
-            accessorKey: "unit",
+            id: "unit",
+            accessorFn: (row: any) =>
+                row.ingredientId
+                    ? row.ingredient.selectedDeliveryPrice.unit
+                    : row.recipeIngredient.unit,
             header: "UNIT",
         },
         {
@@ -120,7 +122,7 @@ export function DataTable({
             header: "AMOUNT",
         },
         {
-            accessorKey: "price",
+            id: "pricePerUnit",
             header: ({ column }) => {
                 return (
                     <Button
@@ -134,43 +136,26 @@ export function DataTable({
                     </Button>
                 );
             },
-            cell: ({ row }) => formatPrice(row.original.price),
+            cell: ({ row }: { row: any }) => {
+                if (row.original.ingredientId) {
+                    return formatPrice(
+                        row.original.ingredient.selectedDeliveryPrice.price /
+                            row.original.ingredient.selectedDeliveryPrice.amount
+                    );
+                } else {
+                    const totalPrice = calculateNestedItemPrice(
+                        row.original.recipeIngredient.ingredients
+                    );
+                    const pricePerUnit =
+                        totalPrice / row.original.recipeIngredient.yield;
+
+                    return formatPrice(pricePerUnit);
+                }
+            },
         },
 
         {
-            accessorKey: "supplier.name",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent font-bold"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        SUPPLIER
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-        },
-        {
-            accessorKey: "category",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent font-bold"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        CATEGORY
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-        },
-        {
-            accessorKey: "totalPrice",
+            id: "totalPrice",
             header: ({ column }) => {
                 return (
                     <Button
@@ -184,27 +169,37 @@ export function DataTable({
                     </Button>
                 );
             },
-            cell: ({ row }) => {
-                const totalPrice = row.original.price * row.original.amount;
-                return formatPrice(totalPrice);
+            cell: ({ row }: { row: any }) => {
+                let pricePerUnit;
+                if (row.original.ingredientId) {
+                    pricePerUnit =
+                        row.original.ingredient.selectedDeliveryPrice.price /
+                        row.original.ingredient.selectedDeliveryPrice.amount;
+                } else {
+                    const totalPrice = calculateNestedItemPrice(
+                        row.original.recipeIngredient.ingredients
+                    );
+                    pricePerUnit =
+                        totalPrice / row.original.recipeIngredient.yield;
+                }
+                return formatPrice(pricePerUnit * row.original.amount);
             },
         },
-        {
-            id: "actions",
-            cell: ({ row }) => {
-                const recipeIngredient = row.original;
-                return (
-                    <RecipeActions
-                        ingredients={ingredients}
-                        recipeIngredient={recipeIngredient}
-                    />
-                );
-            },
-        },
+        // {
+        //     id: "actions",
+        //     cell: ({ row }) => {
+        //         const recipeIngredient = row.original;
+        //         return (
+        //             <RecipeActions
+        //                 recipeIngredient={recipeIngredient}
+        //             />
+        //         );
+        //     },
+        // },
     ];
 
     const table = useReactTable({
-        data: recipeIngredients,
+        data: recipe.ingredients,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -318,7 +313,6 @@ export function DataTable({
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    className="cursor-pointer"
                                     data-state={
                                         row.getIsSelected() && "selected"
                                     }>
@@ -374,11 +368,9 @@ export function DataTable({
                 </AlertDialogContent>
             </AlertDialog>
             <RecipeIngredientForm
-                recipeId={recipe.id}
-                ingredients={ingredients}
+                initialRecipe={recipe}
                 isOpen={isAddIngredientFormOpen}
                 setIsOpen={setIsAddIngredientFormOpen}
-                suppliers={suppliers}
             />
         </>
     );

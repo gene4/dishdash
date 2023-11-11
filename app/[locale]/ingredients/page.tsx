@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 export default async function IngredientsPage() {
     const { userId } = auth();
+    console.log(userId);
 
     if (!userId) {
         return redirectToSignIn();

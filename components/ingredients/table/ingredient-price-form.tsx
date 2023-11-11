@@ -183,7 +183,7 @@ export function IngredientPriceForm({
                                                 VAT
                                             </FormLabel>
                                             <Select
-                                                defaultValue={field.value}
+                                                value={field.value}
                                                 disabled={isLoading}
                                                 onValueChange={field.onChange}>
                                                 <FormControl>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
@@ -31,21 +31,24 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Ingredient, Recipe, Supplier } from "@prisma/client";
+import { Recipe } from "@prisma/client";
 import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import IngredientsCommandBox from "../ingredients-command-box";
-import IngredientForm from "../ingredients/table/ingredient-price-form";
+import { useQuery } from "@tanstack/react-query";
+import { getIngredients, getRecipes } from "@/lib/actions";
+import { IngredientPriceForm } from "../ingredients/table/ingredient-price-form";
 
 const recipeSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    UNIT: z.string().min(1, { message: "UNIT is required" }),
+    unit: z.string().min(1, { message: "Unit is required" }),
     yield: z.coerce.number({ required_error: "Yield is required" }),
     ingredients: z
         .array(
             z.object({
                 id: z.string().min(1, { message: "Ingredient is required" }),
+                type: z.string(),
                 amount: z.coerce.number(),
             })
         )
@@ -56,26 +59,32 @@ interface Props {
     initialRecipe?: Recipe;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    ingredients?: Ingredient[];
-    suppliers?: Supplier[];
 }
 
 export default function RecipeForm({
     initialRecipe,
     isOpen,
     setIsOpen,
-    ingredients,
-    suppliers,
 }: Props) {
     const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
+
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
-        defaultValues: initialRecipe || {
+        defaultValues: { ...initialRecipe, ingredients: [] } || {
             name: "",
             unit: "",
             yield: 0,
             ingredients: [],
         },
+    });
+
+    const recipes = useQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
+    });
+    const ingredients = useQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -95,6 +104,7 @@ export default function RecipeForm({
 
         response.then(() => {
             router.refresh();
+            form.reset();
         });
 
         toast.promise(response, {
@@ -155,7 +165,7 @@ export default function RecipeForm({
                                         <FormControl>
                                             <Select
                                                 onValueChange={field.onChange}
-                                                defaultValue={field.value}>
+                                                value={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger className="rounded-lg">
                                                         <SelectValue placeholder="Select" />
@@ -197,7 +207,7 @@ export default function RecipeForm({
                                 )}
                             />
                         </div>
-                        {ingredients && (
+                        {!initialRecipe && (
                             <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[300px] overflow-y-scroll">
                                 {fields.length ? (
                                     fields.map((field, index) => (
@@ -211,9 +221,10 @@ export default function RecipeForm({
                                                             <IngredientsCommandBox
                                                                 field={field}
                                                                 index={index}
-                                                                ingredients={
-                                                                    ingredients
-                                                                }
+                                                                ingredients={[
+                                                                    ...recipes.data,
+                                                                    ...ingredients.data,
+                                                                ]}
                                                                 setValue={
                                                                     form.setValue
                                                                 }
@@ -284,7 +295,7 @@ export default function RecipeForm({
                                     variant={"outline"}
                                     className="rounded-lg"
                                     onClick={() =>
-                                        append({ id: "", amount: 0 })
+                                        append({ id: "", type: "", amount: 0 })
                                     }>
                                     <Plus className="mr-2 w-4 h-4" /> Add
                                     ingredient
@@ -302,13 +313,11 @@ export default function RecipeForm({
                     </form>
                 </Form>
             </DialogContent>
-            {suppliers && (
-                <IngredientForm
-                    isOpen={isIngredientFormOpen}
-                    setIsOpen={setIsIngredientFormOpen}
-                    suppliers={suppliers}
-                />
-            )}
+
+            <IngredientPriceForm
+                isOpen={isIngredientFormOpen}
+                setIsOpen={setIsIngredientFormOpen}
+            />
         </Dialog>
     );
 }

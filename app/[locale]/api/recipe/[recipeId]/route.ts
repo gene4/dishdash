@@ -60,6 +60,13 @@ export async function DELETE(
             },
         });
 
+        // Delete all RecipeIngredient where the recipe is an ingredient
+        await prismadb.recipeIngredient.deleteMany({
+            where: {
+                recipeIngredientId: params.recipeId,
+            },
+        });
+
         // Delete all DishIngredient records associated with the recipe
         await prismadb.dishIngredient.deleteMany({
             where: {

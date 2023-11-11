@@ -1,8 +1,15 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
-import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
 import { formatPrice } from "@/lib/utils/format-price";
+import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
+import {
+    HydrationBoundary,
+    QueryClient,
+    dehydrate,
+} from "@tanstack/react-query";
+import { getIngredients, getSuppliers } from "@/lib/actions";
+import { nestedRecipeItems } from "@/lib/utils";
 
 interface RecipeIdPageProps {
     params: {
@@ -17,51 +24,30 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
         return redirectToSignIn();
     }
 
+    const queryClient = new QueryClient();
+
     // Get initial recipe
     const recipe = await prismadb.recipe.findUnique({
         where: {
             id: params.recipeId,
             userId,
         },
-        include: {
-            ingredients: {
-                include: {
-                    ingredient: {
-                        include: {
-                            selectedDeliveryPrice: true,
-                        },
-                    },
-                },
-            },
-        },
+        include: nestedRecipeItems,
     });
 
-    // Format data for table
-    const recipeIngredients =
-        recipe &&
-        recipe.ingredients.map((ingredient) => ({
-            ...ingredient.ingredient,
-            amount: ingredient.amount,
-            recipeIngredientId: ingredient.id,
-            price: ingredient.ingredient.selectedDeliveryPrice
-                ? ingredient.ingredient.selectedDeliveryPrice?.price /
-                  ingredient.ingredient.selectedDeliveryPrice?.amount
-                : 0,
-        }));
-
-    const ingredients = await prismadb.ingredient.findMany({
-        where: {
-            userId,
-        },
+    const ingredients = queryClient.prefetchQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
     });
 
-    const suppliers = await prismadb.supplier.findMany({
-        where: {
-            userId,
-        },
+    const suppliers = queryClient.prefetchQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
     });
 
-    return recipeIngredients ? (
+    await Promise.all([recipe, ingredients, suppliers]);
+
+    return recipe ? (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
                 <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0">
@@ -78,20 +64,17 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                         <div>
                             <h2 className="border-b mb-1">Total Price</h2>
                             <span className="font-normal text-2xl">
-                                {formatPrice(
-                                    calculateRecipePrice(recipe.ingredients)
-                                )}
+                                {/* {formatPrice(
+                                    calculateNestedItemPrice(recipe.ingredients)
+                                )} */}
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
-            <DataTable
-                recipeIngredients={recipeIngredients}
-                ingredients={ingredients}
-                recipe={recipe}
-                suppliers={suppliers}
-            />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <DataTable recipe={recipe} />
+            </HydrationBoundary>
         </>
     ) : (
         <div>Not Found!</div>

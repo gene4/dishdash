@@ -29,7 +29,10 @@ export async function POST(req: Request) {
         for (const ingredient of ingredients) {
             await prismadb.recipeIngredient.create({
                 data: {
-                    ingredientId: ingredient.id,
+                    ingredientId:
+                        ingredient.type === "ingredient" ? ingredient.id : null,
+                    recipeIngredientId:
+                        ingredient.type === "recipe" ? ingredient.id : null,
                     amount: ingredient.amount,
                     recipeId: recipe.id,
                 },

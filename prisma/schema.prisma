@@ -56,8 +56,11 @@ model Recipe {
   userId          String
   unit            String
   yield           Float
+ 
   ingredients     RecipeIngredient[]
   dishes          DishIngredient[]
+  recipes         RecipeIngredient[] @relation("recipeIngredientId")
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -69,12 +72,20 @@ model RecipeIngredient {
   recipe          Recipe   @relation(fields: [recipeId], references: [id])
   recipeId        String
 
-  ingredient      Ingredient @relation(fields: [ingredientId], references: [id])
-  ingredientId    String
+   ingredient      Ingredient? @relation(fields: [ingredientId], references: [id])
+  ingredientId     String?
 
-@@index([recipeId])
+   recipeIngredient    Recipe? @relation("recipeIngredientId", fields: [recipeIngredientId], references: [id])
+  recipeIngredientId   String? 
+
+
+
+@@index([recipeIngredientId])
 @@index([ingredientId])
+@@index([recipeId])
 }
+
+
 
 
 model Dish {

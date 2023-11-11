@@ -2,6 +2,7 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import { Supplier } from "@prisma/client";
+import { nestedRecipeItems } from "./utils";
 
 export async function getIngredients() {
     const { userId } = auth();
@@ -19,27 +20,6 @@ export async function getIngredients() {
     return ingredients;
 }
 
-export async function getIngredient(id: string) {
-    const { userId } = auth();
-
-    if (!userId) {
-        return redirectToSignIn();
-    }
-
-    try {
-        const ingredient = await prismadb.ingredient.findUnique({
-            where: {
-                id,
-                userId,
-            },
-            include: { selectedDeliveryPrice: true, deliveryPrices: true },
-        });
-        return ingredient;
-    } catch (error) {
-        return { error };
-    }
-}
-
 export async function getSuppliers(): Promise<Supplier[]> {
     const { userId } = auth();
 
@@ -53,4 +33,20 @@ export async function getSuppliers(): Promise<Supplier[]> {
         },
     });
     return suppliers;
+}
+
+export async function getRecipes() {
+    const { userId } = auth();
+
+    if (!userId) {
+        return redirectToSignIn();
+    }
+
+    const recipes = await prismadb.recipe.findMany({
+        where: {
+            userId,
+        },
+        include: nestedRecipeItems,
+    });
+    return recipes;
 }

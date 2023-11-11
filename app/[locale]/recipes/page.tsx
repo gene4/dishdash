@@ -1,6 +1,11 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
-import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
+import { getIngredients, getRecipes, getSuppliers } from "@/lib/actions";
+import {
+    HydrationBoundary,
+    QueryClient,
+    dehydrate,
+} from "@tanstack/react-query";
 
 export default async function RecipesPage() {
     const { userId } = auth();
@@ -8,45 +13,35 @@ export default async function RecipesPage() {
     if (!userId) {
         return redirectToSignIn();
     }
-    const recipes = await prismadb.recipe.findMany({
-        where: {
-            userId,
-        },
-        include: {
-            ingredients: {
-                include: {
-                    ingredient: {
-                        include: {
-                            selectedDeliveryPrice: true,
-                        },
-                    },
-                },
-            },
-        },
+
+    const queryClient = new QueryClient();
+
+    // Prefetch data
+    const recipes = queryClient.prefetchQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
     });
 
-    const ingredients = await prismadb.ingredient.findMany({
-        where: {
-            userId,
-        },
+    const ingredients = queryClient.prefetchQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
     });
 
-    const suppliers = await prismadb.supplier.findMany({
-        where: {
-            userId,
-        },
+    const suppliers = queryClient.prefetchQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
     });
+
+    await Promise.all([recipes, ingredients, suppliers]);
 
     return (
         <>
             <h1 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-5">
                 Recipes
             </h1>
-            <DataTable
-                data={recipes}
-                ingredients={ingredients}
-                suppliers={suppliers}
-            />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <DataTable />
+            </HydrationBoundary>
         </>
     );
 }

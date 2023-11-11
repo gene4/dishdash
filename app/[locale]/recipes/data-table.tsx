@@ -25,9 +25,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import RecipesForm from "@/components/recipes/recipe-form";
-import { DeliveryPrice, Ingredient, Recipe, Supplier } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
+import { getRecipes } from "@/lib/actions";
+import { useQuery } from "@tanstack/react-query";
 
 // export type Recipe = {
 //     ingredients: ({
@@ -50,21 +51,26 @@ import { columns } from "./columns";
 //     updatedAt: Date;
 // };
 
-interface DataTableProps {
-    data: Recipe[];
-    ingredients: Ingredient[];
-    suppliers: Supplier[];
-}
+// interface DataTableProps {
+//     data: Recipe[];
+//     ingredients: Ingredient[];
+//     suppliers: Supplier[];
+// }
 
-export function DataTable({ data, ingredients, suppliers }: DataTableProps) {
+export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
+    const recipes = useQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
+    });
+
     const router = useRouter();
 
     const table = useReactTable({
-        data,
+        data: recipes.data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -162,12 +168,7 @@ export function DataTable({ data, ingredients, suppliers }: DataTableProps) {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <RecipesForm
-                isOpen={isFormOpen}
-                setIsOpen={setIsFormOpen}
-                ingredients={ingredients}
-                suppliers={suppliers}
-            />
+            <RecipesForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
         </>
     );
 }
