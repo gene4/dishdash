@@ -48,11 +48,12 @@ import { Ingredient } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { getSuppliers } from "@/lib/actions";
+import SupplierForm from "@/components/suppliers/supplier-form";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
@@ -79,6 +80,7 @@ export function IngredientPriceForm({
     const [isMultiple, setIsMultiple] = useState(false);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSupplierFormOpen, setIsSupplierFormOpen] = useState(false);
 
     const { data } = useQuery({
         queryKey: ["suppliers"],
@@ -266,6 +268,21 @@ export function IngredientPriceForm({
                                                     <CommandInput placeholder="Search supplier..." />
                                                     <CommandEmpty>
                                                         No supplier found.
+                                                        <Button
+                                                            onClick={(
+                                                                event
+                                                            ) => {
+                                                                event.preventDefault();
+                                                                setIsSupplierFormOpen(
+                                                                    true
+                                                                );
+                                                            }}
+                                                            className="mt-4 rounded-lg"
+                                                            size={"sm"}
+                                                            variant={"outline"}>
+                                                            <Plus className="mr-2 w-3 h-3" />
+                                                            New supplier
+                                                        </Button>
                                                     </CommandEmpty>
                                                     <CommandGroup>
                                                         {data &&
@@ -441,6 +458,10 @@ export function IngredientPriceForm({
                     </Form>
                 </div>
             </SheetContent>
+            <SupplierForm
+                isOpen={isSupplierFormOpen}
+                setIsOpen={setIsSupplierFormOpen}
+            />
         </Sheet>
     );
 }

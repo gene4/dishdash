@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormControl, FormMessage } from "./ui/form";
+import { FormControl } from "./ui/form";
 import {
     Popover,
     PopoverContent,
@@ -17,13 +17,12 @@ import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Ingredient } from "@prisma/client";
-import { IngredientsAndRecipes } from "@/app/[locale]/dishes/data-table";
 
 interface Props {
     setValue: Function;
     field: any;
     index: number;
-    ingredients: Ingredient[] | IngredientsAndRecipes;
+    ingredients: any;
     setIsIngredientFormOpen: (open: boolean) => void;
 }
 
