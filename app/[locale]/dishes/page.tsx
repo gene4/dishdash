@@ -1,7 +1,16 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
-import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
-import { Loader2 } from "lucide-react";
+import {
+    HydrationBoundary,
+    QueryClient,
+    dehydrate,
+} from "@tanstack/react-query";
+import {
+    getDishes,
+    getIngredients,
+    getRecipes,
+    getSuppliers,
+} from "@/lib/actions";
 
 export default async function RecipesPage() {
     const { userId } = auth();
@@ -9,64 +18,40 @@ export default async function RecipesPage() {
     if (!userId) {
         return redirectToSignIn();
     }
-    const dishes = await prismadb.dish.findMany({
-        where: {
-            userId,
-        },
-        include: {
-            ingredients: {
-                include: {
-                    ingredient: true,
-                    recipe: {
-                        include: {
-                            ingredients: {
-                                include: {
-                                    ingredient: {
-                                        select: {
-                                            price: true,
-                                            amount: true,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        },
+
+    const queryClient = new QueryClient();
+
+    // Prefetch data
+    const recipes = queryClient.prefetchQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
     });
 
-    const ingredients = await prismadb.ingredient.findMany({
-        where: {
-            userId,
-        },
+    const ingredients = queryClient.prefetchQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
     });
 
-    const recipes = await prismadb.recipe.findMany({
-        where: {
-            userId,
-        },
+    const suppliers = queryClient.prefetchQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
     });
 
-    const suppliers = await prismadb.supplier.findMany({
-        where: {
-            userId,
-        },
+    const dishes = queryClient.prefetchQuery({
+        queryKey: ["dishes"],
+        queryFn: getDishes,
     });
 
-    const ingredientsAndRecipes = [...ingredients, ...recipes];
+    await Promise.all([dishes, recipes, ingredients, suppliers]);
 
     return (
         <>
             <h1 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-5">
                 Dishes
             </h1>
-
-            <DataTable
-                data={dishes}
-                ingredientsAndRecipes={ingredientsAndRecipes}
-                suppliers={suppliers}
-            />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <DataTable />
+            </HydrationBoundary>
         </>
     );
 }

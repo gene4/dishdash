@@ -7,13 +7,13 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, targetPrice, multiplier, ingredients } = body;
+        const { name, menuPrice, multiplier, ingredients, vat } = body;
 
         if (!user || !user.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!name || !targetPrice || !multiplier || !ingredients) {
+        if (!name || !menuPrice || !multiplier || !ingredients) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -21,8 +21,9 @@ export async function POST(req: Request) {
             data: {
                 userId: user.id,
                 name,
-                targetPrice,
+                menuPrice,
                 multiplier,
+                vat,
             },
         });
 
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
                 data: {
                     ingredientId:
                         ingredient.type === "ingredient" ? ingredient.id : null,
-                    recipeId:
+                    recipeIngredientId:
                         ingredient.type === "recipe" ? ingredient.id : null,
                     amount: ingredient.amount,
                     dishId: dish.id,

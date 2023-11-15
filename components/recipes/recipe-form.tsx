@@ -286,7 +286,7 @@ export default function RecipeForm({
                                 )}
                             </ol>
                         )}
-                        {ingredients && (
+                        {!initialRecipe && (
                             <>
                                 <Button
                                     type="button"

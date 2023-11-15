@@ -1,12 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { DishDataReceived } from "./data-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import clsx from "clsx";
-import { calculateNetoDishPrice } from "@/lib/utils/calculate-dish-neto-price";
 import { formatPrice } from "@/lib/utils/format-price";
+import { Dish, DishIngredient } from "@prisma/client";
+import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 
-export const columns: ColumnDef<DishDataReceived>[] = [
+export const columns: ColumnDef<Dish & { ingredients: DishIngredient[] }>[] = [
     {
         accessorKey: "name",
         header: ({ column }) => {
@@ -39,7 +39,8 @@ export const columns: ColumnDef<DishDataReceived>[] = [
                 </Button>
             );
         },
-        cell: ({ row }) => formatPrice(calculateNetoDishPrice(row.original)),
+        cell: ({ row }) =>
+            formatPrice(calculateNestedItemPrice(row.original.ingredients)),
     },
 
     {
@@ -47,7 +48,7 @@ export const columns: ColumnDef<DishDataReceived>[] = [
         header: "MULTIPLIER",
     },
     {
-        accessorKey: "targetPrice",
+        accessorKey: "menuPrice",
         header: ({ column }) => {
             return (
                 <Button
@@ -56,22 +57,24 @@ export const columns: ColumnDef<DishDataReceived>[] = [
                     onClick={() =>
                         column.toggleSorting(column.getIsSorted() === "asc")
                     }>
-                    TARGET PRICE
+                    MENU PRICE
                     <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                 </Button>
             );
         },
-        cell: ({ row }) => formatPrice(row.original.targetPrice),
+        cell: ({ row }) => formatPrice(row.original.menuPrice),
     },
     {
-        accessorKey: "totalPrice",
+        id: "totalPrice",
         header: () => <div className="w-max">TOTAL PRICE</div>,
         cell: ({ row }) => {
-            const netoPrice = calculateNetoDishPrice(row.original);
+            const netoPrice = calculateNestedItemPrice(
+                row.original.ingredients
+            );
             const multiplier = row.getValue("multiplier") as number;
             const totalPrice = netoPrice * multiplier;
 
-            const targetPrice = row.getValue("targetPrice") as number;
+            const targetPrice = row.getValue("menuPrice") as number;
 
             return (
                 <div

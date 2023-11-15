@@ -22,7 +22,7 @@ export async function POST(req: Request) {
                 data: {
                     ingredientId:
                         ingredient.type === "ingredient" ? ingredient.id : null,
-                    recipeId:
+                    recipeIngredientId:
                         ingredient.type === "recipe" ? ingredient.id : null,
                     amount: ingredient.amount,
                     dishId: dishId,

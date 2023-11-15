@@ -64,9 +64,9 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                         <div>
                             <h2 className="border-b mb-1">Total Price</h2>
                             <span className="font-normal text-2xl">
-                                {/* {formatPrice(
+                                {formatPrice(
                                     calculateNestedItemPrice(recipe.ingredients)
-                                )} */}
+                                )}
                             </span>
                         </div>
                     </div>

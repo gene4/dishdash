@@ -70,13 +70,12 @@ export default function RecipeIngredientForm({
                     initialRecipeIngredient?.recipeIngredientId ||
                     initialRecipeIngredient?.ingredientId ||
                     undefined,
-                type: initialRecipeIngredient?.recipeId
+                type: initialRecipeIngredient?.recipeIngredientId
                     ? "recipe"
                     : "ingredient",
             },
         ],
     };
-    console.log("initialDefaultValue", initialDefaultValue.ingredients[0].id);
 
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),

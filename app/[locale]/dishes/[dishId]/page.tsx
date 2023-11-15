@@ -1,9 +1,16 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
-import { DataTable, DishIngredients } from "./data-table";
+import { DataTable } from "./data-table";
 import { formatPrice } from "@/lib/utils/format-price";
-import { calculateNetoDishPrice } from "@/lib/utils/calculate-dish-neto-price";
 import clsx from "clsx";
+import { nestedRecipeItems } from "@/lib/utils";
+import {
+    HydrationBoundary,
+    QueryClient,
+    dehydrate,
+} from "@tanstack/react-query";
+import { getIngredients, getRecipes } from "@/lib/actions";
+import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 
 interface DishIdPageProps {
     params: {
@@ -18,63 +25,28 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
         return redirectToSignIn();
     }
 
+    const queryClient = new QueryClient();
+
     // Get initial dish
     const dish = await prismadb.dish.findUnique({
         where: {
             id: params.dishId,
             userId,
         },
-        include: {
-            ingredients: {
-                include: {
-                    ingredient: true,
-                    recipe: {
-                        include: {
-                            ingredients: {
-                                include: {
-                                    ingredient: {
-                                        select: {
-                                            price: true,
-                                            amount: true,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        },
+        include: nestedRecipeItems,
     });
 
-    // Format data for table
-    const dishIngredients =
-        dish &&
-        (dish.ingredients.map((ingredient) => ({
-            ...ingredient.ingredient,
-            ...ingredient.recipe,
-            amount: ingredient.amount,
-            price: ingredient.ingredient
-                ? ingredient.ingredient.price / ingredient.ingredient.amount
-                : null,
-            dishIngredientId: ingredient.id,
-        })) as DishIngredients[]);
-
-    const ingredients = await prismadb.ingredient.findMany({
-        where: {
-            userId,
-        },
+    const recipes = queryClient.prefetchQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
     });
 
-    const recipes = await prismadb.recipe.findMany({
-        where: {
-            userId,
-        },
+    const ingredients = queryClient.prefetchQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
     });
 
-    const netoPrice = dish && calculateNetoDishPrice(dish);
-
-    const ingredientsAndRecipes = [...ingredients, ...recipes];
+    await Promise.all([dish, ingredients, recipes]);
 
     return dish ? (
         <>
@@ -87,7 +59,9 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                         <div>
                             <h2 className="border-b mb-1">Neto Price </h2>
                             <span className="font-normal text-xl md:text-2xl">
-                                {netoPrice && formatPrice(netoPrice)}
+                                {formatPrice(
+                                    calculateNestedItemPrice(dish.ingredients)
+                                )}
                             </span>
                         </div>
                         <div>
@@ -99,9 +73,9 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                     </div>
                     <div className="flex justify-around w-full md:w-fit md:space-x-10">
                         <div>
-                            <h2 className="border-b mb-1">Target Price </h2>
+                            <h2 className="border-b mb-1">Menu Price </h2>
                             <span className="font-normal text-xl md:text-2xl">
-                                {formatPrice(dish.targetPrice)}
+                                {formatPrice(dish.menuPrice)}
                             </span>
                         </div>
 
@@ -110,23 +84,22 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                             <span
                                 className={clsx(
                                     "text-xl md:text-2xl font-semibold",
-                                    netoPrice &&
-                                        netoPrice * dish.multiplier >
-                                            dish.targetPrice &&
-                                        "text-red-500"
+                                    calculateNestedItemPrice(dish.ingredients) *
+                                        dish.multiplier >
+                                        dish.menuPrice && "text-red-500"
                                 )}>
-                                {netoPrice &&
-                                    formatPrice(netoPrice * dish.multiplier)}
+                                {formatPrice(
+                                    calculateNestedItemPrice(dish.ingredients) *
+                                        dish.multiplier
+                                )}
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
-            <DataTable
-                dish={dish}
-                dishIngredients={dishIngredients!}
-                ingredientsAndRecipes={ingredientsAndRecipes}
-            />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <DataTable dish={dish} />
+            </HydrationBoundary>
         </>
     ) : (
         <div>Not Found!</div>

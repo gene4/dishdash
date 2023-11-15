@@ -10,7 +10,7 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, targetPrice, multiplier } = body;
+        const { name, menuPrice, multiplier, vat } = body;
         if (!params.dishId) {
             return new NextResponse("Recipe ID required", { status: 400 });
         }
@@ -19,7 +19,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!name || !targetPrice || !multiplier) {
+        if (!name || !menuPrice || !multiplier || !vat) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -30,8 +30,9 @@ export async function PATCH(
             },
             data: {
                 name,
-                targetPrice,
+                menuPrice,
                 multiplier,
+                vat,
             },
         });
 

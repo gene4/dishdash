@@ -30,33 +30,6 @@ import { columns } from "./columns";
 import { getRecipes } from "@/lib/actions";
 import { useQuery } from "@tanstack/react-query";
 
-// export type Recipe = {
-//     ingredients: ({
-//         ingredient: {
-//             selectedDeliveryPrice: DeliveryPrice;
-//         };
-//     } & {
-//         id: string;
-//         amount: number;
-//         recipeId: string;
-//         ingredientId: string;
-//     })[];
-// } & {
-//     id: string;
-//     name: string;
-//     userId: string;
-//     unit: string;
-//     yield: number;
-//     createdAt: Date;
-//     updatedAt: Date;
-// };
-
-// interface DataTableProps {
-//     data: Recipe[];
-//     ingredients: Ingredient[];
-//     suppliers: Supplier[];
-// }
-
 export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

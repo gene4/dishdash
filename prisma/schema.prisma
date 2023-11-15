@@ -111,12 +111,12 @@ model DishIngredient {
   ingredient      Ingredient? @relation(fields: [ingredientId], references: [id])
   ingredientId    String?
 
-  recipe          Recipe? @relation(fields: [recipeId], references: [id])
-  recipeId        String?
+  recipeIngredient          Recipe? @relation(fields: [recipeIngredientId], references: [id])
+  recipeIngredientId        String?
 
 @@index([dishId])
 @@index([ingredientId])
-@@index([recipeId])
+@@index([recipeIngredientId])
 }
 
 model Supplier {

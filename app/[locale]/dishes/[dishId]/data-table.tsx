@@ -43,58 +43,27 @@ import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     ArrowUpDown,
-    Loader2,
     MoreHorizontal,
     Plus,
     Search,
     Trash2,
     Edit,
 } from "lucide-react";
-import { Dish } from "@prisma/client";
-import RecipeActions from "./dish-actions";
+import { Dish, DishIngredient } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { formatPrice } from "@/lib/utils/format-price";
-import { IngredientsAndRecipes } from "../data-table";
 import DishIngredientForm from "@/components/dishes/dishIngredient-form";
-import { calculateRecipePrice } from "@/lib/utils/calculate-recipe-price";
 import DishForm from "@/components/dishes/dish-form";
 import { toast } from "sonner";
-
-export type DishIngredients = {
-    amount: number;
-    id: string | undefined;
-    name: string;
-    userId: string;
-    unit: string;
-    price?: number;
-    createdAt: Date;
-    yield?: number;
-    updatedAt: Date;
-    dishIngredientId: string;
-    ingredients?: {
-        ingredient: {
-            price: number;
-            amount: number;
-        };
-        id: string;
-        amount: number;
-        recipeId: string;
-        ingredientId: string;
-    }[];
-};
+import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
+import DishActions from "./dish-actions";
 
 interface DataTableProps {
-    dishIngredients: DishIngredients[];
-    ingredientsAndRecipes: IngredientsAndRecipes;
-    dish: Dish;
+    dish: Dish & { ingredients: DishIngredient[] };
 }
 
-export function DataTable({
-    dishIngredients,
-    ingredientsAndRecipes,
-    dish,
-}: DataTableProps) {
+export function DataTable({ dish }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -104,9 +73,13 @@ export function DataTable({
 
     const router = useRouter();
 
-    const columns: ColumnDef<DishIngredients>[] = [
+    const columns: ColumnDef<DishIngredient>[] = [
         {
-            accessorKey: "name",
+            id: "name",
+            accessorFn: (row: any) =>
+                row.ingredientId
+                    ? row.ingredient.name
+                    : row.recipeIngredient.name,
             header: ({ column }) => {
                 return (
                     <Button
@@ -122,7 +95,11 @@ export function DataTable({
             },
         },
         {
-            accessorKey: "unit",
+            id: "unit",
+            accessorFn: (row: any) =>
+                row.ingredientId
+                    ? row.ingredient.selectedDeliveryPrice.unit
+                    : row.recipeIngredient.unit,
             header: "UNIT",
         },
         {
@@ -130,7 +107,7 @@ export function DataTable({
             header: "AMOUNT",
         },
         {
-            accessorKey: "price",
+            id: "pricePerUnit",
             header: ({ column }) => {
                 return (
                     <Button
@@ -144,22 +121,26 @@ export function DataTable({
                     </Button>
                 );
             },
-            cell: ({ row }) => {
-                if ("yield" in row.original) {
-                    const totalRecipePrice = calculateRecipePrice(
-                        row.original.ingredients
+            cell: ({ row }: { row: any }) => {
+                if (row.original.ingredientId) {
+                    return formatPrice(
+                        row.original.ingredient.selectedDeliveryPrice.price /
+                            row.original.ingredient.selectedDeliveryPrice.amount
                     );
-
-                    const pricePerUnit = totalRecipePrice / row.original.yield!;
-                    return formatPrice(pricePerUnit);
                 } else {
-                    return formatPrice(row.original.price!);
+                    const totalPrice = calculateNestedItemPrice(
+                        row.original.recipeIngredient.ingredients
+                    );
+                    const pricePerUnit =
+                        totalPrice / row.original.recipeIngredient.yield;
+
+                    return formatPrice(pricePerUnit);
                 }
             },
         },
 
         {
-            accessorKey: "totalPrice",
+            id: "totalPrice",
             header: ({ column }) => {
                 return (
                     <Button
@@ -173,21 +154,20 @@ export function DataTable({
                     </Button>
                 );
             },
-            cell: ({ row }) => {
-                // If a recipe
-                if ("yield" in row.original) {
-                    const totalRecipePrice = calculateRecipePrice(
-                        row.original.ingredients
-                    );
-                    const pricePerUnit = totalRecipePrice / row.original.yield!;
-                    return formatPrice(pricePerUnit * row.original.amount);
-                    // If an ingredient
+            cell: ({ row }: { row: any }) => {
+                let pricePerUnit;
+                if (row.original.ingredientId) {
+                    pricePerUnit =
+                        row.original.ingredient.selectedDeliveryPrice.price /
+                        row.original.ingredient.selectedDeliveryPrice.amount;
                 } else {
-                    const totalPrice =
-                        row.original.price! * row.original.amount;
-
-                    return formatPrice(totalPrice);
+                    const totalPrice = calculateNestedItemPrice(
+                        row.original.recipeIngredient.ingredients
+                    );
+                    pricePerUnit =
+                        totalPrice / row.original.recipeIngredient.yield;
                 }
+                return formatPrice(pricePerUnit * row.original.amount);
             },
         },
         {
@@ -195,9 +175,9 @@ export function DataTable({
             cell: ({ row }) => {
                 const dishIngredient = row.original;
                 return (
-                    <RecipeActions
-                        ingredientsAndRecipes={ingredientsAndRecipes}
+                    <DishActions
                         dishIngredient={dishIngredient}
+                        initialDish={dish}
                     />
                 );
             },
@@ -205,7 +185,7 @@ export function DataTable({
     ];
 
     const table = useReactTable({
-        data: dishIngredients,
+        data: dish.ingredients,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -374,8 +354,7 @@ export function DataTable({
                 initialDish={dish}
             />
             <DishIngredientForm
-                dishId={dish.id}
-                ingredientsAndRecipes={ingredientsAndRecipes}
+                initialDish={dish}
                 isOpen={isAddIngredientFormOpen}
                 setIsOpen={setIsAddIngredientFormOpen}
             />

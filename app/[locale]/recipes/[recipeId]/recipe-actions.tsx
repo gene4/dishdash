@@ -65,7 +65,7 @@ function RecipeActions({ recipeIngredient, initialRecipe }: Props) {
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
-                            <p>Edit amount</p>
+                            <p>Edit</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -78,7 +78,7 @@ function RecipeActions({ recipeIngredient, initialRecipe }: Props) {
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-red-600 text-white rounded-3xl">
-                            <p>Remove ingredient</p>
+                            <p>Remove</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

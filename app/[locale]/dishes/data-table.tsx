@@ -29,63 +29,10 @@ import { Dish, Ingredient, Recipe, Supplier } from "@prisma/client";
 import AddDishForm from "@/components/dishes/dish-form";
 import { columns } from "./columns";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getDishes } from "@/lib/actions";
 
-export type DishDataReceived = Dish & {
-    ingredients: {
-        id: string;
-        amount: number;
-        dishId: string;
-        ingredientId: string | null;
-        recipeId: string | null;
-        ingredient: Ingredient | null;
-        recipe:
-            | (Recipe & {
-                  ingredients: {
-                      id: string;
-                      amount: number;
-                      recipeId: string;
-                      ingredientId: string;
-                      ingredient: { price: number };
-                  }[];
-              })
-            | null;
-    }[];
-};
-
-export type IngredientsAndRecipes = (
-    | {
-          id: string;
-          name: string;
-          userId: string;
-          unit: string;
-          price: number;
-          createdAt: Date;
-          supplierId: string;
-          category: string;
-          updatedAt: Date;
-      }
-    | {
-          id: string;
-          name: string;
-          userId: string;
-          unit: string;
-          yield: number;
-          createdAt: Date;
-          updatedAt: Date;
-      }
-)[];
-
-interface DataTableProps {
-    ingredientsAndRecipes: IngredientsAndRecipes;
-    data: DishDataReceived[];
-    suppliers: Supplier[];
-}
-
-export function DataTable({
-    data,
-    ingredientsAndRecipes,
-    suppliers,
-}: DataTableProps) {
+export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isAddIngredientFormOpen, setIsAddIngredientFormOpen] =
@@ -93,8 +40,13 @@ export function DataTable({
 
     const router = useRouter();
 
+    const dishes = useQuery({
+        queryKey: ["dishes"],
+        queryFn: getDishes,
+    });
+
     const table = useReactTable({
-        data,
+        data: dishes.data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -194,10 +146,8 @@ export function DataTable({
             </div>
             <DataTablePagination table={table} />
             <AddDishForm
-                ingredientsAndRecipes={ingredientsAndRecipes}
                 isOpen={isAddIngredientFormOpen}
                 setIsOpen={setIsAddIngredientFormOpen}
-                suppliers={suppliers}
             />
         </>
     );

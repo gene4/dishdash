@@ -35,7 +35,7 @@ export async function PATCH(
                     ingredients[0].type === "ingredient"
                         ? ingredients[0].id
                         : null,
-                recipeId:
+                recipeIngredientId:
                     ingredients[0].type === "recipe" ? ingredients[0].id : null,
             },
         });

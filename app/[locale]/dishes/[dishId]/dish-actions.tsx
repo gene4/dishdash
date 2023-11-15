@@ -21,19 +21,15 @@ import {
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import DishIngredientForm from "@/components/dishes/dishIngredient-form";
-import { IngredientsAndRecipes } from "../data-table";
-import { DishIngredients } from "./data-table";
 import { toast } from "sonner";
+import { Dish, DishIngredient } from "@prisma/client";
 
 interface Props {
-    dishIngredient: DishIngredients;
-    ingredientsAndRecipes: IngredientsAndRecipes;
+    initialDish: Dish & { ingredients: DishIngredient[] };
+    dishIngredient: DishIngredient;
 }
 
-export default function DishActions({
-    dishIngredient,
-    ingredientsAndRecipes,
-}: Props) {
+export default function DishActions({ dishIngredient, initialDish }: Props) {
     const [openDialog, setOpenDialog] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
@@ -43,7 +39,7 @@ export default function DishActions({
         setOpenDialog(false);
 
         const response = axios
-            .delete(`/api/dishIngredient/${dishIngredient.dishIngredientId}`)
+            .delete(`/api/dishIngredient/${dishIngredient.id}`)
             .then(() => {
                 router.refresh();
             });
@@ -51,11 +47,11 @@ export default function DishActions({
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `Ingredient ${dishIngredient.name} was deleted.`;
+                return `Ingredient was deleted.`;
             },
             error: "Error",
         });
-    }, [dishIngredient.dishIngredientId, dishIngredient.name, router]);
+    }, [dishIngredient.id, router]);
 
     return (
         <>
@@ -69,7 +65,7 @@ export default function DishActions({
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
-                            <p>Edit amount</p>
+                            <p>Edit</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -82,7 +78,7 @@ export default function DishActions({
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-red-600 text-white rounded-3xl">
-                            <p>Remove ingredient</p>
+                            <p>Remove</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -94,8 +90,7 @@ export default function DishActions({
                             Are you absolutely sure?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will remove {dishIngredient.name} from this
-                            dish.
+                            This will remove the ingredient from this dish.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -111,9 +106,9 @@ export default function DishActions({
             </AlertDialog>
             <DishIngredientForm
                 initialDishIngredient={dishIngredient}
-                ingredientsAndRecipes={ingredientsAndRecipes}
                 isOpen={isEditFormOpen}
                 setIsOpen={setIsEditFormOpen}
+                initialDish={initialDish}
             />
         </>
     );

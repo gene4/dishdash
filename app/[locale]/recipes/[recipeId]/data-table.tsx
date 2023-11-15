@@ -86,8 +86,6 @@ export function DataTable({ recipe }: DataTableProps) {
 
     const router = useRouter();
 
-    console.log(recipe);
-
     const columns: ColumnDef<RecipeIngredient>[] = [
         {
             id: "name",

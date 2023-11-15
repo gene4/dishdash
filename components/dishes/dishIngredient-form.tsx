@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
@@ -13,7 +13,6 @@ import {
     FormItem,
     FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import {
     Dialog,
@@ -22,27 +21,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
-
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@radix-ui/react-popover";
 import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { IngredientsAndRecipes } from "@/app/[locale]/dishes/data-table";
 import { toast } from "sonner";
-import { DishIngredients } from "@/app/[locale]/dishes/[dishId]/data-table";
+import { useQuery } from "@tanstack/react-query";
+import { getIngredients, getRecipes } from "@/lib/actions";
+import { Dish, DishIngredient } from "@prisma/client";
+import IngredientsCommandBox from "../ingredients-command-box";
+import { IngredientPriceForm } from "../ingredients/table/ingredient-price-form";
 
 const recipeSchema = z.object({
     ingredients: z
@@ -59,31 +45,32 @@ const recipeSchema = z.object({
 });
 
 interface Props {
-    initialDishIngredient?: DishIngredients;
+    initialDishIngredient?: DishIngredient;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    ingredientsAndRecipes: IngredientsAndRecipes;
-    dishId?: string;
+    initialDish: Dish & { ingredients: DishIngredient[] };
 }
 
 export default function DishIngredientForm({
     isOpen,
     setIsOpen,
-    ingredientsAndRecipes,
-    dishId,
+    initialDish,
     initialDishIngredient,
 }: Props) {
+    const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
     const submitRef = useRef<HTMLButtonElement>(null);
 
     const initialDefaultValue = {
         ingredients: [
             {
-                id: initialDishIngredient?.id,
-                amount: initialDishIngredient?.amount,
-                type:
-                    initialDishIngredient && "yield" in initialDishIngredient
-                        ? "recipe"
-                        : "ingredient",
+                ...initialDishIngredient,
+                id:
+                    initialDishIngredient?.recipeIngredientId ||
+                    initialDishIngredient?.ingredientId ||
+                    undefined,
+                type: initialDishIngredient?.recipeIngredientId
+                    ? "recipe"
+                    : "ingredient",
             },
         ],
     };
@@ -93,6 +80,15 @@ export default function DishIngredientForm({
             ingredients: [{ id: "", amount: 0, type: "" }],
         },
         mode: "onTouched",
+    });
+
+    const recipes = useQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
+    });
+    const ingredients = useQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -107,16 +103,17 @@ export default function DishIngredientForm({
 
         const response = initialDishIngredient
             ? axios.patch(
-                  `/api/dishIngredient/${initialDishIngredient?.dishIngredientId}`,
+                  `/api/dishIngredient/${initialDishIngredient.id}`,
                   values
               )
             : axios.post(`/api/dishIngredient`, {
                   ...values,
-                  dishId,
+                  dishId: initialDish.id,
               });
 
         response.then(() => {
             router.refresh();
+            form.reset();
         });
 
         toast.promise(response, {
@@ -125,7 +122,7 @@ export default function DishIngredientForm({
                 return `${
                     initialDishIngredient
                         ? "Ingredient wes updated."
-                        : "Ingredients were added to the recipe."
+                        : "Ingredients were added to the dish."
                 }`;
             },
             error: "Error",
@@ -159,84 +156,20 @@ export default function DishIngredientForm({
                                                 name={`ingredients.${index}.id`}
                                                 render={({ field }) => (
                                                     <FormItem className="flex flex-col">
-                                                        <Popover>
-                                                            <PopoverTrigger
-                                                                asChild>
-                                                                <FormControl>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        role="combobox"
-                                                                        className={cn(
-                                                                            "w-[200px] justify-between",
-                                                                            !field.value &&
-                                                                                "text-muted-foreground"
-                                                                        )}>
-                                                                        {field.value
-                                                                            ? ingredientsAndRecipes.find(
-                                                                                  (
-                                                                                      ingredient
-                                                                                  ) =>
-                                                                                      ingredient.id ===
-                                                                                      field.value
-                                                                              )
-                                                                                  ?.name
-                                                                            : "Select ingredient"}
-                                                                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                                    </Button>
-                                                                </FormControl>
-                                                            </PopoverTrigger>
-                                                            <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
-                                                                <Command>
-                                                                    <CommandInput placeholder="Search ingredient..." />
-                                                                    <CommandEmpty>
-                                                                        No
-                                                                        ingredient
-                                                                        found.
-                                                                    </CommandEmpty>
-                                                                    <CommandGroup>
-                                                                        {ingredientsAndRecipes.map(
-                                                                            (
-                                                                                ingredient
-                                                                            ) => (
-                                                                                <CommandItem
-                                                                                    value={
-                                                                                        ingredient.id
-                                                                                    }
-                                                                                    key={
-                                                                                        ingredient.id
-                                                                                    }
-                                                                                    onSelect={() => {
-                                                                                        form.setValue(
-                                                                                            `ingredients.${index}.id`,
-                                                                                            ingredient.id
-                                                                                        );
-                                                                                        form.setValue(
-                                                                                            `ingredients.${index}.type`,
-                                                                                            "yield" in
-                                                                                                ingredient
-                                                                                                ? "recipe"
-                                                                                                : "ingredient"
-                                                                                        );
-                                                                                    }}>
-                                                                                    <CheckIcon
-                                                                                        className={cn(
-                                                                                            "mr-2 h-4 w-4",
-                                                                                            ingredient.id ===
-                                                                                                field.value
-                                                                                                ? "opacity-100"
-                                                                                                : "opacity-0"
-                                                                                        )}
-                                                                                    />
-                                                                                    {
-                                                                                        ingredient.name
-                                                                                    }
-                                                                                </CommandItem>
-                                                                            )
-                                                                        )}
-                                                                    </CommandGroup>
-                                                                </Command>
-                                                            </PopoverContent>
-                                                        </Popover>
+                                                        <IngredientsCommandBox
+                                                            field={field}
+                                                            index={index}
+                                                            ingredients={[
+                                                                ...recipes.data,
+                                                                ...ingredients.data,
+                                                            ]}
+                                                            setValue={
+                                                                form.setValue
+                                                            }
+                                                            setIsIngredientFormOpen={
+                                                                setIsIngredientFormOpen
+                                                            }
+                                                        />
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -256,6 +189,17 @@ export default function DishIngredientForm({
                                                                 }
                                                                 placeholder="Amount"
                                                                 {...field}
+                                                                onKeyDown={(
+                                                                    event
+                                                                ) => {
+                                                                    if (
+                                                                        event.key ===
+                                                                        "Enter"
+                                                                    ) {
+                                                                        event.preventDefault();
+                                                                        submitRef.current?.click();
+                                                                    }
+                                                                }}
                                                             />
                                                         </FormControl>
                                                         <FormMessage />
@@ -304,6 +248,10 @@ export default function DishIngredientForm({
                     </form>
                 </Form>
             </DialogContent>
+            <IngredientPriceForm
+                isOpen={isIngredientFormOpen}
+                setIsOpen={setIsIngredientFormOpen}
+            />
         </Dialog>
     );
 }

@@ -15,7 +15,13 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import {
     Dialog,
@@ -26,16 +32,19 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { IngredientsAndRecipes } from "@/app/[locale]/dishes/data-table";
-import { Dish, Supplier } from "@prisma/client";
+import { Dish } from "@prisma/client";
 import { toast } from "sonner";
 import IngredientsCommandBox from "../ingredients-command-box";
-import IngredientForm from "../ingredients/table/ingredient-price-form";
+import { IngredientPriceForm } from "../ingredients/table/ingredient-price-form";
+import { useQuery } from "@tanstack/react-query";
+import { getIngredients, getRecipes } from "@/lib/actions";
+import { VAT } from "@/config/constants";
 
 const recipeSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
     multiplier: z.coerce.number({ required_error: "Multiplier is required" }),
-    targetPrice: z.coerce.number({ required_error: "Targe price is required" }),
+    menuPrice: z.coerce.number({ required_error: "Targe price is required" }),
+    vat: z.string().min(1, { message: "Vat is required" }),
     ingredients: z
         .array(
             z
@@ -52,28 +61,30 @@ const recipeSchema = z.object({
 interface Props {
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    ingredientsAndRecipes?: IngredientsAndRecipes;
     initialDish?: Dish;
-    suppliers?: Supplier[];
 }
 
-export default function DishForm({
-    isOpen,
-    setIsOpen,
-    ingredientsAndRecipes,
-    initialDish,
-    suppliers,
-}: Props) {
+export default function DishForm({ isOpen, setIsOpen, initialDish }: Props) {
     const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
 
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
         defaultValues: { ...initialDish, ingredients: [] } || {
             name: "",
-            targetPrice: 0,
+            vat: "",
+            menuPrice: 0,
             multiplier: 0,
             ingredients: [],
         },
+    });
+
+    const recipes = useQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
+    });
+    const ingredients = useQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -142,11 +153,11 @@ export default function DishForm({
 
                             <FormField
                                 control={form.control}
-                                name="targetPrice"
+                                name="menuPrice"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className={labelStyle}>
-                                            Target price
+                                            Menu price
                                         </FormLabel>
                                         <FormControl>
                                             <Input
@@ -180,8 +191,38 @@ export default function DishForm({
                                     </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={form.control}
+                                name="vat"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={labelStyle}>
+                                            VAT
+                                        </FormLabel>
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}>
+                                            <FormControl>
+                                                <SelectTrigger className="w-[130px]">
+                                                    <SelectValue placeholder="Select VAT" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {VAT.map((unit) => (
+                                                    <SelectItem
+                                                        key={unit}
+                                                        value={unit}>
+                                                        {unit}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
-                        {ingredientsAndRecipes && (
+                        {!initialDish && (
                             <>
                                 <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[300px] overflow-y-scroll">
                                     {fields.length ? (
@@ -200,9 +241,10 @@ export default function DishForm({
                                                                     index={
                                                                         index
                                                                     }
-                                                                    ingredients={
-                                                                        ingredientsAndRecipes
-                                                                    }
+                                                                    ingredients={[
+                                                                        ...recipes.data,
+                                                                        ...ingredients.data,
+                                                                    ]}
                                                                     setValue={
                                                                         form.setValue
                                                                     }
@@ -267,7 +309,7 @@ export default function DishForm({
                                 </ol>
                             </>
                         )}
-                        {ingredientsAndRecipes && (
+                        {!initialDish && (
                             <>
                                 <Button
                                     type="button"
@@ -297,13 +339,10 @@ export default function DishForm({
                     </form>
                 </Form>
             </DialogContent>
-            {suppliers && (
-                <IngredientForm
-                    isOpen={isIngredientFormOpen}
-                    setIsOpen={setIsIngredientFormOpen}
-                    suppliers={suppliers}
-                />
-            )}
+            <IngredientPriceForm
+                isOpen={isIngredientFormOpen}
+                setIsOpen={setIsIngredientFormOpen}
+            />
         </Dialog>
     );
 }

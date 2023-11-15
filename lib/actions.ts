@@ -50,3 +50,19 @@ export async function getRecipes() {
     });
     return recipes;
 }
+
+export async function getDishes() {
+    const { userId } = auth();
+
+    if (!userId) {
+        return redirectToSignIn();
+    }
+
+    const recipes = await prismadb.dish.findMany({
+        where: {
+            userId,
+        },
+        include: nestedRecipeItems,
+    });
+    return recipes;
+}
