@@ -9,7 +9,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Supplier } from "@prisma/client";
-import { Edit, Trash2, BarChart3 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -55,7 +55,9 @@ export default function SupplierActions({ row }: Props) {
     }, [router, supplier.id, supplier.name]);
 
     return (
-        <div className="flex space-x-2">
+        <div
+            onClick={(event) => event.stopPropagation()}
+            className="flex space-x-2">
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger>

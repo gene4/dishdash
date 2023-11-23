@@ -10,7 +10,7 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, paymentInfo, paymentDay } = body;
+        const { name, paymentInfo } = body;
 
         if (!params.supplierId) {
             return new NextResponse("Ingredient ID required", { status: 400 });
@@ -32,7 +32,6 @@ export async function PATCH(
             data: {
                 name,
                 paymentInfo,
-                paymentDay,
             },
         });
 
@@ -54,8 +53,8 @@ export async function DELETE(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        // Delete all invoices records associated with the supplier
-        await prismadb.invoice.deleteMany({
+        // Delete all deliveries records associated with the supplier
+        await prismadb.delivery.deleteMany({
             where: {
                 supplierId: params.supplierId,
             },

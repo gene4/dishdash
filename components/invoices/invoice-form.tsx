@@ -48,7 +48,7 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "../ui/calendar";
-import { statuses } from "@/app/[locale]/invoices/data-table";
+import { statuses } from "@/app/[locale]/deliveries/data-table";
 import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 500000;

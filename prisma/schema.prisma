@@ -124,7 +124,6 @@ model Supplier {
   name        String
   userId      String
   paymentInfo String? @db.Text
-  paymentDay  Int?
   deliveries  Delivery[] 
   deliveryPrices DeliveryPrice[]
 

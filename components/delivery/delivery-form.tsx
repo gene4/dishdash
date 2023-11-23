@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,48 +23,43 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import {
     Command,
     CommandEmpty,
     CommandGroup,
     CommandInput,
     CommandItem,
 } from "@/components/ui/command";
-import { Delivery, Supplier } from "@prisma/client";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Delivery } from "@prisma/client";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@radix-ui/react-popover";
-import { Button } from "../ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Plus, Trash2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Calendar } from "../ui/calendar";
-import { statuses } from "@/app/[locale]/invoices/data-table";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { getIngredients, getSuppliers } from "@/lib/actions";
+import { ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE, UNIT } from "@/config/constants";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import IngredientsCommandBox from "@/components/ingredients-command-box";
+import { IngredientPriceForm } from "@/components/ingredients/table/ingredient-price-form";
 
-const MAX_FILE_SIZE = 500000;
-const ACCEPTED_IMAGE_TYPES = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "application/pdf",
-];
-
-const recipeSchema = z.object({
-    invoiceNr: z.string().min(1, { message: "Invoice number is required" }),
+const deliverySchema = z.object({
+    invoiceNr: z.string().optional(),
     supplierId: z.string().min(1, { message: "Supplier is required" }),
     date: z.date({ required_error: "Date is required" }),
-    amount: z.coerce.number({ required_error: "Amount is required" }),
-    status: z.string(),
     file: z
         .any()
         .refine(
@@ -76,45 +71,57 @@ const recipeSchema = z.object({
             ".jpg, .jpeg, .png and .pdf files are accepted."
         )
         .optional(),
+    ingredients: z.array(
+        z.object({
+            id: z.string().min(1, { message: "Ingredient is required" }),
+            unit: z.string(),
+            amount: z.coerce.number(),
+            price: z.coerce.number(),
+        })
+    ),
 });
 
 interface Props {
     initialInvoice?: Delivery;
-    suppliers: Supplier[];
-    isOpen: boolean;
-    setIsOpen: (open: boolean) => void;
 }
 
-export default function InvoiceForm({
-    isOpen,
-    setIsOpen,
-    suppliers,
-    initialInvoice,
-}: Props) {
-    const form = useForm<z.infer<typeof recipeSchema>>({
-        resolver: zodResolver(recipeSchema),
-        defaultValues: initialInvoice || {
+export default function DeliveryForm({ initialInvoice }: Props) {
+    const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
+    const [isSupplierWindow, setIsSupplierWindow] = useState(false);
+    const [isDateWindow, setIsDateWindow] = useState(false);
+    const [formProgress, setFormProgress] = useState<1 | 2>(1);
+
+    const form = useForm<z.infer<typeof deliverySchema>>({
+        resolver: zodResolver(deliverySchema),
+        defaultValues: {
             invoiceNr: "",
             supplierId: "",
-            status: "open",
             date: undefined,
-            amount: 0,
             file: undefined,
+            ingredients: [{ id: "", unit: "", price: 0, amount: 0 }],
         },
     });
 
     const router = useRouter();
 
-    async function onSubmit(values: z.infer<typeof recipeSchema>) {
-        setIsOpen(false);
+    const ingredients = useQuery({
+        queryKey: ["ingredients"],
+        queryFn: getIngredients,
+    });
+
+    const suppliers = useQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
+    });
+
+    async function onSubmit(values: z.infer<typeof deliverySchema>) {
         const formData = new FormData();
 
         values.file && formData.append("file", values.file[0]);
-        formData.append("invoiceNr", values.invoiceNr);
+        values.invoiceNr && formData.append("invoiceNr", values.invoiceNr);
         formData.append("supplierId", values.supplierId);
-        formData.append("amount", values.amount.toString());
         formData.append("date", values.date.toString());
-        formData.append("status", values.status.toString());
+        formData.append("ingredients", JSON.stringify(values.ingredients));
 
         if (initialInvoice && initialInvoice.fileRef) {
             formData.append("fileUrl", initialInvoice.fileUrl!);
@@ -122,13 +129,13 @@ export default function InvoiceForm({
         }
 
         const response = initialInvoice
-            ? axios.patch(`/api/invoice/${initialInvoice.id}`, formData)
-            : axios.post("/api/invoice", formData);
+            ? axios.patch(`/api/delivery/${initialInvoice.id}`, formData)
+            : axios.post("/api/delivery", formData);
 
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `Invoice was ${initialInvoice ? "updated" : "added"}`;
+                return `Delivery was ${initialInvoice ? "updated" : "added"}`;
             },
             error: "Error",
         });
@@ -139,253 +146,473 @@ export default function InvoiceForm({
         });
     }
 
+    const { fields, append, remove } = useFieldArray({
+        name: "ingredients",
+        control: form.control,
+    });
+
+    const supplierId = form.watch("supplierId");
+    const date = form.watch("date");
+
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
+
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[250px]">
-                <DialogHeader className="mb-5">
-                    <DialogTitle>Add Invoice</DialogTitle>
-                    <DialogDescription>
-                        Add a new invoice to your list
-                    </DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-7">
-                        <div className="flex items-center space-x-6">
-                            <FormField
-                                control={form.control}
-                                name="invoiceNr"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Invoice number
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
+        <>
+            <div className="mb-16 flex justify-between">
+                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0 ">
+                    Add Delivery
+                </h1>
 
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="amount"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Amount
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                min={0}
-                                                step={0.01}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="flex space-x-6">
-                            <FormField
-                                control={form.control}
-                                name={`supplierId`}
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className={labelStyle}>
-                                            Supplier
-                                        </FormLabel>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        className={cn(
-                                                            "w-[200px] justify-between",
-                                                            !field.value &&
-                                                                "text-muted-foreground"
-                                                        )}>
-                                                        {field.value
-                                                            ? suppliers.find(
-                                                                  (supplier) =>
-                                                                      supplier.id ===
-                                                                      field.value
-                                                              )?.name
-                                                            : "Select supplier"}
-                                                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
-                                                <Command>
-                                                    <CommandInput placeholder="Search supplier..." />
-                                                    <CommandEmpty>
-                                                        No supplier found.
-                                                    </CommandEmpty>
-                                                    <CommandGroup>
-                                                        {suppliers.map(
-                                                            (supplier) => (
-                                                                <CommandItem
-                                                                    value={
-                                                                        supplier.id
-                                                                    }
-                                                                    key={
-                                                                        supplier.id
-                                                                    }
-                                                                    onSelect={() => {
-                                                                        form.setValue(
-                                                                            `supplierId`,
-                                                                            supplier.id
-                                                                        );
-                                                                    }}>
-                                                                    <CheckIcon
-                                                                        className={cn(
-                                                                            "mr-2 h-4 w-4",
-                                                                            supplier.id ===
-                                                                                field.value
-                                                                                ? "opacity-100"
-                                                                                : "opacity-0"
-                                                                        )}
-                                                                    />
-                                                                    {
-                                                                        supplier.name
-                                                                    }
-                                                                </CommandItem>
-                                                            )
-                                                        )}
-                                                    </CommandGroup>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="date"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className={labelStyle}>
-                                            Date
-                                        </FormLabel>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[240px] pl-3 text-left font-normal",
-                                                            !field.value &&
-                                                                "text-muted-foreground"
-                                                        )}>
-                                                        {field.value ? (
-                                                            format(
-                                                                field.value,
-                                                                "PPP"
-                                                            )
-                                                        ) : (
-                                                            <span>
-                                                                Pick a date
-                                                            </span>
-                                                        )}
-                                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent
-                                                className="w-auto p-0 bg-background border shadow-md rounded-md"
-                                                align="start">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={field.value}
-                                                    onSelect={field.onChange}
-                                                    disabled={(date) =>
-                                                        date > new Date() ||
-                                                        date <
-                                                            new Date(
-                                                                "1900-01-01"
-                                                            )
-                                                    }
-                                                    initialFocus
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="flex space-x-6">
-                            <FormField
-                                control={form.control}
-                                name="status"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Status
-                                        </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}>
+                <div className="flex items-center self-start mr-4 mt-2">
+                    <div className="relative flex items-center">
+                        <Button
+                            size={"icon"}
+                            variant={"outline"}
+                            onClick={() => setFormProgress(1)}
+                            className={cn(
+                                "rounded-full transition-all w-6 h-6 border",
+                                formProgress === 1 && "border-[3px]"
+                            )}>
+                            {supplierId && date && formProgress === 2 && (
+                                <Check className="w-4 h-4 text-muted-foreground" />
+                            )}
+                        </Button>
+                        <p className="text-xs absolute top-7 text-center right-[-22px]">
+                            Initial <br /> information
+                        </p>
+                    </div>
+                    <span className="flex border-[0.5px] w-20" />
+                    <div className="relative flex items-center">
+                        <Button
+                            size={"icon"}
+                            variant={"outline"}
+                            onClick={() => setFormProgress(2)}
+                            className={cn(
+                                "rounded-full transition-all w-6 h-6 border",
+                                formProgress === 2 && "border-[3px]"
+                            )}></Button>
+                        <p className="text-xs absolute top-7 text-center  right-[-2px]">
+                            Add <br /> items
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)}>
+                    {formProgress === 1 && (
+                        <div className="space-y-4">
+                            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
+                                <FormField
+                                    control={form.control}
+                                    name={`supplierId`}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-col">
+                                            <FormLabel className={labelStyle}>
+                                                Supplier
+                                            </FormLabel>
+                                            <Popover
+                                                open={isSupplierWindow}
+                                                onOpenChange={
+                                                    setIsSupplierWindow
+                                                }>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant="outline"
+                                                            role="combobox"
+                                                            className={cn(
+                                                                "w-[250px] justify-between",
+                                                                !field.value &&
+                                                                    "text-muted-foreground"
+                                                            )}>
+                                                            {field.value
+                                                                ? suppliers.data &&
+                                                                  suppliers.data.find(
+                                                                      (
+                                                                          supplier
+                                                                      ) =>
+                                                                          supplier.id ===
+                                                                          field.value
+                                                                  )?.name
+                                                                : "Select supplier"}
+                                                            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-[250px] relative z-50 bg-background border rounded-md shadow-md">
+                                                    <Command>
+                                                        <CommandInput placeholder="Search supplier..." />
+                                                        <CommandEmpty>
+                                                            No supplier found.
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                            {suppliers.data &&
+                                                                suppliers.data.map(
+                                                                    (
+                                                                        supplier
+                                                                    ) => (
+                                                                        <CommandItem
+                                                                            value={
+                                                                                supplier.id
+                                                                            }
+                                                                            key={
+                                                                                supplier.id
+                                                                            }
+                                                                            onSelect={() => {
+                                                                                form.setValue(
+                                                                                    `supplierId`,
+                                                                                    supplier.id
+                                                                                );
+                                                                                setIsSupplierWindow(
+                                                                                    false
+                                                                                );
+                                                                            }}>
+                                                                            <CheckIcon
+                                                                                className={cn(
+                                                                                    "mr-2 h-4 w-4",
+                                                                                    supplier.id ===
+                                                                                        field.value
+                                                                                        ? "opacity-100"
+                                                                                        : "opacity-0"
+                                                                                )}
+                                                                            />
+                                                                            {
+                                                                                supplier.name
+                                                                            }
+                                                                        </CommandItem>
+                                                                    )
+                                                                )}
+                                                        </CommandGroup>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-col">
+                                            <FormLabel className={labelStyle}>
+                                                Date
+                                            </FormLabel>
+                                            <Popover
+                                                open={isDateWindow}
+                                                onOpenChange={setIsDateWindow}>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant={"outline"}
+                                                            className={cn(
+                                                                "w-[250px] pl-3 text-left font-normal",
+                                                                !field.value &&
+                                                                    "text-muted-foreground"
+                                                            )}>
+                                                            {field.value ? (
+                                                                format(
+                                                                    field.value,
+                                                                    "dd/MM/yyyy"
+                                                                )
+                                                            ) : (
+                                                                <span>
+                                                                    Pick a date
+                                                                </span>
+                                                            )}
+                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent
+                                                    className="w-auto p-0 bg-background border shadow-md rounded-md"
+                                                    align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={field.value}
+                                                        onSelect={(event) => {
+                                                            setIsDateWindow(
+                                                                false
+                                                            );
+                                                            field.onChange(
+                                                                event
+                                                            );
+                                                        }}
+                                                        disabled={(date) =>
+                                                            date > new Date() ||
+                                                            date <
+                                                                new Date(
+                                                                    "1900-01-01"
+                                                                )
+                                                        }
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
+                                <FormField
+                                    control={form.control}
+                                    name="invoiceNr"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Invoice number
+                                            </FormLabel>
                                             <FormControl>
-                                                <SelectTrigger className="w-[150px]">
-                                                    <SelectValue />
-                                                </SelectTrigger>
+                                                <Input
+                                                    className="w-[250px]"
+                                                    {...field}
+                                                />
                                             </FormControl>
-                                            <SelectContent>
-                                                {statuses.map((status) => (
-                                                    <SelectItem
-                                                        key={status.value}
-                                                        value={status.value}>
-                                                        <span className="flex items-center">
-                                                            {status.label}
-                                                        </span>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
 
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="file"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>PDF / Image</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="file"
-                                                accept=".jpg, .jpeg, .png, .pdf"
-                                                onChange={(event) =>
-                                                    field.onChange(
-                                                        event.target.files
-                                                    )
-                                                }
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="file"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>PDF / Image</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="file"
+                                                    className="w-[250px]"
+                                                    accept=".jpg, .jpeg, .png, .pdf"
+                                                    onChange={(event) =>
+                                                        field.onChange(
+                                                            event.target.files
+                                                        )
+                                                    }
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </div>
-                        <div className="flex justify-end pt-5">
-                            <Button type="submit">
-                                {initialInvoice ? "Update" : "Add"}
+                    )}
+                    {formProgress === 2 && (
+                        <div className="border relative rounded-lg max-h-[380px] md:max-h-none overflow-scroll">
+                            <Table>
+                                <TableHeader className="shadow-sm  sticky z-50 top-0 bg-background">
+                                    <TableRow className="">
+                                        <TableHead>INGREDIENT</TableHead>
+                                        <TableHead>UNIT</TableHead>
+                                        <TableHead>AMOUNT</TableHead>
+                                        <TableHead>PRICE</TableHead>
+                                        <TableHead />
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody className="mt-5">
+                                    {fields.map((field, index) => (
+                                        <TableRow key={field.id}>
+                                            <TableCell>
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.id`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex flex-col">
+                                                            <IngredientsCommandBox
+                                                                field={field}
+                                                                index={index}
+                                                                ingredients={
+                                                                    ingredients.data
+                                                                }
+                                                                setValue={
+                                                                    form.setValue
+                                                                }
+                                                                setIsIngredientFormOpen={
+                                                                    setIsIngredientFormOpen
+                                                                }
+                                                            />
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.unit`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex-1">
+                                                            <FormControl>
+                                                                <Select
+                                                                    onValueChange={
+                                                                        field.onChange
+                                                                    }
+                                                                    value={
+                                                                        field.value
+                                                                    }>
+                                                                    <FormControl>
+                                                                        <SelectTrigger className="rounded-lg w-20">
+                                                                            <SelectValue placeholder="Select" />
+                                                                        </SelectTrigger>
+                                                                    </FormControl>
+                                                                    <SelectContent>
+                                                                        {UNIT.map(
+                                                                            (
+                                                                                unit
+                                                                            ) => (
+                                                                                <SelectItem
+                                                                                    key={
+                                                                                        unit
+                                                                                    }
+                                                                                    value={
+                                                                                        unit
+                                                                                    }>
+                                                                                    {
+                                                                                        unit
+                                                                                    }
+                                                                                </SelectItem>
+                                                                            )
+                                                                        )}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.amount`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <Input
+                                                                    className="w-16"
+                                                                    type="number"
+                                                                    step={0.1}
+                                                                    min={0}
+                                                                    autoFocus={
+                                                                        false
+                                                                    }
+                                                                    {...field}
+                                                                    onKeyDown={(
+                                                                        event
+                                                                    ) => {
+                                                                        if (
+                                                                            event.key ===
+                                                                            "Enter"
+                                                                        ) {
+                                                                            event.preventDefault();
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`ingredients.${index}.price`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormControl>
+                                                                <Input
+                                                                    className="w-16"
+                                                                    type="number"
+                                                                    step={0.1}
+                                                                    min={0}
+                                                                    autoFocus={
+                                                                        false
+                                                                    }
+                                                                    {...field}
+                                                                    onKeyDown={(
+                                                                        event
+                                                                    ) => {
+                                                                        if (
+                                                                            event.key ===
+                                                                            "Enter"
+                                                                        ) {
+                                                                            event.preventDefault();
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    className="rounded-full"
+                                                    onClick={() =>
+                                                        remove(index)
+                                                    }
+                                                    size="icon"
+                                                    variant="ghost">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                    {formProgress === 2 && (
+                        <>
+                            <Button
+                                type="button"
+                                size="sm"
+                                defaultValue={undefined}
+                                variant={"secondary"}
+                                className="rounded-lg border mt-4"
+                                onClick={() =>
+                                    append({
+                                        id: "",
+                                        unit: "",
+                                        price: 0,
+                                        amount: 0,
+                                    })
+                                }>
+                                <Plus className="mr-2 w-4 h-4" /> Add
                             </Button>
-                        </div>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
+                            <p className="text-red-500 text-sm mt-2">
+                                {form.formState.errors.ingredients?.message}
+                            </p>
+                        </>
+                    )}
+                    <div className="flex justify-end">
+                        {formProgress === 1 && supplierId && date && (
+                            <Button
+                                className="mt-8"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    setFormProgress(2);
+                                }}
+                                type="button">
+                                Next
+                            </Button>
+                        )}
+                        {formProgress === 2 && (
+                            <Button type="submit">Submit</Button>
+                        )}
+                    </div>
+                </form>
+            </Form>
+
+            <IngredientPriceForm
+                isOpen={isIngredientFormOpen}
+                setIsOpen={setIsIngredientFormOpen}
+            />
+        </>
     );
 }

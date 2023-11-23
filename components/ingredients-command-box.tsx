@@ -16,7 +16,6 @@ import { Button } from "./ui/button";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Ingredient } from "@prisma/client";
 
 interface Props {
     setValue: Function;
@@ -42,7 +41,7 @@ export default function IngredientsCommandBox({
                         variant="outline"
                         role="combobox"
                         className={cn(
-                            "w-[250px] justify-between",
+                            "w-[160px] justify-between",
                             !field.value && "text-muted-foreground"
                         )}>
                         {field.value
@@ -50,14 +49,14 @@ export default function IngredientsCommandBox({
                                   (ingredient: any) =>
                                       ingredient.id === field.value
                               )?.name
-                            : "Select ingredient"}
+                            : "Select"}
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </FormControl>
             </PopoverTrigger>
             <PopoverContent
                 side="bottom"
-                className="w-[250px] relative z-50 bg-background border rounded-md shadow-md">
+                className="w-[180px] relative z-50 bg-background border rounded-md shadow-md">
                 <Command>
                     <CommandInput placeholder="Search..." />
                     <CommandEmpty>

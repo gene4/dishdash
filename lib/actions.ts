@@ -66,3 +66,19 @@ export async function getDishes() {
     });
     return recipes;
 }
+
+export async function getDeliveries() {
+    const { userId } = auth();
+
+    if (!userId) {
+        return redirectToSignIn();
+    }
+
+    const deliveries = await prismadb.delivery.findMany({
+        where: {
+            userId,
+        },
+        include: { supplier: { select: { name: true } } },
+    });
+    return deliveries;
+}

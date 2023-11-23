@@ -7,13 +7,16 @@ import prismadb from "@/lib/prismadb";
 export async function POST(req: Request) {
     try {
         const user = await currentUser();
-
         const data = await req.formData();
-        const amount = Number(data.get("amount"));
+
         const date = data.get("date")?.toString();
-        const status = data.get("status")?.toString();
         const supplierId = data.get("supplierId")?.toString();
         const invoiceNr = data.get("invoiceNr")?.toString();
+
+        const ingredients = data.get("ingredients")?.toString();
+        const parsedIngredients = ingredients && JSON.parse(ingredients);
+
+        console.log("supplierId", supplierId);
 
         const file: File | null = data.get("file") as unknown as File;
 
@@ -21,7 +24,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!invoiceNr || !supplierId || !date || !amount || !status) {
+        if (!supplierId || !date || !ingredients) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -43,20 +46,40 @@ export async function POST(req: Request) {
             });
         }
 
-        const invoice = await prismadb.invoice.create({
+        const delivery = await prismadb.delivery.create({
             data: {
                 userId: user.id,
                 invoiceNr,
                 supplierId,
                 date: new Date(date),
-                status,
-                amount,
                 fileUrl,
                 fileRef,
             },
         });
 
-        return NextResponse.json(invoice);
+        for (const ingredient of parsedIngredients) {
+            const deliveryPrice = await prismadb.deliveryPrice.create({
+                data: {
+                    unit: ingredient.unit,
+                    amount: ingredient.amount,
+                    price: ingredient.price,
+                    date: delivery.date,
+                    ingredientId: ingredient.id,
+                    deliveryId: delivery.id,
+                    supplierId: delivery.supplierId,
+                },
+            });
+            await prismadb.ingredient.update({
+                where: {
+                    id: ingredient.id,
+                },
+                data: {
+                    selectedDeliveryPriceId: deliveryPrice.id,
+                },
+            });
+        }
+
+        return NextResponse.json(delivery);
     } catch (error) {
         console.log("[INVOICE_POST]", error);
         return new NextResponse("Internal Error", { status: 500 });

@@ -1,7 +1,6 @@
 "use client";
 
 import { formatPrice } from "@/lib/utils/format-price";
-import { Invoice } from "@prisma/client";
 import { BarChart, Card, Subtitle, Title } from "@tremor/react";
 import { useMemo, useState } from "react";
 import {
@@ -11,13 +10,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Delivery } from "@prisma/client";
 
 interface Props {
-    invoices: Invoice[];
+    deliveries: Delivery[];
     yearsFromInvoices: string[];
 }
 
-export function Overview({ invoices, yearsFromInvoices }: Props) {
+export function Overview({ deliveries, yearsFromInvoices }: Props) {
     const [year, setYear] = useState(yearsFromInvoices[0]);
     const InvoicesForChart = useMemo(() => {
         const monthlyTotals: { [month: string]: number } = {
@@ -34,15 +34,17 @@ export function Overview({ invoices, yearsFromInvoices }: Props) {
             Nov: 0,
             Dec: 0,
         };
-        // Iterate through the invoices and accumulate the total amounts for each month
-        invoices
-            .filter((invoice) => invoice.date.getFullYear().toString() === year)
-            .forEach((invoice) => {
-                const month = invoice.date.toLocaleString("en-US", {
+        // Iterate through the deliveries and accumulate the total amounts for each month
+        deliveries
+            .filter(
+                (delivery) => delivery.date.getFullYear().toString() === year
+            )
+            .forEach((delivery) => {
+                const month = delivery.date.toLocaleString("en-US", {
                     month: "short",
                 });
                 // Add the invoice amount to the corresponding month's total
-                monthlyTotals[month] += invoice.amount;
+                monthlyTotals[month] += delivery.amount;
             });
 
         // Convert the monthlyTotals object to an array of objects for the chart data
@@ -67,9 +69,7 @@ export function Overview({ invoices, yearsFromInvoices }: Props) {
                     </SelectTrigger>
                     <SelectContent>
                         {yearsFromInvoices.map((year) => (
-                            <SelectItem
-                                value={year}
-                                key={year}>
+                            <SelectItem value={year} key={year}>
                                 {year}
                             </SelectItem>
                         ))}

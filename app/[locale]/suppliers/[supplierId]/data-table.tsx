@@ -40,7 +40,7 @@ import InvoiceActions from "./invoice-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";
 import { Card, Title } from "@tremor/react";
-import { statuses } from "../../invoices/data-table";
+import { statuses } from "../../deliveries/data-table";
 
 interface DataTableProps {
     data: Invoice[];

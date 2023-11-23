@@ -10,6 +10,7 @@ export function getNextPaymentDate(dayOfMonth: number) {
     if (nextDate < currentDate) {
         return format(addMonths(nextDate, 1), "dd/MM/yy");
     }
+    console.log("from function", format(nextDate, "dd/MM/yy"));
 
     return format(nextDate, "dd/MM/yy");
 }

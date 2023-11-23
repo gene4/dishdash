@@ -5,7 +5,7 @@ import {
     Pizza,
     ClipboardList,
     Truck,
-    CircleDollarSign,
+    UserCircle2,
 } from "lucide-react";
 
 export const siteConfig = {
@@ -32,12 +32,12 @@ export const siteConfig = {
         {
             label: "suppliers",
             href: "/suppliers",
-            icon: Truck,
+            icon: UserCircle2,
         },
         {
-            label: "invoices",
-            href: "/invoices",
-            icon: CircleDollarSign,
+            label: "deliveries",
+            href: "/deliveries",
+            icon: Truck,
         },
     ],
     mobileNavItems: [

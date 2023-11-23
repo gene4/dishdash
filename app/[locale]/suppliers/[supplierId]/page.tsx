@@ -5,6 +5,7 @@ import { Overview } from "./overview";
 import { DataTable } from "./data-table";
 import { IngredientsTable } from "./ingredients-table";
 import InfoCard from "./info-card";
+import { QueryClient } from "@tanstack/react-query";
 
 interface RecipeIdPageProps {
     params: {
@@ -19,19 +20,21 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
         return redirectToSignIn();
     }
 
-    const invoices = await prismadb.invoice.findMany({
+    const queryClient = new QueryClient();
+
+    const deliveries = await prismadb.delivery.findMany({
         where: {
             userId,
             supplierId: params.supplierId,
         },
     });
 
-    const yearsFromInvoices: string[] = [];
+    const yearsFromDeliveries: string[] = [];
 
-    invoices.forEach((invoice) => {
-        const year = invoice.date.getFullYear();
-        if (!yearsFromInvoices.includes(year.toString())) {
-            yearsFromInvoices.push(year.toString());
+    deliveries.forEach((delivery) => {
+        const year = delivery.date.getFullYear();
+        if (!yearsFromDeliveries.includes(year.toString())) {
+            yearsFromDeliveries.push(year.toString());
         }
     });
 
@@ -66,29 +69,17 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                 </TabsList>
                 <TabsContent value="overview">
                     <Overview
-                        invoices={invoices}
-                        yearsFromInvoices={yearsFromInvoices.reverse()}
+                        deliveries={deliveries}
+                        yearsFromInvoices={yearsFromDeliveries.reverse()}
                     />
                 </TabsContent>
-                <TabsContent
-                    className="relative h-full"
-                    value="invoices">
-                    <DataTable
-                        data={invoices}
-                        supplier={supplier}
-                    />
+                <TabsContent className="relative h-full" value="invoices">
+                    <DataTable data={invoices} supplier={supplier} />
                 </TabsContent>
-                <TabsContent
-                    className="relative h-full"
-                    value="ingredients">
-                    <IngredientsTable
-                        data={ingredients}
-                        supplier={supplier}
-                    />
+                <TabsContent className="relative h-full" value="ingredients">
+                    <IngredientsTable data={ingredients} supplier={supplier} />
                 </TabsContent>
-                <TabsContent
-                    className="relative h-full"
-                    value="info">
+                <TabsContent className="relative h-full" value="info">
                     <InfoCard supplier={supplier} />
                 </TabsContent>
             </Tabs>

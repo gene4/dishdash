@@ -1,6 +1,11 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
-import prismadb from "@/lib/prismadb";
 import { DataTable } from "./data-table";
+import { getSuppliers } from "@/lib/actions";
+import {
+    HydrationBoundary,
+    QueryClient,
+    dehydrate,
+} from "@tanstack/react-query";
 
 export default async function IngredientsPage() {
     const { userId } = auth();
@@ -9,10 +14,11 @@ export default async function IngredientsPage() {
         return redirectToSignIn();
     }
 
-    const suppliers = await prismadb.supplier.findMany({
-        where: {
-            userId,
-        },
+    const queryClient = new QueryClient();
+
+    await queryClient.prefetchQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
     });
 
     return (
@@ -20,7 +26,9 @@ export default async function IngredientsPage() {
             <h1 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-5">
                 Suppliers
             </h1>
-            <DataTable data={suppliers} />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <DataTable />
+            </HydrationBoundary>
         </div>
     );
 }

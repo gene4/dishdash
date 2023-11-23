@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    ColumnDef,
     flexRender,
     getCoreRowModel,
     getPaginationRowModel,
@@ -28,20 +27,23 @@ import SupplierForm from "@/components/suppliers/supplier-form";
 import { useRouter } from "next/navigation";
 import { Supplier } from "@prisma/client";
 import { columns } from "./columns";
+import { useQuery } from "@tanstack/react-query";
+import { getSuppliers } from "@/lib/actions";
 
-interface DataTableProps {
-    data: Supplier[];
-}
-
-export function DataTable({ data }: DataTableProps) {
+export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
     const router = useRouter();
 
+    const { data } = useQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliers,
+    });
+
     const table = useReactTable({
-        data,
+        data: data as Supplier[],
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -139,10 +141,7 @@ export function DataTable({ data }: DataTableProps) {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <SupplierForm
-                isOpen={isFormOpen}
-                setIsOpen={setIsFormOpen}
-            />
+            <SupplierForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
         </>
     );
 }

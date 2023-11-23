@@ -47,7 +47,6 @@ import {
     Edit,
     MoreHorizontal,
     Plus,
-    Search,
     Trash2,
 } from "lucide-react";
 import {
@@ -64,7 +63,6 @@ import {
 } from "@/components/ui/command";
 import { DeliveryPrice, Ingredient } from "@prisma/client";
 import { formatPrice } from "@/lib/utils/format-price";
-import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils/format-date";
 import EditIngredientForm from "@/components/ingredients/table/edit-ingredient-form";
@@ -373,7 +371,7 @@ export function DataTable({
                     </div>
                 </div>
             </div>
-            <div className="rounded-lg border shadow-md">
+            <div className="rounded-lg border shadow-md overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (

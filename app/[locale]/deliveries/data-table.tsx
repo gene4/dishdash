@@ -22,7 +22,7 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Plus, Circle, ChevronsUpDown, Check } from "lucide-react";
+import { ArrowUpDown, Plus, ChevronsUpDown, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils/format-date";
 import { formatPrice } from "@/lib/utils/format-price";
 import { DatePickerWithRange } from "@/components/date-picker-range";
@@ -40,69 +40,23 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { Invoice, Supplier } from "@prisma/client";
-import InvoiceForm from "@/components/delivery/delivery-form";
+import { Delivery, Supplier } from "@prisma/client";
 import InvoiceActions from "./invoice-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";
+import { useQuery } from "@tanstack/react-query";
+import { getDeliveries } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
-export type InvoiceT = Invoice & {
-    supplier: string;
-};
-
-interface DataTableProps {
-    data: Invoice[];
-    suppliers: Supplier[];
-}
-
-export const statuses = [
-    {
-        value: "open",
-        label: (
-            <>
-                <Circle
-                    fill="rgb(239 68 68)"
-                    className="mr-2 h-2 w-2 text-red-500"
-                />
-                <span>Open</span>
-            </>
-        ),
-    },
-    {
-        value: "pending",
-        label: (
-            <>
-                <Circle
-                    fill="rgb(250 204 21)"
-                    className="mr-2 h-2 w-2 text-yellow-400"
-                />
-                <span>Pending</span>
-            </>
-        ),
-    },
-
-    {
-        value: "paid",
-        label: (
-            <>
-                <Circle
-                    fill="rgb(34 197 94)"
-                    className="mr-2 h-2 w-2 text-green-500"
-                />
-                <span>Paid</span>
-            </>
-        ),
-    },
-];
-
-export function DataTable({ data, suppliers }: DataTableProps) {
+export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [date, setDate] = useState<DateRange | undefined>();
     const [supplierValue, setSupplierValue] = useState("");
-    const [isFormOpen, setIsFormOpen] = useState(false);
     const [rowSelection, setRowSelection] = useState({});
 
-    const columns: ColumnDef<Invoice>[] = [
+    const { push } = useRouter();
+
+    const columns: ColumnDef<Delivery>[] = [
         {
             id: "select",
             header: ({ table }) => (
@@ -145,7 +99,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
             },
         },
         {
-            accessorKey: "supplier",
+            accessorKey: "supplier.name",
             header: ({ column }) => {
                 return (
                     <Button
@@ -196,37 +150,6 @@ export function DataTable({ data, suppliers }: DataTableProps) {
             },
             cell: ({ row }) => formatPrice(row.original.amount),
         },
-        {
-            accessorKey: "status",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        STATUS
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-            cell: ({ row }) => {
-                const status = statuses.find(
-                    (status) => status.value === row.getValue("status")
-                );
-
-                if (!status) {
-                    return null;
-                }
-
-                return (
-                    <div className="flex w-[100px] items-center">
-                        {status.label}
-                    </div>
-                );
-            },
-        },
 
         {
             id: "actions",
@@ -236,13 +159,18 @@ export function DataTable({ data, suppliers }: DataTableProps) {
         },
     ];
 
+    const { data } = useQuery({
+        queryKey: ["deliveries"],
+        queryFn: getDeliveries,
+    });
+
     const filteredInvoices = useMemo(() => {
         // Filter invoices by date and supplier
         if (!data || !data.length) {
             return [];
         }
 
-        let filtered = data;
+        let filtered = data as Delivery[];
 
         if (date?.from && date.to) {
             filtered = filtered.filter((invoice) => {
@@ -285,7 +213,7 @@ export function DataTable({ data, suppliers }: DataTableProps) {
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start overflow-y-scroll">
                 <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-                    Invoices
+                    Deliveries
                 </h1>
                 <h1 className="text-2xl md:border-b">
                     Selected total:{" "}
@@ -327,11 +255,6 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                                             value={supplier.id}
                                             key={supplier.id}
                                             onSelect={(currentValue) => {
-                                                console.log(
-                                                    "currentValue",
-                                                    currentValue
-                                                );
-
                                                 setSupplierValue(
                                                     currentValue ===
                                                         supplierValue
@@ -357,15 +280,13 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                     </Popover>
 
                     <Button
-                        onClick={() => {
-                            setIsFormOpen(true);
-                        }}
+                        onClick={() => push("/deliveries/add-delivery")}
                         className="rounded-lg md:ml-auto">
                         Add New <Plus className="ml-2 w-4 h-4" />
                     </Button>
                 </div>
             </div>
-            <div className="rounded-lg border shadow-md">
+            <div className="rounded-lg border shadow-md overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -413,11 +334,6 @@ export function DataTable({ data, suppliers }: DataTableProps) {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <InvoiceForm
-                suppliers={suppliers}
-                isOpen={isFormOpen}
-                setIsOpen={setIsFormOpen}
-            />
         </>
     );
 }
