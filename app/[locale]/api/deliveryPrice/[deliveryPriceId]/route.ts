@@ -31,14 +31,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (
-            !unit ||
-            !amount ||
-            !price ||
-            !amount ||
-            !ingredientId ||
-            !supplierId
-        ) {
+        if (!unit || !price || !amount || !ingredientId || !supplierId) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 

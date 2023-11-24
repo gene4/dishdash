@@ -143,6 +143,24 @@ export function DataTable({
             },
         },
         {
+            id: "pricePerUnit",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent w-max"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        PRICE PER UNIT
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+            cell: ({ row }) =>
+                formatPrice(row.original.price / row.original.amount),
+        },
+        {
             accessorKey: "price",
             header: ({ column }) => {
                 return (

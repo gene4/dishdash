@@ -37,7 +37,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Delivery } from "@prisma/client";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import {
     Popover,
@@ -81,11 +80,7 @@ const deliverySchema = z.object({
     ),
 });
 
-interface Props {
-    initialInvoice?: Delivery;
-}
-
-export default function DeliveryForm({ initialInvoice }: Props) {
+export default function DeliveryForm() {
     const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
     const [isSupplierWindow, setIsSupplierWindow] = useState(false);
     const [isDateWindow, setIsDateWindow] = useState(false);
@@ -125,28 +120,19 @@ export default function DeliveryForm({ initialInvoice }: Props) {
         formData.append("date", values.date.toString());
         formData.append("ingredients", JSON.stringify(values.ingredients));
 
-        if (initialInvoice && initialInvoice.fileRef) {
-            formData.append("fileUrl", initialInvoice.fileUrl!);
-            formData.append("fileRef", initialInvoice.fileRef);
-        }
-
-        const response = initialInvoice
-            ? axios.patch(`/api/delivery/${initialInvoice.id}`, formData)
-            : axios.post("/api/delivery", formData);
+        const response = axios.post("/api/delivery", formData);
 
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `Delivery was ${initialInvoice ? "updated" : "added"}`;
+                return `Delivery was added`;
             },
             error: "Error",
         });
 
         response
             .then(({ data }) => {
-                console.log("data", data);
-                !initialInvoice && router.push(`/deliveries/${data.id}`);
-                // !initialInvoice && form.reset();
+                router.push(`/deliveries/${data.id}`);
             })
             .catch(() => {
                 setIsLoading(false);
@@ -165,11 +151,10 @@ export default function DeliveryForm({ initialInvoice }: Props) {
 
     return (
         <>
-            <div className="mb-16 flex justify-between">
-                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0 ">
-                    Add Delivery
+            <div className="mb-16 flex justify-between md:justify-normal md:space-x-24">
+                <h1 className="scroll-m-20 text-2xl md:text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+                    Receive Delivery
                 </h1>
-
                 <div className="flex items-center self-start mr-4 mt-2">
                     <div className="relative flex items-center">
                         <Button
@@ -208,7 +193,7 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     {formProgress === 1 && (
                         <div className="space-y-4">
-                            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
+                            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6 md:pt-4">
                                 <FormField
                                     control={form.control}
                                     name={`supplierId`}
@@ -415,7 +400,7 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                                         <TableHead>INGREDIENT</TableHead>
                                         <TableHead>UNIT</TableHead>
                                         <TableHead>AMOUNT</TableHead>
-                                        <TableHead>PRICE</TableHead>
+                                        <TableHead>TOTAL PRICE</TableHead>
                                         <TableHead />
                                     </TableRow>
                                 </TableHeader>
@@ -461,7 +446,7 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                                                                         field.value
                                                                     }>
                                                                     <FormControl>
-                                                                        <SelectTrigger className="rounded-lg w-20">
+                                                                        <SelectTrigger className="rounded-lg w-20 md:w-24">
                                                                             <SelectValue placeholder="Select" />
                                                                         </SelectTrigger>
                                                                     </FormControl>
@@ -499,9 +484,9 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                                                         <FormItem>
                                                             <FormControl>
                                                                 <Input
-                                                                    className="w-16"
+                                                                    className="w-16 md:w-20"
                                                                     type="number"
-                                                                    step={0.1}
+                                                                    step={0.01}
                                                                     min={0}
                                                                     autoFocus={
                                                                         false
@@ -532,9 +517,9 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                                                         <FormItem>
                                                             <FormControl>
                                                                 <Input
-                                                                    className="w-16"
+                                                                    className="w-16 md:w-20"
                                                                     type="number"
-                                                                    step={0.1}
+                                                                    step={0.01}
                                                                     min={0}
                                                                     autoFocus={
                                                                         false
@@ -590,14 +575,14 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                                         amount: 0,
                                     })
                                 }>
-                                <Plus className="mr-2 w-4 h-4" /> Add
+                                <Plus className="mr-2 w-4 h-4" /> Add item
                             </Button>
                             <p className="text-red-500 text-sm mt-2">
                                 {form.formState.errors.ingredients?.message}
                             </p>
                         </>
                     )}
-                    <div className="flex justify-end">
+                    <div className="flex justify-end md:justify-start">
                         {formProgress === 1 && supplierId && date && (
                             <Button
                                 className="mt-8"
@@ -610,7 +595,10 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                             </Button>
                         )}
                         {formProgress === 2 && (
-                            <Button disabled={isLoading} type="submit">
+                            <Button
+                                className="md:mt-2"
+                                disabled={isLoading}
+                                type="submit">
                                 Submit
                             </Button>
                         )}

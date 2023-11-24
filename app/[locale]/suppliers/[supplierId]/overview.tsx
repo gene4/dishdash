@@ -10,7 +10,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Delivery } from "@prisma/client";
+import { Delivery, DeliveryPrice } from "@prisma/client";
+import { calculateDeliveryTotal } from "@/lib/utils/calculate-total-invoices-price";
 
 interface Props {
     deliveries: Delivery[];
@@ -39,12 +40,12 @@ export function Overview({ deliveries, yearsFromInvoices }: Props) {
             .filter(
                 (delivery) => delivery.date.getFullYear().toString() === year
             )
-            .forEach((delivery) => {
+            .forEach((delivery: any) => {
                 const month = delivery.date.toLocaleString("en-US", {
                     month: "short",
                 });
                 // Add the invoice amount to the corresponding month's total
-                monthlyTotals[month] += delivery.amount;
+                monthlyTotals[month] += calculateDeliveryTotal(delivery.items);
             });
 
         // Convert the monthlyTotals object to an array of objects for the chart data
@@ -54,7 +55,7 @@ export function Overview({ deliveries, yearsFromInvoices }: Props) {
         }));
 
         return chartData;
-    }, [invoices, year]);
+    }, [deliveries, year]);
 
     return (
         <Card>
