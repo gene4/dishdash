@@ -23,14 +23,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (
-            !unit ||
-            !amount ||
-            !price ||
-            !amount ||
-            !ingredientId ||
-            !supplierId
-        ) {
+        if (!unit || !amount || !price || !ingredientId || !supplierId) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 

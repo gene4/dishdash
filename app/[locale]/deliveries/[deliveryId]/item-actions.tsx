@@ -8,7 +8,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Edit, Trash2, FileText } from "lucide-react";
+import { DeliveryPrice } from "@prisma/client";
+import { Edit, Trash2 } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -20,82 +21,74 @@ import {
 } from "@/components/ui/alert-dialog";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { InvoiceT } from "./data-table";
-import InvoiceForm from "@/components/delivery/delivery-form";
-import { Invoice, Supplier } from "@prisma/client";
+import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
+import PriceForm from "@/components/ingredients/table/price-form";
+import ItemForm from "@/components/delivery/item-form";
 
-interface Props {
-    invoice: Invoice;
-    suppliers: Supplier[];
-}
+export default function ItemActions({ row }: { row: Row<DeliveryPrice> }) {
+    const item = row.original;
 
-export default function InvoiceActions({ invoice, suppliers }: Props) {
     const [openDialog, setOpenDialog] = useState(false);
-    const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
     const router = useRouter();
 
     const onDelete = useCallback(async () => {
         setOpenDialog(false);
 
-        const response = axios.delete(`/api/invoice/${invoice.id}`).then(() => {
-            router.refresh();
-        });
+        const response = axios
+            .delete(`/api/deliveryPrice/${item.id}`)
+            .then(() => {
+                router.refresh();
+            });
 
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `Invoice was deleted.`;
+                return `Price was deleted.`;
             },
             error: "Error",
         });
-    }, [invoice.id, router]);
+    }, [item.id, router]);
 
     return (
         <>
-            <div className="flex justify-end w-[75px] space-x-3">
-                {invoice.fileUrl && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <a target="_blank" href={invoice.fileUrl}>
-                                    <FileText className="h-4 w-4 text-muted-foreground hover:scale-110 transition-all" />
-                                </a>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-primary text-white rounded-3xl">
-                                <p>Open file</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
+            <div className="flex space-x-2">
                 <TooltipProvider>
                     <Tooltip>
-                        <TooltipTrigger asChild>
+                        <TooltipTrigger>
                             <Edit
-                                onClick={() => setIsEditFormOpen(true)}
-                                className="w-4 h-4 text-muted-foreground cursor-pointer hover:scale-110 transition-all"
+                                onClick={() => {
+                                    setIsFormOpen(true);
+                                }}
+                                className="w-4 h-4 text-muted-foreground hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
-                            <p>Edit invoice</p>
+                            <p>Edit item</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
                 <TooltipProvider>
                     <Tooltip>
-                        <TooltipTrigger asChild>
+                        <TooltipTrigger>
                             <Trash2
                                 onClick={() => setOpenDialog(true)}
-                                className="w-4 h-4 text-red-500 cursor-pointer hover:scale-110 transition-all"
+                                className="w-4 h-4 text-red-500 hover:scale-110 transition-all"
                             />
                         </TooltipTrigger>
-                        <TooltipContent className="bg-red-600 text-white rounded-3xl ">
-                            <p>Delete invoice</p>
+                        <TooltipContent className="bg-red-600 text-white rounded-3xl">
+                            <p>Delete item</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             </div>
+            <ItemForm
+                isOpen={isFormOpen}
+                setIsOpen={setIsFormOpen}
+                initialItem={item}
+            />
             <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -103,11 +96,12 @@ export default function InvoiceActions({ invoice, suppliers }: Props) {
                             Are you absolutely sure?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will delete this invoice permanently.
+                            This will remove this item from the delivery.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
+
                         <Button
                             onClick={onDelete}
                             className="bg-red-500 hover:bg-red-500/90">
@@ -116,12 +110,6 @@ export default function InvoiceActions({ invoice, suppliers }: Props) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <InvoiceForm
-                suppliers={suppliers}
-                isOpen={isEditFormOpen}
-                setIsOpen={setIsEditFormOpen}
-                initialInvoice={invoice}
-            />
         </>
     );
 }

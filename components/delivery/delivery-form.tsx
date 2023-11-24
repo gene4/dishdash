@@ -90,6 +90,7 @@ export default function DeliveryForm({ initialInvoice }: Props) {
     const [isSupplierWindow, setIsSupplierWindow] = useState(false);
     const [isDateWindow, setIsDateWindow] = useState(false);
     const [formProgress, setFormProgress] = useState<1 | 2>(1);
+    const [isLoading, setIsLoading] = useState(false);
 
     const form = useForm<z.infer<typeof deliverySchema>>({
         resolver: zodResolver(deliverySchema),
@@ -115,6 +116,7 @@ export default function DeliveryForm({ initialInvoice }: Props) {
     });
 
     async function onSubmit(values: z.infer<typeof deliverySchema>) {
+        setIsLoading(true);
         const formData = new FormData();
 
         values.file && formData.append("file", values.file[0]);
@@ -140,10 +142,15 @@ export default function DeliveryForm({ initialInvoice }: Props) {
             error: "Error",
         });
 
-        response.then(() => {
-            router.refresh();
-            !initialInvoice && form.reset();
-        });
+        response
+            .then(({ data }) => {
+                console.log("data", data);
+                !initialInvoice && router.push(`/deliveries/${data.id}`);
+                // !initialInvoice && form.reset();
+            })
+            .catch(() => {
+                setIsLoading(false);
+            });
     }
 
     const { fields, append, remove } = useFieldArray({
@@ -603,7 +610,9 @@ export default function DeliveryForm({ initialInvoice }: Props) {
                             </Button>
                         )}
                         {formProgress === 2 && (
-                            <Button type="submit">Submit</Button>
+                            <Button disabled={isLoading} type="submit">
+                                Submit
+                            </Button>
                         )}
                     </div>
                 </form>

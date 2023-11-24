@@ -12,23 +12,21 @@ import prismadb from "@/lib/prismadb";
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { invoiceId: string } }
+    { params }: { params: { deliveryId: string } }
 ) {
     try {
         const user = await currentUser();
         const data = await req.formData();
 
         const invoiceNr = data.get("invoiceNr")?.toString();
-        const amount = Number(data.get("amount"));
         const date = data.get("date")?.toString();
-        const status = data.get("status")?.toString();
         const supplierId = data.get("supplierId")?.toString();
 
         const file: File | null = data.get("file") as unknown as File;
         let oldFileRef = data.get("fileRef");
         let oldFileUrl = data.get("fileUrl");
 
-        if (!params.invoiceId) {
+        if (!params.deliveryId) {
             return new NextResponse("Invoice ID required", { status: 400 });
         }
 
@@ -36,7 +34,7 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!invoiceNr || !supplierId || !date || !amount || !status) {
+        if (!supplierId || !date) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -76,23 +74,22 @@ export async function PATCH(
             });
         }
 
-        const invoice = await prismadb.invoice.update({
+        const delivery = await prismadb.delivery.update({
             where: {
-                id: params.invoiceId,
+                id: params.deliveryId,
                 userId: user.id,
             },
             data: {
                 supplierId,
                 invoiceNr,
                 date: new Date(date),
-                status,
-                amount,
+
                 fileUrl: file ? newFileUrl : oldFileUrl?.toString(),
                 fileRef: file ? newFileRef : oldFileRef?.toString(),
             },
         });
 
-        return NextResponse.json(invoice);
+        return NextResponse.json(delivery);
     } catch (error) {
         console.log("[INVOICE_PATCH]", error);
         return new NextResponse("Internal Error", { status: 500 });
@@ -101,7 +98,7 @@ export async function PATCH(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { invoiceId: string } }
+    { params }: { params: { deliveryId: string } }
 ) {
     try {
         const { userId } = auth();
@@ -111,9 +108,9 @@ export async function DELETE(
         }
 
         // Find Invoice
-        const invoice = await prismadb.invoice.findUnique({
+        const invoice = await prismadb.delivery.findUnique({
             where: {
-                id: params.invoiceId,
+                id: params.deliveryId,
                 userId,
             },
         });
@@ -129,9 +126,9 @@ export async function DELETE(
                 });
         }
 
-        await prismadb.invoice.delete({
+        await prismadb.delivery.delete({
             where: {
-                id: params.invoiceId,
+                id: params.deliveryId,
                 userId,
             },
         });

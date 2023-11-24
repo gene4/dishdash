@@ -1,7 +1,7 @@
 "use server";
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
-import { Supplier } from "@prisma/client";
+import { Delivery, Supplier } from "@prisma/client";
 import { nestedRecipeItems } from "./utils";
 
 export async function getIngredients() {
@@ -78,7 +78,11 @@ export async function getDeliveries() {
         where: {
             userId,
         },
-        include: { supplier: { select: { name: true } } },
+        include: {
+            supplier: { select: { name: true } },
+            items: { include: { ingredient: true } },
+        },
     });
+
     return deliveries;
 }

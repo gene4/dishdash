@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { ChefHat, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Sidebar } from "./sidebar";
 import { Button } from "./ui/button";
 import LocaleSwitcher from "./locale-switch";
 import { ThemeSwitch } from "./theme-switch";
+import Image from "next/image";
 
 function MobileSidebar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +19,13 @@ function MobileSidebar() {
                 </SheetTrigger>
                 <SheetContent className="pt-20" side={"top"}>
                     <div className="absolute top-3 left-4 flex justify-start items-center gap-1 ">
-                        <ChefHat className="w-7 h-7" strokeWidth="1.5px" />
+                        <Image
+                            priority
+                            width={36}
+                            height={36}
+                            alt="logo"
+                            src="/logo.svg"
+                        />
                         <p className="font-bold text-inherit">DishDash</p>
                     </div>
                     <div className="absolute top-2 right-12">

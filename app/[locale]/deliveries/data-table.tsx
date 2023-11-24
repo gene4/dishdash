@@ -19,10 +19,22 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Plus, ChevronsUpDown, Check } from "lucide-react";
+import {
+    ArrowUpDown,
+    Plus,
+    ChevronsUpDown,
+    Check,
+    FileText,
+} from "lucide-react";
 import { formatDate } from "@/lib/utils/format-date";
 import { formatPrice } from "@/lib/utils/format-price";
 import { DatePickerWithRange } from "@/components/date-picker-range";
@@ -40,10 +52,9 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { Delivery, Supplier } from "@prisma/client";
-import InvoiceActions from "./invoice-actions";
+import { Delivery, DeliveryPrice, Supplier } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
-import { calculateTotalInvoicesPrice } from "@/lib/utils/calculate-total-invoices-price";
+import { calculateDeliveryTotal } from "@/lib/utils/calculate-total-invoices-price";
 import { useQuery } from "@tanstack/react-query";
 import { getDeliveries } from "@/lib/actions";
 import { useRouter } from "next/navigation";
@@ -56,7 +67,12 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
 
     const { push } = useRouter();
 
-    const columns: ColumnDef<Delivery>[] = [
+    const { data } = useQuery({
+        queryKey: ["deliveries"],
+        queryFn: getDeliveries,
+    });
+
+    const columns: ColumnDef<Delivery & { items: DeliveryPrice }>[] = [
         {
             id: "select",
             header: ({ table }) => (
@@ -71,7 +87,9 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                 </div>
             ),
             cell: ({ row }) => (
-                <div className="flex justify-center items-center">
+                <div
+                    onClick={(event) => event.stopPropagation()}
+                    className="flex justify-center items-center">
                     <Checkbox
                         checked={row.getIsSelected()}
                         onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -97,6 +115,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                     </Button>
                 );
             },
+            cell: ({ row }) => row.getValue("invoiceNr") || "Not available",
         },
         {
             accessorKey: "supplier.name",
@@ -134,35 +153,42 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
         },
 
         {
-            accessorKey: "amount",
+            id: "total",
             header: ({ column }) => {
                 return (
                     <Button
-                        className="px-0 group font-bold hover:bg-transparent"
+                        className="px-0 group font-bold hover:bg-transparent  w-max"
                         variant="ghost"
                         onClick={() =>
                             column.toggleSorting(column.getIsSorted() === "asc")
                         }>
-                        AMOUNT
+                        TOTAL PRICE
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
             },
-            cell: ({ row }) => formatPrice(row.original.amount),
+            cell: ({ row }) =>
+                formatPrice(calculateDeliveryTotal(row.original.items)),
         },
-
         {
             id: "actions",
-            cell: ({ row }) => (
-                <InvoiceActions suppliers={suppliers} invoice={row.original} />
-            ),
+            cell: ({ row }) =>
+                row.original.fileUrl && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <a target="_blank" href={row.original.fileUrl}>
+                                    <FileText className="h-4 w-4 text-muted-foreground hover:scale-110 transition-all" />
+                                </a>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-primary text-white rounded-3xl">
+                                <p>Open file</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                ),
         },
     ];
-
-    const { data } = useQuery({
-        queryKey: ["deliveries"],
-        queryFn: getDeliveries,
-    });
 
     const filteredInvoices = useMemo(() => {
         // Filter invoices by date and supplier
@@ -170,18 +196,18 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
             return [];
         }
 
-        let filtered = data as Delivery[];
+        let filtered = data;
 
         if (date?.from && date.to) {
-            filtered = filtered.filter((invoice) => {
+            filtered = filtered.filter((invoice: Delivery) => {
                 const invoiceDate = new Date(invoice.date);
                 return invoiceDate > date.from! && invoiceDate < date.to!;
             });
         }
 
         if (supplierValue) {
-            filtered = filtered.filter((invoice) => {
-                return invoice.id === supplierValue;
+            filtered = filtered.filter((invoice: Delivery) => {
+                return invoice.supplierId === supplierValue;
             });
         }
 
@@ -206,7 +232,17 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
 
     const TotalInvoicesPrice = useMemo(() => {
-        return calculateTotalInvoicesPrice(selectedRows);
+        // return calculateTotalInvoicesPrice(selectedRows);
+        if (!selectedRows || selectedRows.length === 0) {
+            return 0; // No rows selected, so the total price is 0
+        }
+
+        const totalPrice = selectedRows.reduce((total, row) => {
+            const price = calculateDeliveryTotal(row.original.items) || 0;
+            return total + price;
+        }, 0);
+
+        return totalPrice;
     }, [selectedRows]);
 
     return (
@@ -310,7 +346,12 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id}>
+                                <TableRow
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                        push(`/deliveries/${row.original.id}`)
+                                    }
+                                    key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(

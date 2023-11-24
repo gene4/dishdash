@@ -91,6 +91,7 @@ export default function IngredientsCommandBox({
                                     );
 
                                     setValue(`ingredientsId`, ingredient.id);
+                                    setValue(`ingredientId`, ingredient.id);
                                     setIsOpen(false);
                                 }}>
                                 <CheckIcon
