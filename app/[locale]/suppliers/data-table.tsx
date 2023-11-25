@@ -114,7 +114,7 @@ export function DataTable() {
                                     className="cursor-pointer"
                                     onClick={() => {
                                         router.push(
-                                            `/suppliers/${row.original.id}`
+                                            `/suppliers/${row.original.id}?tab=overview`
                                         );
                                     }}
                                     key={row.id}>

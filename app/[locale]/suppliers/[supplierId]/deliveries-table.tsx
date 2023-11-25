@@ -28,46 +28,20 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-    ArrowUpDown,
-    Plus,
-    ChevronsUpDown,
-    Check,
-    FileText,
-} from "lucide-react";
+import { ArrowUpDown, Plus, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils/format-date";
 import { formatPrice } from "@/lib/utils/format-price";
 import { DatePickerWithRange } from "@/components/date-picker-range";
 import { DateRange } from "react-day-picker";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
-import { cn } from "@/lib/utils";
-import { Delivery, DeliveryPrice, Supplier } from "@prisma/client";
+import { Delivery, DeliveryPrice } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { calculateDeliveryTotal } from "@/lib/utils/calculate-total-invoices-price";
 import { useRouter } from "next/navigation";
 import { Card, Title } from "@tremor/react";
 
-export function DeliveriesTable({
-    suppliers,
-    deliveries,
-}: {
-    suppliers: Supplier[];
-    deliveries: any;
-}) {
+export function DeliveriesTable({ deliveries }: { deliveries: any }) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [date, setDate] = useState<DateRange | undefined>();
-    const [supplierValue, setSupplierValue] = useState("");
     const [rowSelection, setRowSelection] = useState({});
 
     const { push } = useRouter();
@@ -205,14 +179,8 @@ export function DeliveriesTable({
             });
         }
 
-        if (supplierValue) {
-            filtered = filtered.filter((invoice: Delivery) => {
-                return invoice.supplierId === supplierValue;
-            });
-        }
-
         return filtered;
-    }, [deliveries, date, supplierValue]);
+    }, [deliveries, date]);
 
     const table = useReactTable({
         data: filteredInvoices,
@@ -259,62 +227,7 @@ export function DeliveriesTable({
 
                 <div className="flex flex-col-reverse md:flex-row md:items-center py-4 md:space-x-4">
                     <DatePickerWithRange date={date} setDate={setDate} />
-                    <div className="flex justify-between mb-4 md:mb-0 w-full">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className="w-[180px] justify-between group">
-                                    {supplierValue ? (
-                                        suppliers.find(
-                                            (supplier) =>
-                                                supplier.id === supplierValue
-                                        )?.name
-                                    ) : (
-                                        <p className="text-muted-foreground group-hover:text-foreground font-normal">
-                                            Filter by supplier...
-                                        </p>
-                                    )}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0">
-                                <Command>
-                                    <CommandInput placeholder="Search..." />
-                                    <CommandEmpty>
-                                        No supplier found.
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                        {suppliers.map((supplier) => (
-                                            <CommandItem
-                                                value={supplier.id}
-                                                key={supplier.id}
-                                                onSelect={(currentValue) => {
-                                                    setSupplierValue(
-                                                        currentValue ===
-                                                            supplierValue
-                                                            ? ""
-                                                            : currentValue
-                                                    );
-                                                }}>
-                                                <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        supplierValue ===
-                                                            supplier.id
-                                                            ? "opacity-100"
-                                                            : "opacity-0"
-                                                    )}
-                                                />
-                                                {supplier.name}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-
+                    <div className="flex justify-between mb-4 space-x-2 md:mb-0 w-full">
                         <Button
                             onClick={() => push("/deliveries/add-delivery")}
                             className="rounded-lg md:ml-auto">

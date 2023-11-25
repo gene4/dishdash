@@ -37,43 +37,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { Input } from "@/components/ui/input";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     ArrowUpDown,
-    Check,
-    ChevronsUpDown,
     Edit,
     MoreHorizontal,
     Plus,
     Search,
     Trash2,
 } from "lucide-react";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
-import { Delivery, DeliveryPrice, Ingredient } from "@prisma/client";
+import { Delivery, DeliveryPrice } from "@prisma/client";
 import { formatPrice } from "@/lib/utils/format-price";
 import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/utils/format-date";
-import EditIngredientForm from "@/components/ingredients/table/edit-ingredient-form";
 import axios from "axios";
 import { toast } from "sonner";
-import PriceForm from "@/components/ingredients/table/price-form";
-import { DateRange } from "react-day-picker";
-import { DatePickerWithRange } from "@/components/date-picker-range";
-import { useQuery } from "@tanstack/react-query";
-import { getSuppliers } from "@/lib/actions";
-import { cn } from "@/lib/utils";
 import ItemActions from "./item-actions";
 import ItemForm from "@/components/delivery/item-form";
 import EditDeliveryForm from "@/components/delivery/edit-delivery-form";
@@ -185,11 +163,6 @@ export function DataTable({
             },
         },
     ];
-
-    const suppliers = useQuery({
-        queryKey: ["suppliers"],
-        queryFn: getSuppliers,
-    });
 
     const table = useReactTable({
         data: delivery.items,

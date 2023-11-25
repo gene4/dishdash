@@ -1,9 +1,5 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
-import { Overview } from "./overview";
-import InfoCard from "./info-card";
-
-import { DeliveriesTable } from "./deliveries-table";
 import SupplierTabs from "./supplier-tabs";
 
 interface RecipeIdPageProps {
@@ -45,12 +41,7 @@ export default async function SupplierIdPage({ params }: RecipeIdPageProps) {
         },
     });
 
-    // const ingredients = await prismadb.ingredient.findMany({
-    //     where: {
-    //         userId,
-    //         supplierId: params.supplierId,
-    //     },
-    // });
+    await Promise.all([deliveries, supplier]);
 
     return supplier ? (
         <>

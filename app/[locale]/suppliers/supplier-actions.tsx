@@ -3,13 +3,15 @@
 import React, { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Supplier } from "@prisma/client";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -17,24 +19,21 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Row } from "@tanstack/react-table";
 import SupplierForm from "@/components/suppliers/supplier-form";
 import { toast } from "sonner";
 
 interface Props {
-    row: Row<Supplier>;
+    supplier: Supplier;
 }
 
-export default function SupplierActions({ row }: Props) {
+export default function SupplierActions({ supplier }: Props) {
     const [openDialog, setOpenDialog] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
     const router = useRouter();
-    const supplier = row.original;
 
     const onDelete = useCallback(async () => {
         setOpenDialog(false);
@@ -43,6 +42,7 @@ export default function SupplierActions({ row }: Props) {
             .delete(`/api/supplier/${supplier.id}`)
             .then(() => {
                 router.refresh();
+                router.push("/suppliers");
             });
 
         toast.promise(response, {
@@ -55,38 +55,40 @@ export default function SupplierActions({ row }: Props) {
     }, [router, supplier.id, supplier.name]);
 
     return (
-        <div
-            onClick={(event) => event.stopPropagation()}
-            className="flex space-x-2">
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger>
-                        <Edit
-                            onClick={() => {
-                                setIsFormOpen(true);
-                            }}
-                            className="w-4 h-4 text-muted-foreground hover:scale-110 transition-all"
-                        />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-muted text-foreground rounded-3xl">
-                        <p>Edit supplier</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant={"outline"} size={"icon"}>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Supplier actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        onClick={() => {
+                            setIsFormOpen(true);
+                            document.body.style.pointerEvents = "";
+                        }}
+                        className="flex items-center justify-between">
+                        Edit <Edit className="w-4 h-4" />
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => {
+                            setOpenDialog(true);
+                            document.body.style.pointerEvents = "";
+                        }}
+                        className="flex items-center justify-between text-red-500 focus:text-white focus:bg-red-500">
+                        Delete <Trash2 className="w-4 h-4" />
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <SupplierForm
+                isOpen={isFormOpen}
+                setIsOpen={setIsFormOpen}
+                initialSupplier={supplier}
+            />
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-                <DialogTrigger>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Trash2 className="w-4 h-4 text-red-500 hover:scale-110 transition-all" />
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-red-600 text-white rounded-3xl">
-                                <p>Delete supplier</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Are you absolutely sure?</DialogTitle>
@@ -107,12 +109,6 @@ export default function SupplierActions({ row }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-
-            <SupplierForm
-                isOpen={isFormOpen}
-                setIsOpen={setIsFormOpen}
-                initialSupplier={supplier}
-            />
-        </div>
+        </>
     );
 }
