@@ -42,14 +42,13 @@ import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     ArrowUpDown,
-    Loader2,
     MoreHorizontal,
     Plus,
     Search,
     Trash2,
     Edit,
 } from "lucide-react";
-import { Ingredient, Recipe, RecipeIngredient, Supplier } from "@prisma/client";
+import { Recipe, RecipeIngredient } from "@prisma/client";
 import RecipeActions from "./recipe-actions";
 import { useRouter } from "next/navigation";
 import axios from "axios";
