@@ -59,6 +59,7 @@ export function DataTable() {
                     </Button>
                 );
             },
+            cell: ({ row }) => <div className="w-max">{row.original.name}</div>,
         },
 
         {

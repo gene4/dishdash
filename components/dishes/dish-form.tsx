@@ -119,7 +119,7 @@ export default function DishForm({ isOpen, setIsOpen, initialDish }: Props) {
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[250px]">
+            <DialogContent>
                 <DialogHeader className="mb-5">
                     <DialogTitle>
                         {initialDish ? "Update" : "Add"} Dish
@@ -134,101 +134,107 @@ export default function DishForm({ isOpen, setIsOpen, initialDish }: Props) {
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="space-y-6">
-                        <div className="flex justify-between space-x-4">
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Name
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="menuPrice"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Menu price
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                min={0}
-                                                step={0.01}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="multiplier"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            Multiplier
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                min={0}
-                                                step={0.01}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="vat"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className={labelStyle}>
-                                            VAT
-                                        </FormLabel>
-                                        <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}>
+                        <div className="md:flex space-y-4 md:space-y-0 justify-between md:space-x-4 ">
+                            <div className="flex justify-between space-x-4">
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                Name
+                                            </FormLabel>
                                             <FormControl>
-                                                <SelectTrigger className="w-[130px]">
-                                                    <SelectValue placeholder="Select VAT" />
-                                                </SelectTrigger>
+                                                <Input {...field} />
                                             </FormControl>
-                                            <SelectContent>
-                                                {VAT.map((unit) => (
-                                                    <SelectItem
-                                                        key={unit}
-                                                        value={unit}>
-                                                        {unit}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="menuPrice"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                Menu price
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="number"
+                                                    min={0}
+                                                    step={0.01}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <div className="flex justify-between space-x-4">
+                                <FormField
+                                    control={form.control}
+                                    name="multiplier"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                Multiplier
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="number"
+                                                    min={0}
+                                                    step={0.01}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="vat"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelStyle}>
+                                                VAT
+                                            </FormLabel>
+                                            <Select
+                                                value={field.value}
+                                                onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-[130px]">
+                                                        <SelectValue placeholder="Select VAT" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {VAT.map((unit) => (
+                                                        <SelectItem
+                                                            key={unit}
+                                                            value={unit}>
+                                                            {unit}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </div>
                         {!initialDish && (
                             <>
-                                <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[300px] overflow-y-scroll">
+                                <ol className="md:border md:p-4 min-h-3 py-1 space-y-3 md:rounded-lg md:list-decimal max-h-[300px] overflow-y-scroll">
                                     {fields.length ? (
                                         fields.map((field, index) => (
-                                            <li className="ml-6" key={field.id}>
-                                                <div className="flex justify-between items-center space-x-4 ml-2">
+                                            <li
+                                                className="md:ml-6"
+                                                key={field.id}>
+                                                <div className="flex justify-between items-center space-x-4 md:ml-2">
                                                     <FormField
                                                         control={form.control}
                                                         name={`ingredients.${index}.id`}

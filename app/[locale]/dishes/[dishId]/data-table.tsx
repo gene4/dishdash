@@ -93,6 +93,13 @@ export function DataTable({ dish }: DataTableProps) {
                     </Button>
                 );
             },
+            cell: ({ row }: { row: any }) => (
+                <div className="w-max">
+                    {row.original.ingredientId
+                        ? row.original.ingredient.name
+                        : row.original.recipeIngredient.name}
+                </div>
+            ),
         },
         {
             id: "unit",
@@ -271,7 +278,7 @@ export function DataTable({ dish }: DataTableProps) {
                     </DropdownMenu>
                 </div>
             </div>
-            <div className="rounded-lg border shadow-md">
+            <div className="rounded-lg border shadow-md overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (

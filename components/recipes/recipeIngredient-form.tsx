@@ -149,7 +149,7 @@ export default function RecipeIngredientForm({
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[250px]">
+            <DialogContent>
                 <DialogHeader className="mb-5">
                     <DialogTitle>
                         {initialRecipeIngredient ? "Update" : "Add"} Ingredients
@@ -165,11 +165,11 @@ export default function RecipeIngredientForm({
                         className="space-y-6"
                         onSubmit={form.handleSubmit(onSubmit)}>
                         <>
-                            <ol className="min-h-3 p-1 space-y-3 rounded-lg list-decimal max-h-[400px] overflow-y-scroll">
+                            <ol className="md:border md:p-4 min-h-3 py-1 space-y-3 md:rounded-lg md:list-decimal max-h-[300px] overflow-y-scroll">
                                 {fields.length ? (
                                     fields.map((field, index) => (
-                                        <li className="ml-4" key={field.id}>
-                                            <div className="flex justify-between items-center ml-3">
+                                        <li className="md:ml-6" key={field.id}>
+                                            <div className="flex justify-between items-center space-x-4 md:ml-2">
                                                 <FormField
                                                     control={form.control}
                                                     name={`ingredients.${index}.id`}

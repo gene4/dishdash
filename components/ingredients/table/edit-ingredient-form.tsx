@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -12,9 +11,8 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
-import { UNIT, VAT } from "@/config/constants";
+import { VAT } from "@/config/constants";
 import {
     Form,
     FormControl,
@@ -31,28 +29,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@radix-ui/react-popover";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
 import { toast } from "sonner";
-import { DeliveryPrice, Ingredient } from "@prisma/client";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Ingredient } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { useQuery } from "@tanstack/react-query";
-import { getSuppliers } from "@/lib/actions";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
@@ -72,10 +51,6 @@ export default function EditIngredientForm({
     isOpen,
     setIsOpen,
 }: Props) {
-    const [isMultiple, setIsMultiple] = useState(false);
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -110,7 +85,7 @@ export default function EditIngredientForm({
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[250px]">
+            <DialogContent>
                 <DialogHeader className="mb-5">
                     <DialogTitle>Edit ingredient</DialogTitle>
                 </DialogHeader>
@@ -128,7 +103,10 @@ export default function EditIngredientForm({
                                             Name
                                         </FormLabel>
                                         <FormControl>
-                                            <Input {...field} />
+                                            <Input
+                                                className="w-28"
+                                                {...field}
+                                            />
                                         </FormControl>
 
                                         <FormMessage />

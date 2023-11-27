@@ -277,7 +277,7 @@ export function DataTable({
         <>
             <div className="flex flex-col-reverse md:flex-row md:items-center py-4 md:space-x-4">
                 <DatePickerWithRange date={date} setDate={setDate} />
-                <div className="flex justify-between mb-4 md:mb-0 w-full">
+                <div className="flex justify-between space-x-2 w-full">
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
@@ -298,7 +298,7 @@ export function DataTable({
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
+                        <PopoverContent className="w-[180px] p-0">
                             <Command>
                                 <CommandInput placeholder="Search..." />
                                 <CommandEmpty>No supplier found.</CommandEmpty>
@@ -332,11 +332,11 @@ export function DataTable({
                             </Command>
                         </PopoverContent>
                     </Popover>
-                    <div className="flex justify-between w-full md:w-fit space-x-2 mb-4 md:mb-0">
+                    <div className="flex  md:w-fit space-x-2 mb-4 md:mb-0">
                         <Button
                             onClick={() => setIsPriceFormOpen(true)}
-                            className="rounded-lg">
-                            Add Price <Plus className="ml-2 w-4 h-4" />
+                            className="rounded-lg ml-auto">
+                            Add <Plus className="ml-2 w-4 h-4" />
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

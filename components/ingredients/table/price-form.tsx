@@ -129,9 +129,9 @@ export default function PriceForm({
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[250px]">
+            <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-semibold">
+                    <DialogTitle className="text-xl font-semibold">
                         {initialPrice ? "Update" : "Add"} Price
                     </DialogTitle>
                     {!initialPrice && (

@@ -121,7 +121,7 @@ export default function RecipeForm({
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[250px]">
+            <DialogContent>
                 <DialogHeader className="mb-5">
                     <DialogTitle>
                         {initialRecipe ? "Update" : "Add"} Recipe
@@ -196,6 +196,7 @@ export default function RecipeForm({
                                         </FormLabel>
                                         <FormControl>
                                             <Input
+                                                className="w-16"
                                                 type="number"
                                                 min={0}
                                                 step={0.01}
@@ -208,11 +209,11 @@ export default function RecipeForm({
                             />
                         </div>
                         {!initialRecipe && (
-                            <ol className="border p-4 min-h-3 space-y-3 rounded-lg list-decimal max-h-[300px] overflow-y-scroll">
+                            <ol className="md:border md:p-4 min-h-3 py-1 space-y-3 md:rounded-lg md:list-decimal max-h-[300px] overflow-y-scroll">
                                 {fields.length ? (
                                     fields.map((field, index) => (
-                                        <li className="ml-6" key={field.id}>
-                                            <div className="flex justify-between items-center space-x-4 ml-2">
+                                        <li className="md:ml-6" key={field.id}>
+                                            <div className="flex justify-between items-center space-x-4 md:ml-2">
                                                 <FormField
                                                     control={form.control}
                                                     name={`ingredients.${index}.id`}
@@ -292,8 +293,8 @@ export default function RecipeForm({
                                     type="button"
                                     size="sm"
                                     defaultValue={undefined}
-                                    variant={"outline"}
-                                    className="rounded-lg"
+                                    variant={"secondary"}
+                                    className="rounded-lg border"
                                     onClick={() =>
                                         append({ id: "", type: "", amount: 0 })
                                     }>

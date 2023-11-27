@@ -85,7 +85,7 @@ export default function SupplierForm({
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[250px]">
+            <DialogContent>
                 <DialogHeader className="mb-5">
                     <DialogTitle>Add Supplier</DialogTitle>
                     <DialogDescription>

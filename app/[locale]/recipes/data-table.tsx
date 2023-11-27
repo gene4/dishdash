@@ -83,7 +83,7 @@ export function DataTable() {
                     Add New <Plus className="ml-2 w-4 h-4" />
                 </Button>
             </div>
-            <div className="rounded-lg border shadow-md">
+            <div className="rounded-lg border shadow-md overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (
