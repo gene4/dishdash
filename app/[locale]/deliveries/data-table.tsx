@@ -30,7 +30,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     ArrowUpDown,
-    Plus,
+    Truck,
     ChevronsUpDown,
     Check,
     FileText,
@@ -251,6 +251,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                 <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
                     Deliveries
                 </h1>
+
                 <h1 className="text-2xl md:border-b">
                     Selected total:{" "}
                     <span className="font-semibold tracking-tight">
@@ -258,7 +259,11 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                     </span>
                 </h1>
             </div>
-
+            <Button
+                onClick={() => push("/deliveries/add-delivery")}
+                className="rounded-lg md:ml-auto absolute right-4 top-20 md:hidden">
+                Receive delivery <Truck className="ml-2 w-4 h-4" />
+            </Button>
             <div className="flex flex-col-reverse md:flex-row md:items-center py-4 md:space-x-4">
                 <DatePickerWithRange date={date} setDate={setDate} />
                 <div className="flex justify-between mb-4 md:mb-0 w-full">
@@ -317,8 +322,8 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
 
                     <Button
                         onClick={() => push("/deliveries/add-delivery")}
-                        className="rounded-lg md:ml-auto">
-                        Add New <Plus className="ml-2 w-4 h-4" />
+                        className="rounded-lg md:ml-auto hidden md:flex">
+                        Receive delivery <Truck className="ml-2 w-4 h-4" />
                     </Button>
                 </div>
             </div>
