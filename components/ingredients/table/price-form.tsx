@@ -53,7 +53,6 @@ import { getSuppliers } from "@/lib/actions";
 const formSchema = z.object({
     unit: z.string().min(1, { message: "Unit is required" }),
     amount: z.coerce.number().positive({ message: "Amount is required" }),
-    weight: z.coerce.number().optional(),
     price: z.coerce.number().positive({ message: "Price is required" }),
     supplierId: z.string().min(1, { message: "Supplier is required" }),
 });
@@ -82,14 +81,12 @@ export default function PriceForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             ...initialPrice,
-            weight: initialPrice?.weight || undefined,
             supplierId: initialPrice?.supplierId || undefined,
         } || {
             supplierId: "",
             unit: "",
             price: 0,
             amount: 0,
-            weight: 0,
         },
     });
 
@@ -261,7 +258,7 @@ export default function PriceForm({
                                         </FormItem>
                                     )}
                                 />
-                                {unit === "Piece" && (
+                                {/* {unit === "Piece" && (
                                     <FormField
                                         control={form.control}
                                         name="weight"
@@ -282,7 +279,7 @@ export default function PriceForm({
                                             </FormItem>
                                         )}
                                     />
-                                )}
+                                )} */}
                             </div>
                             <div className="flex space-x-6">
                                 <FormField
