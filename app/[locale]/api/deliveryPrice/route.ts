@@ -9,10 +9,8 @@ export async function POST(req: Request) {
         const user = await currentUser();
         const {
             unit,
-            weight,
             amount,
             price,
-            bruttoPrice,
             date,
             deliveryId,
             supplierId,
@@ -34,8 +32,6 @@ export async function POST(req: Request) {
                 amount,
                 price,
                 unit,
-                weight,
-                bruttoPrice,
                 deliveryId,
                 date: new Date(date || new Date()),
             },

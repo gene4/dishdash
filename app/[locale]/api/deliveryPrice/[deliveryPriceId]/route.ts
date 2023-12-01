@@ -12,10 +12,8 @@ export async function PATCH(
         const user = await currentUser();
         const {
             unit,
-            weight,
             amount,
             price,
-            bruttoPrice,
             date,
             deliveryId,
             supplierId,
@@ -45,8 +43,6 @@ export async function PATCH(
                 amount,
                 price,
                 unit,
-                weight,
-                bruttoPrice,
                 deliveryId,
                 date: new Date(date || new Date()),
             },
