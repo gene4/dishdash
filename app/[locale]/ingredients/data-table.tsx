@@ -42,6 +42,8 @@ export function DataTable() {
         queryFn: getIngredients,
     });
 
+    console.log("ingredients", ingredients.data);
+
     const { push } = useRouter();
     const columns: ColumnDef<Ingredient>[] = [
         {
