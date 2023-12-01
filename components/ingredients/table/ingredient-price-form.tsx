@@ -285,7 +285,7 @@ export function IngredientPriceForm({
                                                         </Button>
                                                     </CommandEmpty>
                                                     <CommandGroup>
-                                                        {data &&
+                                                        {data?.length ? (
                                                             data.map(
                                                                 (supplier) => (
                                                                     <CommandItem
@@ -318,7 +318,30 @@ export function IngredientPriceForm({
                                                                         }
                                                                     </CommandItem>
                                                                 )
-                                                            )}
+                                                            )
+                                                        ) : (
+                                                            <div className="w-full flex flex-col justify-center items-center p-4 text-sm">
+                                                                No supplier
+                                                                found.
+                                                                <Button
+                                                                    onClick={(
+                                                                        event
+                                                                    ) => {
+                                                                        event.preventDefault();
+                                                                        setIsSupplierFormOpen(
+                                                                            true
+                                                                        );
+                                                                    }}
+                                                                    className="mt-4 rounded-lg"
+                                                                    size={"sm"}
+                                                                    variant={
+                                                                        "outline"
+                                                                    }>
+                                                                    <Plus className="mr-2 w-3 h-3" />
+                                                                    New supplier
+                                                                </Button>
+                                                            </div>
+                                                        )}
                                                     </CommandGroup>
                                                 </Command>
                                             </PopoverContent>

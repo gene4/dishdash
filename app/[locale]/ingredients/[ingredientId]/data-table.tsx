@@ -89,7 +89,7 @@ export function DataTable({
     const [date, setDate] = useState<DateRange | undefined>();
     const [supplierValue, setSupplierValue] = useState("");
 
-    const { push } = useRouter();
+    const router = useRouter();
 
     const columns: ColumnDef<DeliveryPrice>[] = [
         {
@@ -261,7 +261,8 @@ export function DataTable({
         const response = axios
             .delete(`/api/ingredient/${ingredient.id}`)
             .then(() => {
-                push("/ingredients");
+                router.refresh();
+                router.push("/ingredients");
             });
 
         toast.promise(response, {
@@ -271,7 +272,7 @@ export function DataTable({
             },
             error: "Error",
         });
-    }, [ingredient.id, ingredient.name, push]);
+    }, [ingredient.id, ingredient.name, router]);
 
     return (
         <>

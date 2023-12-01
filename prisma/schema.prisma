@@ -14,7 +14,7 @@ model Ingredient {
   userId                   String
   vat                      String
   category                 String
-
+  weightPerPiece           Float?
   deliveryPrices             DeliveryPrice[] @relation("deliveryPrices")
   
   selectedDeliveryPrice      DeliveryPrice?   @relation("selecteDelivery", fields: [selectedDeliveryPriceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -28,10 +28,8 @@ model Ingredient {
 model DeliveryPrice {
   id           String      @id @default(uuid()) 
   unit         String
-  weight       Float?
   amount       Float
   price        Float
-  bruttoPrice  Float?
   date         DateTime 
 
   delivery     Delivery?    @relation(fields: [deliveryId], references: [id])
