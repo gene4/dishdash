@@ -61,7 +61,6 @@ const formSchema = z.object({
     category: z.string().min(1, { message: "Category is required" }),
     unit: z.string().min(1, { message: "Unit is required" }),
     amount: z.coerce.number().positive({ message: "Amount is required" }),
-    weight: z.coerce.number(),
     price: z.coerce.number().positive({ message: "Price is required" }),
     supplierId: z.string(),
 });
@@ -96,7 +95,6 @@ export function IngredientPriceForm({
             unit: "",
             price: 0,
             amount: 0,
-            weight: 0,
         },
     });
 
@@ -385,7 +383,7 @@ export function IngredientPriceForm({
                                         </FormItem>
                                     )}
                                 />
-                                {unit === "Piece" && (
+                                {/* {unit === "Piece" && (
                                     <FormField
                                         control={form.control}
                                         name="weight"
@@ -407,7 +405,7 @@ export function IngredientPriceForm({
                                             </FormItem>
                                         )}
                                     />
-                                )}
+                                )} */}
                             </div>
                             <div className="flex space-x-6">
                                 <FormField

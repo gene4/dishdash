@@ -14,8 +14,13 @@ model Ingredient {
   userId                   String
   vat                      String
   category                 String
-  weightPerPiece           Float?
   deliveryPrices             DeliveryPrice[] @relation("deliveryPrices")
+ 
+
+  variantId String?    @unique
+  variant   Ingredient?   @relation("ingredientVariant", fields: [variantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentIngredient Ingredient?   @relation("ingredientVariant")
+
   
   selectedDeliveryPrice      DeliveryPrice?   @relation("selecteDelivery", fields: [selectedDeliveryPriceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   selectedDeliveryPriceId    String?    @unique
@@ -24,6 +29,18 @@ model Ingredient {
   dishes       DishIngredient[]
 
 }
+
+// model SubIngredient {
+//   id                       String      @id @default(uuid())
+//   name                     String
+//   weightPerPiece           Float?
+//   ingredient               Ingredient? @relation(fields: [ingredientId], references: [id])
+//   ingredientId             String?
+//   deliveryPrices           DeliveryPrice[]
+
+
+//   @@index([ingredientId])
+// }
 
 model DeliveryPrice {
   id           String      @id @default(uuid()) 
@@ -41,10 +58,14 @@ model DeliveryPrice {
   ingredient   Ingredient @relation("deliveryPrices",fields: [ingredientId], references: [id])
   ingredientId String
 
+  // subIngredient   SubIngredient? @relation(fields: [subIngredientId], references: [id])
+  // subIngredientId String?
+
   selectedFor   Ingredient?   @relation("selecteDelivery") 
   
 @@index([deliveryId])
 @@index([ingredientId])
+// @@index([subIngredientId])
 @@index([supplierId])
 }
 
