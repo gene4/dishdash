@@ -32,39 +32,42 @@ const db = new PrismaClient();
 // main();
 
 async function seedIngredients() {
-    for (let i = 0; i < 100; i++) {
-        const ingredientName = `Ingredient ${i + 1}`;
-        const ingredientPrice = Math.random() * (50 - 1) + 1; // Random price between 1 and 50
+    const ingredient = await db.ingredient.create({
+        data: {
+            name: "Cauliflower",
+            userId: "user_2VDY5dmkvHBagbod561TixETKhB", // Replace with the actual user ID
+            vat: "19%",
+            category: "Veggies", // Replace with the category value
+            variants: {
+                big: {
+                    wightPerPiece: 0.6,
+                },
+                small: {
+                    wightPerPiece: 0.3,
+                },
+            },
+        },
+    });
 
-        const ingredient = await db.ingredient.create({
-            data: {
-                name: ingredientName,
-                userId: "user_2VDY5dmkvHBagbod561TixETKhB", // Replace with the actual user ID
-                vat: "19%",
-                category: "Veggies", // Replace with the category value
-            },
-        });
+    const price = await db.deliveryPrice.create({
+        data: {
+            unit: "Piece", // Replace with the unit value
+            amount: 12, // Replace with the amount value
+            price: 24,
+            date: new Date(), // Replace with the date value
+            ingredientId: ingredient.id,
+            variant: "big",
+        },
+    });
 
-        const price = await db.deliveryPrice.create({
-            data: {
-                unit: "Kg", // Replace with the unit value
-                amount: 100, // Replace with the amount value
-                price: ingredientPrice,
-                date: new Date(), // Replace with the date value
-                ingredientId: ingredient.id,
-            },
-        });
-
-        await db.ingredient.update({
-            where: {
-                id: ingredient.id,
-                // userId: "user_2VDY5dmkvHBagbod561TixETKhB",
-            },
-            data: {
-                selectedDeliveryPriceId: price.id,
-            },
-        });
-    }
+    await db.ingredient.update({
+        where: {
+            id: ingredient.id,
+        },
+        data: {
+            selectedDeliveryPriceId: price.id,
+        },
+    });
 }
 
 seedIngredients();

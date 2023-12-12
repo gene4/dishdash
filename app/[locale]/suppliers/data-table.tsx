@@ -60,8 +60,8 @@ export function DataTable() {
 
     return (
         <>
-            <div className="flex items-center py-4 justify-between">
-                <div className="relative w-48 md:w-80">
+            <div className="flex items-center pb-4 justify-between">
+                <div className="relative w-48 md:w-60">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search supplier..."
@@ -86,7 +86,7 @@ export function DataTable() {
                     Add New <Plus className="ml-2 w-4 h-4" />
                 </Button>
             </div>
-            <div className="rounded-lg border shadow-md">
+            <div className="rounded-sm border shadow-sm">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (

@@ -8,39 +8,41 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
 model Ingredient {
   id                       String      @id @default(uuid())
   name                     String
   userId                   String
   vat                      String
   category                 String
-  deliveryPrices             DeliveryPrice[] @relation("deliveryPrices")
- 
 
-  variantId String?    @unique
-  variant   Ingredient?   @relation("ingredientVariant", fields: [variantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  parentIngredient Ingredient?   @relation("ingredientVariant")
 
+  variants                 IngredientVariant[] 
+  deliveryPrices           DeliveryPrice[] @relation("deliveryPrices")
   
-  selectedDeliveryPrice      DeliveryPrice?   @relation("selecteDelivery", fields: [selectedDeliveryPriceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  selectedDeliveryPriceId    String?    @unique
+  selectedDeliveryPrice    DeliveryPrice?   @relation("selecteDelivery", fields: [selectedDeliveryPriceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  selectedDeliveryPriceId  String?    @unique
 
   recipes      RecipeIngredient[]
   dishes       DishIngredient[]
 
 }
 
-// model SubIngredient {
-//   id                       String      @id @default(uuid())
-//   name                     String
-//   weightPerPiece           Float?
-//   ingredient               Ingredient? @relation(fields: [ingredientId], references: [id])
-//   ingredientId             String?
-//   deliveryPrices           DeliveryPrice[]
+model IngredientVariant {
+  id                       String      @id @default(uuid())
+  name                     String
+  wightPerPiece            Float?
+  
+  parentIngredient         Ingredient @relation(fields: [parentIngredientId], references: [id])
+  parentIngredientId       String
+
+  deliveryPrices           DeliveryPrice[] 
+
+  @@index([parentIngredientId])
+}
 
 
-//   @@index([ingredientId])
-// }
+
 
 model DeliveryPrice {
   id           String      @id @default(uuid()) 
@@ -55,18 +57,18 @@ model DeliveryPrice {
   supplier    Supplier?    @relation(fields: [supplierId], references: [id])
   supplierId  String?
 
+  ingredientVariant    IngredientVariant?    @relation(fields: [ingredientVariantId], references: [id])
+  ingredientVariantId  String? 
+
   ingredient   Ingredient @relation("deliveryPrices",fields: [ingredientId], references: [id])
   ingredientId String
-
-  // subIngredient   SubIngredient? @relation(fields: [subIngredientId], references: [id])
-  // subIngredientId String?
 
   selectedFor   Ingredient?   @relation("selecteDelivery") 
   
 @@index([deliveryId])
 @@index([ingredientId])
-// @@index([subIngredientId])
 @@index([supplierId])
+@@index([ingredientVariantId])
 }
 
 model Recipe {
@@ -87,6 +89,7 @@ model Recipe {
 model RecipeIngredient {
   id              String      @id @default(uuid()) 
   amount          Float
+  unit            String
 
   recipe          Recipe   @relation(fields: [recipeId], references: [id])
   recipeId        String
@@ -123,6 +126,7 @@ model Dish {
 model DishIngredient {
   id              String      @id @default(uuid()) 
   amount          Float
+  unit            String
 
   dish            Dish   @relation(fields: [dishId], references: [id])
   dishId          String

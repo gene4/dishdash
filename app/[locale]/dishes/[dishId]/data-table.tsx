@@ -48,7 +48,14 @@ import {
     Search,
     Trash2,
     Edit,
+    Info,
 } from "lucide-react";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Dish, DishIngredient } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -58,6 +65,7 @@ import DishForm from "@/components/dishes/dish-form";
 import { toast } from "sonner";
 import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 import DishActions from "./dish-actions";
+import Link from "next/link";
 
 interface DataTableProps {
     dish: Dish & { ingredients: DishIngredient[] };
@@ -94,25 +102,91 @@ export function DataTable({ dish }: DataTableProps) {
                 );
             },
             cell: ({ row }: { row: any }) => (
-                <div className="w-max">
+                <Link
+                    href={
+                        row.original.ingredientId
+                            ? `/ingredients/${row.original.ingredient.id}`
+                            : `recipes/${row.original.recipeIngredient.id}`
+                    }
+                    className="w-max">
                     {row.original.ingredientId
                         ? row.original.ingredient.name
                         : row.original.recipeIngredient.name}
-                </div>
+                </Link>
             ),
         },
         {
-            id: "unit",
-            accessorFn: (row: any) =>
-                row.ingredientId
-                    ? row.ingredient.selectedDeliveryPrice.unit
-                    : row.recipeIngredient.unit,
+            accessorKey: "unit",
             header: "UNIT",
         },
         {
             accessorKey: "amount",
             header: "AMOUNT",
         },
+        // {
+        //     id: "pricePerUnit",
+        //     header: ({ column }) => {
+        //         return (
+        //             <Button
+        //                 className="px-0 group hover:bg-transparent font-bold w-max"
+        //                 variant="ghost"
+        //                 onClick={() =>
+        //                     column.toggleSorting(column.getIsSorted() === "asc")
+        //                 }>
+        //                 PRICE PER UNIT
+        //                 <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+        //             </Button>
+        //         );
+        //     },
+        //     cell: ({ row }: { row: any }) => {
+        //         if (row.original.ingredientId) {
+        //             return formatPrice(
+        //                 row.original.ingredient.selectedDeliveryPrice.price /
+        //                     row.original.ingredient.selectedDeliveryPrice.amount
+        //             );
+        //         } else {
+        //             const totalPrice = calculateNestedItemPrice(
+        //                 row.original.recipeIngredient.ingredients
+        //             );
+        //             const pricePerUnit =
+        //                 totalPrice / row.original.recipeIngredient.yield;
+
+        //             return formatPrice(pricePerUnit);
+        //         }
+        //     },
+        // },
+
+        // {
+        //     id: "totalPrice",
+        //     header: ({ column }) => {
+        //         return (
+        //             <Button
+        //                 className="px-0 group hover:bg-transparent font-bold w-max"
+        //                 variant="ghost"
+        //                 onClick={() =>
+        //                     column.toggleSorting(column.getIsSorted() === "asc")
+        //                 }>
+        //                 TOTAL PRICE
+        //                 <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+        //             </Button>
+        //         );
+        //     },
+        //     cell: ({ row }: { row: any }) => {
+        //         let pricePerUnit;
+        //         if (row.original.ingredientId) {
+        //             pricePerUnit =
+        //                 row.original.ingredient.selectedDeliveryPrice.price /
+        //                 row.original.ingredient.selectedDeliveryPrice.amount;
+        //         } else {
+        //             const totalPrice = calculateNestedItemPrice(
+        //                 row.original.recipeIngredient.ingredients
+        //             );
+        //             pricePerUnit =
+        //                 totalPrice / row.original.recipeIngredient.yield;
+        //         }
+        //         return formatPrice(pricePerUnit * row.original.amount);
+        //     },
+        // },
         {
             id: "pricePerUnit",
             header: ({ column }) => {
@@ -129,17 +203,72 @@ export function DataTable({ dish }: DataTableProps) {
                 );
             },
             cell: ({ row }: { row: any }) => {
-                if (row.original.ingredientId) {
-                    return formatPrice(
-                        row.original.ingredient.selectedDeliveryPrice.price /
-                            row.original.ingredient.selectedDeliveryPrice.amount
-                    );
+                const recipeIngredient = row.original;
+                if (recipeIngredient.ingredientId) {
+                    if (!recipeIngredient.ingredient.selectedDeliveryPrice) {
+                        return (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Info className="h-4 w-4" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-secondary text-secondary-foreground rounded-3xl">
+                                        <p>
+                                            Please select a price for this
+                                            ingredient
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        );
+                    }
+                    if (
+                        recipeIngredient.unit === "Kg" &&
+                        recipeIngredient.ingredient.selectedDeliveryPrice
+                            .unit === "Piece"
+                    ) {
+                        if (
+                            !recipeIngredient.ingredient.selectedDeliveryPrice
+                                .ingredientVariant
+                        ) {
+                            return (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Info className="h-4 w-4" />
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-secondary text-secondary-foreground rounded-3xl">
+                                            <p>
+                                                Please specify a weight variant
+                                                for piece to weight conversion
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            );
+                        } else {
+                            return formatPrice(
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.price /
+                                    recipeIngredient.ingredient
+                                        .selectedDeliveryPrice.ingredientVariant
+                                        .wightPerPiece
+                            );
+                        }
+                    } else {
+                        return formatPrice(
+                            recipeIngredient.ingredient.selectedDeliveryPrice
+                                .price /
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.amount
+                        );
+                    }
                 } else {
                     const totalPrice = calculateNestedItemPrice(
-                        row.original.recipeIngredient.ingredients
+                        recipeIngredient.recipeIngredient.ingredients
                     );
                     const pricePerUnit =
-                        totalPrice / row.original.recipeIngredient.yield;
+                        totalPrice / recipeIngredient.recipeIngredient.yield;
 
                     return formatPrice(pricePerUnit);
                 }
@@ -163,18 +292,45 @@ export function DataTable({ dish }: DataTableProps) {
             },
             cell: ({ row }: { row: any }) => {
                 let pricePerUnit;
+                const recipeIngredient = row.original;
+
                 if (row.original.ingredientId) {
-                    pricePerUnit =
-                        row.original.ingredient.selectedDeliveryPrice.price /
-                        row.original.ingredient.selectedDeliveryPrice.amount;
+                    if (!row.original.ingredient.selectedDeliveryPrice) {
+                        return "N/A";
+                    }
+                    if (
+                        recipeIngredient.unit === "Kg" &&
+                        recipeIngredient.ingredient.selectedDeliveryPrice
+                            .unit === "Piece"
+                    ) {
+                        if (
+                            !recipeIngredient.ingredient.selectedDeliveryPrice
+                                .ingredientVariant
+                        ) {
+                            return "N/A";
+                        } else {
+                            pricePerUnit =
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.price /
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.ingredientVariant
+                                    .wightPerPiece;
+                        }
+                    } else {
+                        pricePerUnit =
+                            recipeIngredient.ingredient.selectedDeliveryPrice
+                                .price /
+                            recipeIngredient.ingredient.selectedDeliveryPrice
+                                .amount;
+                    }
                 } else {
                     const totalPrice = calculateNestedItemPrice(
-                        row.original.recipeIngredient.ingredients
+                        recipeIngredient.recipeIngredient.ingredients
                     );
                     pricePerUnit =
-                        totalPrice / row.original.recipeIngredient.yield;
+                        totalPrice / recipeIngredient.recipeIngredient.yield;
                 }
-                return formatPrice(pricePerUnit * row.original.amount);
+                return formatPrice(pricePerUnit * recipeIngredient.amount);
             },
         },
         {

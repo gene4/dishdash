@@ -11,6 +11,7 @@ import {
     FormControl,
     FormField,
     FormItem,
+    FormLabel,
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Ingredient, Recipe, RecipeIngredient, Supplier } from "@prisma/client";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Recipe, RecipeIngredient } from "@prisma/client";
 import { Button } from "../ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -29,6 +37,7 @@ import IngredientsCommandBox from "../ingredients-command-box";
 import { IngredientPriceForm } from "../ingredients/table/ingredient-price-form";
 import { useQuery } from "@tanstack/react-query";
 import { getIngredients, getRecipes } from "@/lib/actions";
+import { UNIT } from "@/config/constants";
 
 const recipeSchema = z.object({
     ingredients: z
@@ -36,6 +45,7 @@ const recipeSchema = z.object({
             z.object({
                 id: z.string().min(1, { message: "Ingredient is required" }),
                 type: z.string(),
+                unit: z.string(),
                 amount: z.coerce.number(),
             })
         )
@@ -80,7 +90,7 @@ export default function RecipeIngredientForm({
     const form = useForm<z.infer<typeof recipeSchema>>({
         resolver: zodResolver(recipeSchema),
         defaultValues: initialDefaultValue || {
-            ingredients: [{ id: "", type: "", amount: 0 }],
+            ingredients: [{ id: "", type: "", unit: "", amount: undefined }],
         },
         mode: "onTouched",
     });
@@ -149,7 +159,7 @@ export default function RecipeIngredientForm({
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent>
+            <DialogContent className="overflow-scroll">
                 <DialogHeader className="mb-5">
                     <DialogTitle>
                         {initialRecipeIngredient ? "Update" : "Add"} Ingredients
@@ -165,16 +175,19 @@ export default function RecipeIngredientForm({
                         className="space-y-6"
                         onSubmit={form.handleSubmit(onSubmit)}>
                         <>
-                            <ol className="md:border md:p-4 min-h-3 py-1 space-y-3 md:rounded-lg md:list-decimal max-h-[300px] overflow-y-scroll">
+                            <ol className=" min-h-3 py-1 space-y-3  max-h-[300px] overflow-y-scroll">
                                 {fields.length ? (
                                     fields.map((field, index) => (
-                                        <li className="md:ml-6" key={field.id}>
-                                            <div className="flex justify-between items-center space-x-4 md:ml-2">
+                                        <li className="" key={field.id}>
+                                            <div className="flex justify-between items-end space-x-4">
                                                 <FormField
                                                     control={form.control}
                                                     name={`ingredients.${index}.id`}
                                                     render={({ field }) => (
-                                                        <FormItem className="flex flex-col">
+                                                        <FormItem className="flex flex-col justify-end">
+                                                            <FormLabel className="text-xs text-secondary-foreground">
+                                                                Ingredient
+                                                            </FormLabel>
                                                             <IngredientsCommandBox
                                                                 field={field}
                                                                 index={index}
@@ -195,9 +208,58 @@ export default function RecipeIngredientForm({
                                                 />
                                                 <FormField
                                                     control={form.control}
+                                                    name={`ingredients.${index}.unit`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-xs text-secondary-foreground">
+                                                                Unit
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Select
+                                                                    onValueChange={
+                                                                        field.onChange
+                                                                    }
+                                                                    value={
+                                                                        field.value
+                                                                    }>
+                                                                    <FormControl>
+                                                                        <SelectTrigger className="rounded-lg w-20 md:w-24">
+                                                                            <SelectValue placeholder="Select" />
+                                                                        </SelectTrigger>
+                                                                    </FormControl>
+                                                                    <SelectContent>
+                                                                        {UNIT.map(
+                                                                            (
+                                                                                unit
+                                                                            ) => (
+                                                                                <SelectItem
+                                                                                    key={
+                                                                                        unit
+                                                                                    }
+                                                                                    value={
+                                                                                        unit
+                                                                                    }>
+                                                                                    {
+                                                                                        unit
+                                                                                    }
+                                                                                </SelectItem>
+                                                                            )
+                                                                        )}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
                                                     name={`ingredients.${index}.amount`}
                                                     render={({ field }) => (
                                                         <FormItem>
+                                                            <FormLabel className="text-xs text-secondary-foreground">
+                                                                Amount
+                                                            </FormLabel>
                                                             <FormControl>
                                                                 <Input
                                                                     type="number"
@@ -225,15 +287,17 @@ export default function RecipeIngredientForm({
                                                         </FormItem>
                                                     )}
                                                 />
-                                                <Button
-                                                    className="rounded-full"
-                                                    onClick={() =>
-                                                        remove(index)
-                                                    }
-                                                    size="icon"
-                                                    variant="ghost">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                                {!initialRecipeIngredient && (
+                                                    <Button
+                                                        className="rounded-full"
+                                                        onClick={() =>
+                                                            remove(index)
+                                                        }
+                                                        size="icon"
+                                                        variant="ghost">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </li>
                                     ))
@@ -253,12 +317,17 @@ export default function RecipeIngredientForm({
                                     variant={"outline"}
                                     className="rounded-lg"
                                     onClick={() =>
-                                        append({ id: "", type: "", amount: 0 })
+                                        append({
+                                            id: "",
+                                            type: "",
+                                            unit: "",
+                                            amount: 0,
+                                        })
                                     }>
-                                    <Plus className="mr-2 w-4 h-4" /> Add
+                                    <Plus className="mr-2 w-4 h-4" /> New
                                     ingredient
                                 </Button>
-                                <p className="text-red-500 text-sm mt-2">
+                                <p className="text-red-500 text-xs mt-2">
                                     {form.formState.errors.ingredients?.message}
                                 </p>
                             </>

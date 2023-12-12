@@ -29,7 +29,7 @@ export function DatePickerWithRange({ className, date, setDate }: Props) {
                         id="date"
                         variant={"outline"}
                         className={cn(
-                            "w-full md:w-[290px] justify-start text-left font-normal tracking-wide",
+                            "w-full md:w-[248px] justify-start text-left font-normal tracking-wide",
                             !date && "text-muted-foreground"
                         )}>
                         <CalendarIcon className="mr-2 h-4 w-4" />

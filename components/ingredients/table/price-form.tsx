@@ -44,7 +44,7 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { toast } from "sonner";
-import { DeliveryPrice } from "@prisma/client";
+import { DeliveryPrice, Ingredient, IngredientVariant } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -52,6 +52,7 @@ import { getSuppliers } from "@/lib/actions";
 
 const formSchema = z.object({
     unit: z.string().min(1, { message: "Unit is required" }),
+    variant: z.string().optional(),
     amount: z.coerce.number().positive({ message: "Amount is required" }),
     price: z.coerce.number().positive({ message: "Price is required" }),
     supplierId: z.string().min(1, { message: "Supplier is required" }),
@@ -61,14 +62,14 @@ interface Props {
     initialPrice?: DeliveryPrice;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    ingredientId?: string;
+    ingredient: Ingredient & { variants: IngredientVariant[] };
 }
 
 export default function PriceForm({
     initialPrice,
     isOpen,
     setIsOpen,
-    ingredientId,
+    ingredient,
 }: Props) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
@@ -82,8 +83,10 @@ export default function PriceForm({
         defaultValues: {
             ...initialPrice,
             supplierId: initialPrice?.supplierId || undefined,
+            variant: initialPrice?.ingredientVariantId || undefined,
         } || {
             supplierId: "",
+            variant: "",
             unit: "",
             price: 0,
             amount: 0,
@@ -92,6 +95,8 @@ export default function PriceForm({
 
     const router = useRouter();
     const unit = form.watch("unit");
+
+    console.log(form.formState.errors);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsOpen(false);
@@ -105,7 +110,7 @@ export default function PriceForm({
         } else {
             response = axios.post("/api/deliveryPrice", {
                 ...values,
-                ingredientId,
+                ingredientId: ingredient!.id,
             });
         }
 
@@ -142,89 +147,97 @@ export default function PriceForm({
                         <form
                             onSubmit={form.handleSubmit(onSubmit)}
                             className="flex flex-col gap-3 mt-5">
-                            <FormField
-                                control={form.control}
-                                name={`supplierId`}
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className={labelStyle}>
-                                            Supplier
-                                        </FormLabel>
-                                        <Popover
-                                            open={isPopoverOpen}
-                                            onOpenChange={setIsPopoverOpen}>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        className={cn(
-                                                            "w-[200px] justify-between",
-                                                            !field.value &&
-                                                                "text-muted-foreground"
-                                                        )}>
-                                                        {field.value
-                                                            ? data &&
-                                                              data.find(
-                                                                  (supplier) =>
-                                                                      supplier.id ===
-                                                                      field.value
-                                                              )?.name
-                                                            : "Select supplier"}
-                                                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
-                                                <Command>
-                                                    <CommandInput placeholder="Search supplier..." />
-                                                    <CommandEmpty>
-                                                        No supplier found.
-                                                    </CommandEmpty>
-                                                    <CommandGroup>
-                                                        {data &&
-                                                            data.map(
-                                                                (supplier) => (
-                                                                    <CommandItem
-                                                                        value={
-                                                                            supplier.name
-                                                                        }
-                                                                        key={
-                                                                            supplier.id
-                                                                        }
-                                                                        onSelect={() => {
-                                                                            form.setValue(
-                                                                                `supplierId`,
+                            <div className="flex md:space-x-6 gap-3 md:gap-0 flex-wrap">
+                                <FormField
+                                    control={form.control}
+                                    name={`supplierId`}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-col justify-end">
+                                            <FormLabel
+                                                className={cn(
+                                                    labelStyle,
+                                                    "pb-1"
+                                                )}>
+                                                Supplier
+                                            </FormLabel>
+                                            <Popover
+                                                open={isPopoverOpen}
+                                                onOpenChange={setIsPopoverOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant="outline"
+                                                            role="combobox"
+                                                            className={cn(
+                                                                "w-[140px] justify-between",
+                                                                !field.value &&
+                                                                    "text-muted-foreground"
+                                                            )}>
+                                                            {field.value
+                                                                ? data &&
+                                                                  data.find(
+                                                                      (
+                                                                          supplier
+                                                                      ) =>
+                                                                          supplier.id ===
+                                                                          field.value
+                                                                  )?.name
+                                                                : "Select"}
+                                                            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-[140px] relative z-50 bg-background border rounded-md shadow-md">
+                                                    <Command>
+                                                        <CommandInput placeholder="Search..." />
+                                                        <CommandEmpty>
+                                                            No supplier found.
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                            {data &&
+                                                                data.map(
+                                                                    (
+                                                                        supplier
+                                                                    ) => (
+                                                                        <CommandItem
+                                                                            value={
+                                                                                supplier.name
+                                                                            }
+                                                                            key={
                                                                                 supplier.id
-                                                                            );
-                                                                            setIsPopoverOpen(
-                                                                                false
-                                                                            );
-                                                                        }}>
-                                                                        <CheckIcon
-                                                                            className={cn(
-                                                                                "mr-2 h-4 w-4",
-                                                                                supplier.id ===
-                                                                                    field.value
-                                                                                    ? "opacity-100"
-                                                                                    : "opacity-0"
-                                                                            )}
-                                                                        />
-                                                                        {
-                                                                            supplier.name
-                                                                        }
-                                                                    </CommandItem>
-                                                                )
-                                                            )}
-                                                    </CommandGroup>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="flex space-x-6">
+                                                                            }
+                                                                            onSelect={() => {
+                                                                                form.setValue(
+                                                                                    `supplierId`,
+                                                                                    supplier.id
+                                                                                );
+                                                                                setIsPopoverOpen(
+                                                                                    false
+                                                                                );
+                                                                            }}>
+                                                                            <CheckIcon
+                                                                                className={cn(
+                                                                                    "mr-2 h-4 w-4",
+                                                                                    supplier.id ===
+                                                                                        field.value
+                                                                                        ? "opacity-100"
+                                                                                        : "opacity-0"
+                                                                                )}
+                                                                            />
+                                                                            {
+                                                                                supplier.name
+                                                                            }
+                                                                        </CommandItem>
+                                                                    )
+                                                                )}
+                                                        </CommandGroup>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="unit"
@@ -240,7 +253,7 @@ export default function PriceForm({
                                                     <SelectTrigger className="w-[130px]">
                                                         <SelectValue
                                                             className="text-muted-foreground"
-                                                            placeholder="Select a unit"
+                                                            placeholder="Select"
                                                         />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -258,28 +271,50 @@ export default function PriceForm({
                                         </FormItem>
                                     )}
                                 />
-                                {/* {unit === "Piece" && (
+                                {ingredient.variants.length > 0 && (
                                     <FormField
                                         control={form.control}
-                                        name="weight"
+                                        name="variant"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>
-                                                    Weight per unit
+                                                <FormLabel
+                                                    className={labelStyle}>
+                                                    Variant
                                                 </FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        min={0}
-                                                        type="number"
-                                                        step={0.01}
-                                                        {...field}
-                                                    />
-                                                </FormControl>
+                                                <Select
+                                                    value={field.value}
+                                                    onValueChange={
+                                                        field.onChange
+                                                    }>
+                                                    <FormControl>
+                                                        <SelectTrigger className="w-[130px]">
+                                                            <SelectValue
+                                                                className="text-muted-foreground"
+                                                                placeholder="Select"
+                                                            />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {ingredient.variants.map(
+                                                            (variant) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        variant.id
+                                                                    }
+                                                                    value={
+                                                                        variant.id
+                                                                    }>
+                                                                    {`${variant.name} (${variant.wightPerPiece}Kg)`}
+                                                                </SelectItem>
+                                                            )
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                )} */}
+                                )}
                             </div>
                             <div className="flex space-x-6">
                                 <FormField
@@ -293,6 +328,7 @@ export default function PriceForm({
                                             <FormControl>
                                                 <Input
                                                     min={0}
+                                                    className="w-24"
                                                     type="number"
                                                     step={0.01}
                                                     {...field}
@@ -308,11 +344,12 @@ export default function PriceForm({
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className={labelStyle}>
-                                                Price
+                                                Total price
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     min={0}
+                                                    className="w-24"
                                                     type="number"
                                                     step={0.01}
                                                     {...field}
@@ -323,6 +360,7 @@ export default function PriceForm({
                                     )}
                                 />
                             </div>
+
                             <div className="flex justify-end pt-5">
                                 <Button className="rounded-lg" type="submit">
                                     {initialPrice ? "Update" : "Add"}

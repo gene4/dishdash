@@ -248,11 +248,11 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
     return (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start overflow-y-scroll">
-                <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0">
                     Deliveries
                 </h1>
 
-                <h1 className="text-2xl md:border-b">
+                <h1 className="text-xl md:border-b">
                     Selected total:{" "}
                     <span className="font-semibold tracking-tight">
                         {formatPrice(TotalInvoicesPrice)}
@@ -264,7 +264,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                 className="rounded-lg md:ml-auto absolute right-4 top-20 md:hidden">
                 Receive delivery <Truck className="ml-2 w-4 h-4" />
             </Button>
-            <div className="flex flex-col-reverse md:flex-row md:items-center py-4 md:space-x-4">
+            <div className="flex flex-col-reverse md:flex-row md:items-center pb-4 md:space-x-4">
                 <DatePickerWithRange date={date} setDate={setDate} />
                 <div className="flex justify-between mb-4 md:mb-0 w-full">
                     <Popover>
@@ -286,7 +286,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
+                        <PopoverContent className="w-[180px] p-0">
                             <Command>
                                 <CommandInput placeholder="Search..." />
                                 <CommandEmpty>No supplier found.</CommandEmpty>
@@ -327,7 +327,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                     </Button>
                 </div>
             </div>
-            <div className="rounded-lg border shadow-md overflow-scroll">
+            <div className="rounded-sm border shadow-sm overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (

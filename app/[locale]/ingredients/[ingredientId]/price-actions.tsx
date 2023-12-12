@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { DeliveryPrice } from "@prisma/client";
+import { DeliveryPrice, Ingredient, IngredientVariant } from "@prisma/client";
 import { Edit, Trash2, Star } from "lucide-react";
 import {
     AlertDialog,
@@ -29,9 +29,11 @@ import { Toggle } from "@/components/ui/toggle";
 export default function PriceActions({
     row,
     selectedPriceId,
+    ingredient,
 }: {
     row: Row<DeliveryPrice>;
     selectedPriceId: string | null;
+    ingredient: Ingredient & { variants: IngredientVariant[] };
 }) {
     const deliveryPrice = row.original;
 
@@ -92,7 +94,10 @@ export default function PriceActions({
                     pressed={isPriceSelected}
                     onPressedChange={() => onToggleChange(isPriceSelected)}
                     aria-label="Toggle selected price">
-                    <Star className="h-4 w-4" />
+                    <Star
+                        fill={isPriceSelected ? "yellow" : "transparent"}
+                        className="h-4 w-4"
+                    />
                 </Toggle>
 
                 <TooltipProvider>
@@ -106,7 +111,7 @@ export default function PriceActions({
                             />
                         </TooltipTrigger>
                         <TooltipContent className="bg-muted text-foreground rounded-3xl">
-                            <p>Edit ingredient</p>
+                            <p>Edit price</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -128,6 +133,7 @@ export default function PriceActions({
                 isOpen={isFormOpen}
                 setIsOpen={setIsFormOpen}
                 initialPrice={deliveryPrice}
+                ingredient={ingredient}
             />
             <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
                 <AlertDialogContent>

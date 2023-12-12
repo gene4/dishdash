@@ -35,6 +35,7 @@ export async function POST(req: Request) {
                         ingredient.type === "recipe" ? ingredient.id : null,
                     amount: ingredient.amount,
                     recipeId: recipe.id,
+                    unit: recipe.unit,
                 },
             });
         }

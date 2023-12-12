@@ -16,6 +16,7 @@ export async function PATCH(
             price,
             date,
             deliveryId,
+            variant,
             supplierId,
             ingredientId,
         } = body;
@@ -42,6 +43,7 @@ export async function PATCH(
                 supplierId,
                 amount,
                 price,
+                ingredientVariantId: variant,
                 unit,
                 deliveryId,
                 date: new Date(date || new Date()),

@@ -10,7 +10,9 @@ export const nestedRecipeItems = {
         include: {
             ingredient: {
                 include: {
-                    selectedDeliveryPrice: true,
+                    selectedDeliveryPrice: {
+                        include: { ingredientVariant: true },
+                    },
                 },
             },
             recipeIngredient: {
@@ -19,7 +21,9 @@ export const nestedRecipeItems = {
                         include: {
                             ingredient: {
                                 include: {
-                                    selectedDeliveryPrice: true,
+                                    selectedDeliveryPrice: {
+                                        include: { ingredientVariant: true },
+                                    },
                                 },
                             },
                             recipeIngredient: {
@@ -28,7 +32,12 @@ export const nestedRecipeItems = {
                                         include: {
                                             ingredient: {
                                                 include: {
-                                                    selectedDeliveryPrice: true,
+                                                    selectedDeliveryPrice: {
+                                                        include: {
+                                                            ingredientVariant:
+                                                                true,
+                                                        },
+                                                    },
                                                 },
                                             },
                                             recipeIngredient: {
@@ -38,7 +47,13 @@ export const nestedRecipeItems = {
                                                             ingredient: {
                                                                 include: {
                                                                     selectedDeliveryPrice:
-                                                                        true,
+                                                                        {
+                                                                            include:
+                                                                                {
+                                                                                    ingredientVariant:
+                                                                                        true,
+                                                                                },
+                                                                        },
                                                                 },
                                                             },
                                                             recipeIngredient: {
@@ -52,7 +67,13 @@ export const nestedRecipeItems = {
                                                                                             include:
                                                                                                 {
                                                                                                     selectedDeliveryPrice:
-                                                                                                        true,
+                                                                                                        {
+                                                                                                            include:
+                                                                                                                {
+                                                                                                                    ingredientVariant:
+                                                                                                                        true,
+                                                                                                                },
+                                                                                                        },
                                                                                                 },
                                                                                         },
                                                                                 },

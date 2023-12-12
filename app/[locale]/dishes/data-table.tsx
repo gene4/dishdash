@@ -25,7 +25,6 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
-import AddDishForm from "@/components/dishes/dish-form";
 import { columns } from "./columns";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -34,8 +33,6 @@ import { getDishes } from "@/lib/actions";
 export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [isAddIngredientFormOpen, setIsAddIngredientFormOpen] =
-        useState(false);
 
     const router = useRouter();
 
@@ -61,8 +58,8 @@ export function DataTable() {
 
     return (
         <>
-            <div className="flex items-center py-4 justify-between">
-                <div className="relative w-48 md:w-80">
+            <div className="flex items-center pb-4 justify-between">
+                <div className="relative w-48 md:w-60">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search dish..."
@@ -81,12 +78,12 @@ export function DataTable() {
                 </div>
 
                 <Button
-                    onClick={() => setIsAddIngredientFormOpen(true)}
+                    onClick={() => router.push("/dishes/create-dish")}
                     className="rounded-lg">
-                    Add dish <Plus className="ml-2 w-4 h-4" />
+                    Create dish <Plus className="ml-2 w-4 h-4" />
                 </Button>
             </div>
-            <div className="rounded-lg border shadow-md overflow-scroll">
+            <div className="rounded-sm border shadow-sm overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -144,10 +141,6 @@ export function DataTable() {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <AddDishForm
-                isOpen={isAddIngredientFormOpen}
-                setIsOpen={setIsAddIngredientFormOpen}
-            />
         </>
     );
 }

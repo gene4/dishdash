@@ -36,6 +36,7 @@ export async function POST(req: Request) {
                         ingredient.type === "recipe" ? ingredient.id : null,
                     amount: ingredient.amount,
                     dishId: dish.id,
+                    unit: ingredient.unit,
                 },
             });
         }

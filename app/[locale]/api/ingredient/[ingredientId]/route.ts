@@ -2,6 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 
 import prismadb from "@/lib/prismadb";
+import { IngredientVariant } from "@prisma/client";
 
 export async function PATCH(
     req: Request,
@@ -10,7 +11,7 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
-        const { name, vat, category, selectedDeliveryPriceId } = body;
+        const { name, vat, category, selectedDeliveryPriceId, variants } = body;
 
         if (!params.ingredientId) {
             return new NextResponse("Ingredient ID required", { status: 400 });
@@ -35,8 +36,55 @@ export async function PATCH(
                 category,
                 selectedDeliveryPriceId,
             },
+            include: { variants: true },
         });
 
+        if (variants.length > 0) {
+            for (const variant of variants) {
+                // if variant exists then update
+                if (variant.id) {
+                    await prismadb.ingredientVariant.update({
+                        where: {
+                            id: variant.id,
+                        },
+                        data: {
+                            name: variant.name,
+                            wightPerPiece: variant.wightPerPiece,
+                        },
+                    });
+                    // if variant doesn't exists then create
+                } else {
+                    await prismadb.ingredientVariant.create({
+                        data: {
+                            name: variant.name,
+                            wightPerPiece: variant.wightPerPiece,
+                            parentIngredientId: params.ingredientId,
+                        },
+                    });
+                }
+            }
+        }
+
+        // search for deleted variants and delete them
+        if (ingredient.variants.length > 0) {
+            const variantsToDelete = ingredient.variants.filter(
+                (oldVariant: IngredientVariant) =>
+                    !variants.some(
+                        (newVariant: IngredientVariant) =>
+                            newVariant.id === oldVariant.id
+                    )
+            );
+
+            if (variantsToDelete.length > 0) {
+                for (const variant of variantsToDelete) {
+                    await prismadb.ingredientVariant.delete({
+                        where: {
+                            id: variant.id,
+                        },
+                    });
+                }
+            }
+        }
         return NextResponse.json(ingredient);
     } catch (error) {
         console.log("[INGREDIENT_PATCH]", error);
@@ -55,20 +103,42 @@ export async function DELETE(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        // Delete all RecipeIngredient records associated with the ingredient
-        await prismadb.recipeIngredient.deleteMany({
+        const ingredient = await prismadb.ingredient.findUnique({
             where: {
-                ingredientId: params.ingredientId,
+                id: params.ingredientId,
             },
+
+            include: { variants: true, recipes: true, dishes: true },
         });
+
+        console.log("ingredient", ingredient);
+
+        // Delete all variants of ingredient
+        if (ingredient!.variants.length > 0) {
+            await prismadb.ingredientVariant.deleteMany({
+                where: {
+                    parentIngredientId: params.ingredientId,
+                },
+            });
+        }
+
+        // Delete all RecipeIngredient records associated with the ingredient
+        if (ingredient!.recipes.length > 0) {
+            await prismadb.recipeIngredient.deleteMany({
+                where: {
+                    ingredientId: params.ingredientId,
+                },
+            });
+        }
 
         // Delete all DishIngredient records associated with the ingredient
-        await prismadb.dishIngredient.deleteMany({
-            where: {
-                ingredientId: params.ingredientId,
-            },
-        });
-
+        if (ingredient!.dishes.length > 0) {
+            await prismadb.dishIngredient.deleteMany({
+                where: {
+                    ingredientId: params.ingredientId,
+                },
+            });
+        }
         await prismadb.ingredient.update({
             where: {
                 id: params.ingredientId,
@@ -85,7 +155,7 @@ export async function DELETE(
             },
         });
 
-        const ingredient = await prismadb.ingredient.delete({
+        await prismadb.ingredient.delete({
             where: {
                 userId,
                 id: params.ingredientId,

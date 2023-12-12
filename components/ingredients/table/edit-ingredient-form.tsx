@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,12 +32,22 @@ import {
 import { toast } from "sonner";
 import { Ingredient } from "@prisma/client";
 import { Button } from "@/components/ui/button";
+import { Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
     vat: z.string().min(1, { message: "Vat is required" }),
     category: z.string().min(1, { message: "Category is required" }),
-    selectedDeliveryPriceId: z.string(),
+    variants: z
+        .array(
+            z.object({
+                id: z.string(),
+                name: z.string(),
+                wightPerPiece: z.coerce.number(),
+            })
+        )
+        .optional(),
 });
 
 interface Props {
@@ -53,14 +63,15 @@ export default function EditIngredientForm({
 }: Props) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            ...initialIngredient,
-            selectedDeliveryPriceId:
-                initialIngredient.selectedDeliveryPriceId || undefined,
-        },
+        defaultValues: initialIngredient,
     });
 
     const router = useRouter();
+
+    const { fields, append, remove } = useFieldArray({
+        name: "variants",
+        control: form.control,
+    });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsOpen(false);
@@ -68,7 +79,6 @@ export default function EditIngredientForm({
             .patch(`/api/ingredient/${initialIngredient.id}`, values)
             .then(() => {
                 router.refresh();
-                form.reset();
             });
 
         toast.promise(response, {
@@ -162,9 +172,76 @@ export default function EditIngredientForm({
                                 )}
                             />
                         </div>
+                        <ol className="min-h-3 space-y-3 max-h-[300px] overflow-y-scroll">
+                            {fields.map((field, index) => (
+                                <li key={field.id}>
+                                    <div className="flex items-end space-x-4 p-[1px]">
+                                        <FormField
+                                            control={form.control}
+                                            name={`variants.${index}.name`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel
+                                                        className={labelStyle}>
+                                                        Name
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name={`variants.${index}.wightPerPiece`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel
+                                                        className={cn(
+                                                            labelStyle,
+                                                            "inline-block w-max"
+                                                        )}>
+                                                        Wight per piece (Kg)
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="number"
+                                                            step={0.01}
+                                                            min={0}
+                                                            autoFocus={false}
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <Button
+                                            className="rounded-full"
+                                            onClick={() => remove(index)}
+                                            size="icon"
+                                            variant="ghost">
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ol>
+
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant={"secondary"}
+                            className="rounded-lg border w-fit"
+                            onClick={() =>
+                                append({ id: "", name: "", wightPerPiece: 0 })
+                            }>
+                            <Plus className="mr-2 w-4 h-4" /> Add variant
+                        </Button>
 
                         <div className="flex justify-end pt-5">
-                            <Button type="submit">Add</Button>
+                            <Button type="submit">Update</Button>
                         </div>
                     </form>
                 </Form>

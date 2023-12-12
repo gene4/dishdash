@@ -60,7 +60,7 @@ import {
     CommandInput,
     CommandItem,
 } from "@/components/ui/command";
-import { DeliveryPrice, Ingredient } from "@prisma/client";
+import { DeliveryPrice, Ingredient, IngredientVariant } from "@prisma/client";
 import { formatPrice } from "@/lib/utils/format-price";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils/format-date";
@@ -78,7 +78,10 @@ import { cn } from "@/lib/utils";
 export function DataTable({
     ingredient,
 }: {
-    ingredient: Ingredient & { deliveryPrices: DeliveryPrice[] };
+    ingredient: Ingredient & {
+        deliveryPrices: DeliveryPrice[];
+        variants: IngredientVariant[];
+    };
 }) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -108,6 +111,7 @@ export function DataTable({
                 );
             },
         },
+
         {
             accessorKey: "unit",
             header: ({ column }) => {
@@ -123,6 +127,27 @@ export function DataTable({
                     </Button>
                 );
             },
+        },
+
+        {
+            accessorKey: "ingredientVariant.name",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        className="px-0 group font-bold hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === "asc")
+                        }>
+                        VARIANT
+                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+            cell: ({ row }: { row: any }) =>
+                (row.original.ingredientVariant &&
+                    `${row.original.ingredientVariant.name} (${row.original.ingredientVariant.wightPerPiece}Kg)`) ||
+                "-",
         },
 
         {
@@ -190,6 +215,7 @@ export function DataTable({
                     <PriceActions
                         selectedPriceId={ingredient.selectedDeliveryPriceId}
                         row={row}
+                        ingredient={ingredient}
                     />
                 );
             },
@@ -278,7 +304,7 @@ export function DataTable({
         <>
             <div className="flex flex-col-reverse md:flex-row md:items-center py-4 md:space-x-4">
                 <DatePickerWithRange date={date} setDate={setDate} />
-                <div className="flex justify-between space-x-2 w-full">
+                <div className="flex justify-between items-center space-x-2 mb-4 md:mb-0 w-full">
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
@@ -333,11 +359,11 @@ export function DataTable({
                             </Command>
                         </PopoverContent>
                     </Popover>
-                    <div className="flex  md:w-fit space-x-2 mb-4 md:mb-0">
+                    <div className="flex md:w-fit space-x-2">
                         <Button
                             onClick={() => setIsPriceFormOpen(true)}
                             className="rounded-lg ml-auto">
-                            Add <Plus className="ml-2 w-4 h-4" />
+                            Add price <Plus className="ml-2 w-4 h-4" />
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -395,13 +421,7 @@ export function DataTable({
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    // className={clsx(
-                                    //     row.original.id ===
-                                    //         ingredient.selectedDeliveryPriceId &&
-                                    //         "bg-muted hover:bg-muted"
-                                    // )}
-                                    key={row.id}>
+                                <TableRow key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(
@@ -456,7 +476,7 @@ export function DataTable({
             <PriceForm
                 isOpen={isPriceFormOpen}
                 setIsOpen={setIsPriceFormOpen}
-                ingredientId={ingredient.id}
+                ingredient={ingredient}
             />
         </>
     );

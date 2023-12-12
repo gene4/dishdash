@@ -47,30 +47,25 @@ import {
     Search,
     Trash2,
     Edit,
+    Info,
 } from "lucide-react";
 import { Recipe, RecipeIngredient } from "@prisma/client";
 import RecipeActions from "./recipe-actions";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { formatPrice } from "@/lib/utils/format-price";
-import RecipeForm from "@/components/recipes/recipe-form";
+import EditRecipeForm from "@/components/recipes/edit-recipe-form";
 import RecipeIngredientForm from "@/components/recipes/recipeIngredient-form";
 import { toast } from "sonner";
 import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import Link from "next/link";
 
-export type RecipeIngredients = {
-    amount: number;
-    id: string;
-    name: string;
-    userId: string;
-    unit: string;
-    price: number;
-    createdAt: Date;
-    supplierId: string;
-    category: string;
-    updatedAt: Date;
-    recipeIngredientId: string;
-};
 interface DataTableProps {
     recipe: Recipe & { ingredients: RecipeIngredient[] };
 }
@@ -106,15 +101,21 @@ export function DataTable({ recipe }: DataTableProps) {
                 );
             },
             cell: ({ row }: { row: any }) => (
-                <div className="w-max">{row.original.ingredient.name}</div>
+                <Link
+                    href={
+                        row.original.ingredientId
+                            ? `/ingredients/${row.original.ingredient.id}`
+                            : `recipes/${row.original.recipeIngredient.id}`
+                    }
+                    className="w-max">
+                    {row.original.ingredientId
+                        ? row.original.ingredient.name
+                        : row.original.recipeIngredient.name}
+                </Link>
             ),
         },
         {
-            id: "unit",
-            accessorFn: (row: any) =>
-                row.ingredientId
-                    ? row.ingredient.selectedDeliveryPrice.unit
-                    : row.recipeIngredient.unit,
+            accessorKey: "unit",
             header: "UNIT",
         },
         {
@@ -137,17 +138,72 @@ export function DataTable({ recipe }: DataTableProps) {
                 );
             },
             cell: ({ row }: { row: any }) => {
-                if (row.original.ingredientId) {
-                    return formatPrice(
-                        row.original.ingredient.selectedDeliveryPrice.price /
-                            row.original.ingredient.selectedDeliveryPrice.amount
-                    );
+                const recipeIngredient = row.original;
+                if (recipeIngredient.ingredientId) {
+                    if (!recipeIngredient.ingredient.selectedDeliveryPrice) {
+                        return (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Info className="h-4 w-4" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-secondary text-secondary-foreground rounded-3xl">
+                                        <p>
+                                            Please select a price for this
+                                            ingredient
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        );
+                    }
+                    if (
+                        recipeIngredient.unit === "Kg" &&
+                        recipeIngredient.ingredient.selectedDeliveryPrice
+                            .unit === "Piece"
+                    ) {
+                        if (
+                            !recipeIngredient.ingredient.selectedDeliveryPrice
+                                .ingredientVariant
+                        ) {
+                            return (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Info className="h-4 w-4" />
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-secondary text-secondary-foreground rounded-3xl">
+                                            <p>
+                                                Please specify a weight variant
+                                                for piece to weight conversion
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            );
+                        } else {
+                            return formatPrice(
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.price /
+                                    recipeIngredient.ingredient
+                                        .selectedDeliveryPrice.ingredientVariant
+                                        .wightPerPiece
+                            );
+                        }
+                    } else {
+                        return formatPrice(
+                            recipeIngredient.ingredient.selectedDeliveryPrice
+                                .price /
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.amount
+                        );
+                    }
                 } else {
                     const totalPrice = calculateNestedItemPrice(
-                        row.original.recipeIngredient.ingredients
+                        recipeIngredient.recipeIngredient.ingredients
                     );
                     const pricePerUnit =
-                        totalPrice / row.original.recipeIngredient.yield;
+                        totalPrice / recipeIngredient.recipeIngredient.yield;
 
                     return formatPrice(pricePerUnit);
                 }
@@ -171,18 +227,45 @@ export function DataTable({ recipe }: DataTableProps) {
             },
             cell: ({ row }: { row: any }) => {
                 let pricePerUnit;
+                const recipeIngredient = row.original;
+
                 if (row.original.ingredientId) {
-                    pricePerUnit =
-                        row.original.ingredient.selectedDeliveryPrice.price /
-                        row.original.ingredient.selectedDeliveryPrice.amount;
+                    if (!row.original.ingredient.selectedDeliveryPrice) {
+                        return "N/A";
+                    }
+                    if (
+                        recipeIngredient.unit === "Kg" &&
+                        recipeIngredient.ingredient.selectedDeliveryPrice
+                            .unit === "Piece"
+                    ) {
+                        if (
+                            !recipeIngredient.ingredient.selectedDeliveryPrice
+                                .ingredientVariant
+                        ) {
+                            return "N/A";
+                        } else {
+                            pricePerUnit =
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.price /
+                                recipeIngredient.ingredient
+                                    .selectedDeliveryPrice.ingredientVariant
+                                    .wightPerPiece;
+                        }
+                    } else {
+                        pricePerUnit =
+                            recipeIngredient.ingredient.selectedDeliveryPrice
+                                .price /
+                            recipeIngredient.ingredient.selectedDeliveryPrice
+                                .amount;
+                    }
                 } else {
                     const totalPrice = calculateNestedItemPrice(
-                        row.original.recipeIngredient.ingredients
+                        recipeIngredient.recipeIngredient.ingredients
                     );
                     pricePerUnit =
-                        totalPrice / row.original.recipeIngredient.yield;
+                        totalPrice / recipeIngredient.recipeIngredient.yield;
                 }
-                return formatPrice(pricePerUnit * row.original.amount);
+                return formatPrice(pricePerUnit * recipeIngredient.amount);
             },
         },
         {
@@ -234,7 +317,7 @@ export function DataTable({ recipe }: DataTableProps) {
     return (
         <>
             <div className="flex flex-col-reverse md:flex-row items-center py-4 justify-between">
-                <div className="relative w-full md:w-80">
+                <div className="relative w-full md:w-60">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search ingredient..."
@@ -288,7 +371,7 @@ export function DataTable({ recipe }: DataTableProps) {
                     </DropdownMenu>
                 </div>
             </div>
-            <div className="rounded-lg border shadow-md overflow-scroll">
+            <div className="rounded-sm border shadow-sm overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -340,7 +423,7 @@ export function DataTable({ recipe }: DataTableProps) {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <RecipeForm
+            <EditRecipeForm
                 isOpen={isFormOpen}
                 setIsOpen={setIsFormOpen}
                 initialRecipe={recipe}

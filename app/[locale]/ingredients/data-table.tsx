@@ -41,6 +41,7 @@ export function DataTable() {
         queryKey: ["ingredients"],
         queryFn: getIngredients,
     });
+    console.log("ingredients", ingredients);
 
     const { push } = useRouter();
     const columns: ColumnDef<Ingredient>[] = [
@@ -49,6 +50,7 @@ export function DataTable() {
             header: ({ column }) => {
                 return (
                     <Button
+                        size={"sm"}
                         className="px-0 font-bold group hover:bg-transparent"
                         variant="ghost"
                         onClick={() =>
@@ -129,8 +131,8 @@ export function DataTable() {
 
     return (
         <>
-            <div className="flex items-center py-4 justify-between">
-                <div className="relative w-48 md:w-80">
+            <div className="flex items-center pb-4 justify-between">
+                <div className="relative w-48 md:w-60">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search ingredients..."
@@ -148,6 +150,7 @@ export function DataTable() {
                     />
                 </div>
                 <Button
+                    size={"sm"}
                     onClick={() => {
                         setIsFormOpen(true);
                     }}
@@ -155,7 +158,7 @@ export function DataTable() {
                     Add New <Plus className="ml-2 w-4 h-4" />
                 </Button>
             </div>
-            <div className="rounded-lg border shadow-md overflow-scroll">
+            <div className="rounded-sm border shadow-sm overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (

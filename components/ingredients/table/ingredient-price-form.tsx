@@ -8,7 +8,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,13 +44,11 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Ingredient } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { getSuppliers } from "@/lib/actions";
 import SupplierForm from "@/components/suppliers/supplier-form";
@@ -62,20 +60,24 @@ const formSchema = z.object({
     unit: z.string().min(1, { message: "Unit is required" }),
     amount: z.coerce.number().positive({ message: "Amount is required" }),
     price: z.coerce.number().positive({ message: "Price is required" }),
-    supplierId: z.string(),
+    supplierId: z.string().nullable(),
+    deliveryVariant: z.string(),
+    variants: z
+        .array(
+            z.object({
+                name: z.string(),
+                wightPerPiece: z.coerce.number(),
+            })
+        )
+        .optional(),
 });
 
 interface Props {
-    initialIngredient?: Ingredient;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
 }
 
-export function IngredientPriceForm({
-    initialIngredient,
-    isOpen,
-    setIsOpen,
-}: Props) {
+export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
     const [isMultiple, setIsMultiple] = useState(false);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -88,30 +90,32 @@ export function IngredientPriceForm({
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialIngredient || {
+        defaultValues: {
             name: "",
             vat: "",
             category: "",
             unit: "",
+            deliveryVariant: "",
+            supplierId: "",
             price: 0,
             amount: 0,
+            variants: [],
         },
     });
 
+    const variants = form.watch("variants");
+
     const router = useRouter();
-    const unit = form.watch("unit");
+
+    const { fields, append, remove } = useFieldArray({
+        name: "variants",
+        control: form.control,
+    });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        let response;
+        console.log(values, "values");
         setIsLoading(true);
-        if (initialIngredient) {
-            response = axios.patch(
-                `/api/ingredient/${initialIngredient.id}`,
-                values
-            );
-        } else {
-            response = axios.post("/api/ingredientWithPrice", values);
-        }
+        const response = axios.post("/api/ingredientWithPrice", values);
 
         if (!isMultiple) {
             setIsOpen(false);
@@ -128,27 +132,21 @@ export function IngredientPriceForm({
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `${values.name}  has been ${
-                    initialIngredient ? "updated" : "added"
-                }`;
+                return `${values.name}  has been created`;
             },
             error: "Error",
         });
     }
 
-    const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
+    const labelStyle =
+        "font-normal after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetContent side={"left"}>
                 <SheetHeader>
                     <SheetTitle className="text-2xl font-semibold">
-                        {initialIngredient ? "Update" : "Add"} Ingredient
+                        Create ingredient
                     </SheetTitle>
-                    {!initialIngredient && (
-                        <SheetDescription>
-                            Add a new ingredient to your list
-                        </SheetDescription>
-                    )}
                 </SheetHeader>
                 <div>
                     <Form {...form}>
@@ -224,131 +222,220 @@ export function IngredientPriceForm({
                                     )}
                                 />
                             </div>
-                            <Separator className="my-2" />
-                            <SheetDescription className="mb-3">
+
+                            <SheetDescription className="mt-4">
+                                Wight variants (optional):
+                            </SheetDescription>
+                            <ol className="min-h-3 space-y-3 max-h-[300px] overflow-y-scroll">
+                                {fields.map((field, index) => (
+                                    <li key={field.id}>
+                                        <div className="flex justify-between items-end space-x-4 p-[1px]">
+                                            <FormField
+                                                control={form.control}
+                                                name={`variants.${index}.name`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel
+                                                            className={
+                                                                labelStyle
+                                                            }>
+                                                            Name
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                {...field}
+                                                                disabled={
+                                                                    isLoading
+                                                                }
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name={`variants.${index}.wightPerPiece`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel
+                                                            className={cn(
+                                                                labelStyle,
+                                                                "inline-block w-max"
+                                                            )}>
+                                                            Wight per piece (Kg)
+                                                        </FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                type="number"
+                                                                step={0.01}
+                                                                min={0}
+                                                                autoFocus={
+                                                                    false
+                                                                }
+                                                                {...field}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <Button
+                                                className="rounded-full"
+                                                onClick={() => remove(index)}
+                                                size="icon"
+                                                variant="ghost">
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ol>
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={"secondary"}
+                                className="rounded-lg border w-fit"
+                                onClick={() =>
+                                    append({ name: "", wightPerPiece: 0 })
+                                }>
+                                <Plus className="mr-2 w-4 h-4" /> Add variant
+                            </Button>
+
+                            <SheetDescription className="mt-4">
                                 Enter a delivery price:
                             </SheetDescription>
-                            <FormField
-                                control={form.control}
-                                name={`supplierId`}
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className={labelStyle}>
-                                            Supplier
-                                        </FormLabel>
-                                        <Popover
-                                            open={isPopoverOpen}
-                                            onOpenChange={setIsPopoverOpen}>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        className={cn(
-                                                            "w-[200px] justify-between",
-                                                            !field.value &&
-                                                                "text-muted-foreground"
-                                                        )}>
-                                                        {field.value
-                                                            ? data &&
-                                                              data.find(
-                                                                  (supplier) =>
-                                                                      supplier.id ===
-                                                                      field.value
-                                                              )?.name
-                                                            : "Select supplier"}
-                                                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[200px] relative z-50 bg-background border rounded-md shadow-md">
-                                                <Command>
-                                                    <CommandInput placeholder="Search supplier..." />
-                                                    <CommandEmpty>
-                                                        No supplier found.
-                                                        <Button
-                                                            onClick={(
-                                                                event
-                                                            ) => {
-                                                                event.preventDefault();
-                                                                setIsSupplierFormOpen(
-                                                                    true
-                                                                );
-                                                            }}
-                                                            className="mt-4 rounded-lg"
-                                                            size={"sm"}
-                                                            variant={"outline"}>
-                                                            <Plus className="mr-2 w-3 h-3" />
-                                                            New supplier
-                                                        </Button>
-                                                    </CommandEmpty>
-                                                    <CommandGroup>
-                                                        {data?.length ? (
-                                                            data.map(
-                                                                (supplier) => (
-                                                                    <CommandItem
-                                                                        value={
-                                                                            supplier.name
-                                                                        }
-                                                                        key={
-                                                                            supplier.id
-                                                                        }
-                                                                        onSelect={() => {
-                                                                            form.setValue(
-                                                                                `supplierId`,
-                                                                                supplier.id
-                                                                            );
-                                                                            setIsPopoverOpen(
-                                                                                false
-                                                                            );
-                                                                        }}>
-                                                                        <CheckIcon
-                                                                            className={cn(
-                                                                                "mr-2 h-4 w-4",
-                                                                                supplier.id ===
-                                                                                    field.value
-                                                                                    ? "opacity-100"
-                                                                                    : "opacity-0"
-                                                                            )}
-                                                                        />
-                                                                        {
-                                                                            supplier.name
-                                                                        }
-                                                                    </CommandItem>
-                                                                )
-                                                            )
-                                                        ) : (
-                                                            <div className="w-full flex flex-col justify-center items-center p-4 text-sm">
-                                                                No supplier
-                                                                found.
-                                                                <Button
-                                                                    onClick={(
-                                                                        event
-                                                                    ) => {
-                                                                        event.preventDefault();
-                                                                        setIsSupplierFormOpen(
-                                                                            true
-                                                                        );
-                                                                    }}
-                                                                    className="mt-4 rounded-lg"
-                                                                    size={"sm"}
-                                                                    variant={
-                                                                        "outline"
-                                                                    }>
-                                                                    <Plus className="mr-2 w-3 h-3" />
-                                                                    New supplier
-                                                                </Button>
-                                                            </div>
-                                                        )}
-                                                    </CommandGroup>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+
                             <div className="flex space-x-6">
+                                <FormField
+                                    control={form.control}
+                                    name={`supplierId`}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-col justify-end">
+                                            <FormLabel className="mb-1">
+                                                Supplier
+                                            </FormLabel>
+                                            <Popover
+                                                open={isPopoverOpen}
+                                                onOpenChange={setIsPopoverOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant="outline"
+                                                            role="combobox"
+                                                            className={cn(
+                                                                "w-[160px] justify-between",
+                                                                !field.value &&
+                                                                    "text-muted-foreground"
+                                                            )}>
+                                                            {field.value
+                                                                ? data &&
+                                                                  data.find(
+                                                                      (
+                                                                          supplier
+                                                                      ) =>
+                                                                          supplier.id ===
+                                                                          field.value
+                                                                  )?.name
+                                                                : "Select supplier"}
+                                                            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-[160px] relative z-50 bg-background border rounded-md shadow-md">
+                                                    <Command>
+                                                        <CommandInput placeholder="Search..." />
+                                                        <CommandEmpty>
+                                                            No supplier found.
+                                                            <Button
+                                                                onClick={(
+                                                                    event
+                                                                ) => {
+                                                                    event.preventDefault();
+                                                                    setIsSupplierFormOpen(
+                                                                        true
+                                                                    );
+                                                                }}
+                                                                className="mt-4 rounded-lg"
+                                                                size={"sm"}
+                                                                variant={
+                                                                    "outline"
+                                                                }>
+                                                                <Plus className="mr-2 w-3 h-3" />
+                                                                New supplier
+                                                            </Button>
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                            {data?.length ? (
+                                                                data.map(
+                                                                    (
+                                                                        supplier
+                                                                    ) => (
+                                                                        <CommandItem
+                                                                            value={
+                                                                                supplier.name
+                                                                            }
+                                                                            key={
+                                                                                supplier.id
+                                                                            }
+                                                                            onSelect={() => {
+                                                                                form.setValue(
+                                                                                    `supplierId`,
+                                                                                    supplier.id
+                                                                                );
+                                                                                setIsPopoverOpen(
+                                                                                    false
+                                                                                );
+                                                                            }}>
+                                                                            <CheckIcon
+                                                                                className={cn(
+                                                                                    "mr-2 h-4 w-4",
+                                                                                    supplier.id ===
+                                                                                        field.value
+                                                                                        ? "opacity-100"
+                                                                                        : "opacity-0"
+                                                                                )}
+                                                                            />
+                                                                            {
+                                                                                supplier.name
+                                                                            }
+                                                                        </CommandItem>
+                                                                    )
+                                                                )
+                                                            ) : (
+                                                                <div className="w-full flex flex-col justify-center items-center p-4 text-xs">
+                                                                    No supplier
+                                                                    found.
+                                                                    <Button
+                                                                        onClick={(
+                                                                            event
+                                                                        ) => {
+                                                                            event.preventDefault();
+                                                                            setIsSupplierFormOpen(
+                                                                                true
+                                                                            );
+                                                                        }}
+                                                                        className="mt-4 rounded-lg"
+                                                                        size={
+                                                                            "sm"
+                                                                        }
+                                                                        variant={
+                                                                            "outline"
+                                                                        }>
+                                                                        New
+                                                                        supplier
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </CommandGroup>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="unit"
@@ -383,31 +470,58 @@ export function IngredientPriceForm({
                                         </FormItem>
                                     )}
                                 />
-                                {/* {unit === "Piece" && (
+                            </div>
+                            <div className="flex space-x-6">
+                                {variants && variants.length > 0 && (
                                     <FormField
                                         control={form.control}
-                                        name="weight"
+                                        name="deliveryVariant"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>
-                                                    Weight per unit
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        disabled={isLoading}
-                                                        min={0}
-                                                        type="number"
-                                                        step={0.01}
-                                                        {...field}
-                                                    />
-                                                </FormControl>
+                                                <FormLabel>Variant</FormLabel>
+                                                <Select
+                                                    value={field.value}
+                                                    disabled={isLoading}
+                                                    onValueChange={
+                                                        field.onChange
+                                                    }>
+                                                    <FormControl>
+                                                        <SelectTrigger className="w-[130px]">
+                                                            <SelectValue placeholder="Select" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {variants
+                                                            .filter(
+                                                                (item) =>
+                                                                    item.name
+                                                            )
+                                                            .map(
+                                                                (
+                                                                    variant,
+                                                                    index
+                                                                ) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        value={
+                                                                            variant.name
+                                                                        }>
+                                                                        {
+                                                                            variant.name
+                                                                        }
+                                                                    </SelectItem>
+                                                                )
+                                                            )}
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                )} */}
-                            </div>
-                            <div className="flex space-x-6">
+                                )}
+
                                 <FormField
                                     control={form.control}
                                     name="amount"
@@ -453,18 +567,17 @@ export function IngredientPriceForm({
                             </div>
 
                             <div className="flex justify-between pt-5">
-                                {!initialIngredient && (
-                                    <div className="flex items-center space-x-2">
-                                        <Switch
-                                            checked={isMultiple}
-                                            onCheckedChange={setIsMultiple}
-                                            id="multiple"
-                                        />
-                                        <Label htmlFor="multiple">
-                                            Add multiple
-                                        </Label>
-                                    </div>
-                                )}
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        checked={isMultiple}
+                                        onCheckedChange={setIsMultiple}
+                                        id="multiple"
+                                    />
+                                    <Label htmlFor="multiple">
+                                        Add multiple
+                                    </Label>
+                                </div>
+
                                 <Button
                                     disabled={isLoading}
                                     className="rounded-lg"
@@ -472,7 +585,7 @@ export function IngredientPriceForm({
                                     {isLoading && (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
-                                    {initialIngredient ? "Update" : "Add"}
+                                    Create
                                 </Button>
                             </div>
                         </form>

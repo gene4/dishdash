@@ -1,12 +1,13 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
-import { DataTable } from "./data-table";
-import { getIngredients, getSuppliers } from "@/lib/actions";
+import { getIngredients, getRecipes, getSuppliers } from "@/lib/actions";
 import {
-    dehydrate,
     HydrationBoundary,
     QueryClient,
+    dehydrate,
 } from "@tanstack/react-query";
-export default async function IngredientsPage() {
+import CreateDishForm from "@/components/dishes/create-dish-form";
+
+export default async function CreateDishePage() {
     const { userId } = auth();
 
     if (!userId) {
@@ -16,6 +17,11 @@ export default async function IngredientsPage() {
     const queryClient = new QueryClient();
 
     // Prefetch data
+    const recipes = queryClient.prefetchQuery({
+        queryKey: ["recipes"],
+        queryFn: getRecipes,
+    });
+
     const ingredients = queryClient.prefetchQuery({
         queryKey: ["ingredients"],
         queryFn: getIngredients,
@@ -26,15 +32,15 @@ export default async function IngredientsPage() {
         queryFn: getSuppliers,
     });
 
-    await Promise.all([ingredients, suppliers]);
+    await Promise.all([recipes, ingredients, suppliers]);
 
     return (
         <>
             <h1 className="scroll-m-20 pb-2 text-2xl font-semibold tracking-tight transition-colors first:mt-0 mb-5">
-                Ingredients
+                Create Dish
             </h1>
             <HydrationBoundary state={dehydrate(queryClient)}>
-                <DataTable />
+                <CreateDishForm />
             </HydrationBoundary>
         </>
     );

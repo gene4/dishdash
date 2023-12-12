@@ -24,7 +24,6 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
-import RecipesForm from "@/components/recipes/recipe-form";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { getRecipes } from "@/lib/actions";
@@ -33,7 +32,6 @@ import { useQuery } from "@tanstack/react-query";
 export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [isFormOpen, setIsFormOpen] = useState(false);
 
     const recipes = useQuery({
         queryKey: ["recipes"],
@@ -59,8 +57,8 @@ export function DataTable() {
 
     return (
         <>
-            <div className="flex items-center py-4 justify-between">
-                <div className="relative w-48 md:w-80">
+            <div className="flex items-center pb-4 justify-between">
+                <div className="relative w-48 md:w-60">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search recipe..."
@@ -78,12 +76,12 @@ export function DataTable() {
                     />
                 </div>
                 <Button
-                    onClick={() => setIsFormOpen(true)}
+                    onClick={() => router.push("/recipes/create-recipe")}
                     className="rounded-lg">
-                    Add New <Plus className="ml-2 w-4 h-4" />
+                    Create Recipe <Plus className="ml-2 w-4 h-4" />
                 </Button>
             </div>
-            <div className="rounded-lg border shadow-md overflow-scroll">
+            <div className="rounded-sm border shadow-sm overflow-scroll">
                 <Table>
                     <TableHeader className="shadow-sm">
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -141,7 +139,6 @@ export function DataTable() {
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <RecipesForm isOpen={isFormOpen} setIsOpen={setIsFormOpen} />
         </>
     );
 }
