@@ -68,6 +68,7 @@ export function DataTable({
     const [isItemFormOpen, setIsItemFormOpen] = useState(false);
 
     const { push } = useRouter();
+    console.log(delivery);
 
     const columns: ColumnDef<DeliveryPrice>[] = [
         {
@@ -85,6 +86,12 @@ export function DataTable({
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
+            },
+            cell: ({ row }: { row: any }) => {
+                const item = row.original;
+                return `${item.ingredient.name} ${
+                    item.ingredientVariant && `(${item.ingredientVariant.name})`
+                }`;
             },
         },
         {
@@ -201,7 +208,7 @@ export function DataTable({
     return (
         <>
             <div className="flex w-full justify-between mb-4">
-                <div className="relative w-40 md:w-80">
+                <div className="relative w-40 md:w-60">
                     <Search className="absolute top-0 bottom-0 w-4 h-4 my-auto text-gray-500 left-3" />
                     <Input
                         placeholder="Search item..."

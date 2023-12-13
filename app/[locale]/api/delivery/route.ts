@@ -12,11 +12,10 @@ export async function POST(req: Request) {
         const date = data.get("date")?.toString();
         const supplierId = data.get("supplierId")?.toString();
         const invoiceNr = data.get("invoiceNr")?.toString();
+        const credit = data.get("credit")?.toString();
 
         const ingredients = data.get("ingredients")?.toString();
         const parsedIngredients = ingredients && JSON.parse(ingredients);
-
-        console.log("supplierId", supplierId);
 
         const file: File | null = data.get("file") as unknown as File;
 
@@ -57,6 +56,16 @@ export async function POST(req: Request) {
             },
         });
 
+        if (credit && parseFloat(credit) != 0) {
+            await prismadb.credit.create({
+                data: {
+                    amount: parseFloat(credit),
+                    date: new Date(date),
+                    deliveryId: delivery.id,
+                },
+            });
+        }
+
         for (const ingredient of parsedIngredients) {
             const deliveryPrice = await prismadb.deliveryPrice.create({
                 data: {
@@ -67,6 +76,7 @@ export async function POST(req: Request) {
                     ingredientId: ingredient.id,
                     deliveryId: delivery.id,
                     supplierId: delivery.supplierId,
+                    ingredientVariantId: ingredient.variant,
                 },
             });
             await prismadb.ingredient.update({

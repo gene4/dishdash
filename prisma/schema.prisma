@@ -71,6 +71,23 @@ model DeliveryPrice {
 @@index([ingredientVariantId])
 }
 
+model Credit {
+    id           String      @id @default(uuid()) 
+    amount       Float
+    date         DateTime 
+
+    delivery     Delivery?    @relation(fields: [deliveryId], references: [id])
+    deliveryId   String? @unique
+
+    supplier    Supplier?    @relation(fields: [supplierId], references: [id])
+    supplierId  String?
+
+
+    @@index([deliveryId])
+    @@index([supplierId])
+}
+
+
 model Recipe {
   id              String      @id @default(uuid()) 
   name            String
@@ -149,6 +166,7 @@ model Supplier {
   paymentInfo String? @db.Text
   deliveries  Delivery[] 
   deliveryPrices DeliveryPrice[]
+  credits     Credit[]
 
   createdAt   DateTime    @default(now())
 }
@@ -161,6 +179,7 @@ model Delivery {
   date        DateTime 
   fileUrl     String? @db.Text
   fileRef     String? @db.Text
+  credit      Credit?
  
   supplier    Supplier    @relation(fields: [supplierId], references: [id])
   supplierId  String

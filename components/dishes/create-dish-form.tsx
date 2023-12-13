@@ -83,6 +83,7 @@ export default function CreateDishForm() {
         name: "ingredients",
         control: form.control,
     });
+    console.log(fields);
 
     const router = useRouter();
 

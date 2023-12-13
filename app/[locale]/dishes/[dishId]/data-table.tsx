@@ -80,6 +80,7 @@ export function DataTable({ dish }: DataTableProps) {
         useState(false);
 
     const router = useRouter();
+    console.log(dish);
 
     const columns: ColumnDef<DishIngredient>[] = [
         {

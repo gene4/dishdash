@@ -15,7 +15,11 @@ export async function getIngredients() {
         where: {
             userId,
         },
-        include: { selectedDeliveryPrice: true, deliveryPrices: true },
+        include: {
+            selectedDeliveryPrice: true,
+            deliveryPrices: true,
+            variants: true,
+        },
     });
     return ingredients;
 }
