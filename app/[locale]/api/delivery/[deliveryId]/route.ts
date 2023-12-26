@@ -21,7 +21,7 @@ export async function PATCH(
         const invoiceNr = data.get("invoiceNr")?.toString();
         const date = data.get("date")?.toString();
         const supplierId = data.get("supplierId")?.toString();
-        const credit = data.get("credit")?.toString();
+        const credit = data.get("credit");
 
         const file: File | null = data.get("file") as unknown as File;
         let oldFileRef = data.get("fileRef");
@@ -84,7 +84,7 @@ export async function PATCH(
                 supplierId,
                 invoiceNr,
                 date: new Date(date),
-                credit: credit ? parseFloat(credit) : null,
+                credit: credit ? parseFloat(credit.toString()) : 0,
                 fileUrl: file ? newFileUrl : oldFileUrl?.toString(),
                 fileRef: file ? newFileRef : oldFileRef?.toString(),
             },

@@ -53,7 +53,7 @@ export async function POST(req: Request) {
                 date: new Date(date),
                 fileUrl,
                 fileRef,
-                credit: credit ? parseFloat(credit) : null,
+                credit: credit ? parseFloat(credit.toString()) : 0,
             },
         });
         if (ingredients.length > 0) {
