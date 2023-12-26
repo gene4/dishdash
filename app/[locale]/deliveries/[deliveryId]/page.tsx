@@ -48,9 +48,7 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
         },
         include: {
             supplier: { select: { name: true } },
-
-            items: { include: { ingredient: true, ingredientVariant: true } },
-            credit: true,
+            items: { include: { ingredient: true } },
         },
     });
 
@@ -115,7 +113,11 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
 
             <HydrationBoundary state={dehydrate(queryClient)}>
                 <DataTable
-                    delivery={delivery as Delivery & { items: DeliveryPrice[] }}
+                    delivery={
+                        delivery as Delivery & {
+                            items: DeliveryPrice[];
+                        }
+                    }
                 />
             </HydrationBoundary>
             <div className="font-semibold mt-10 md:w-[250px] md:ml-auto">
@@ -140,11 +142,11 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
                     </div>
                 </div>
                 <Separator className="my-2" />
-                {delivery?.credit && delivery?.credit?.amount != 0 && (
+                {delivery?.credit && delivery?.credit != 0 && (
                     <div className="flex justify-between">
                         <h2>Credit:</h2>{" "}
                         <span className="font-normal">
-                            -{formatPrice(delivery!.credit!.amount)}
+                            -{formatPrice(delivery!.credit)}
                         </span>
                     </div>
                 )}
@@ -153,9 +155,7 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
                     <span>
                         {formatPrice(
                             summery?.total -
-                                ((delivery!.credit &&
-                                    delivery!.credit!.amount) ||
-                                    0)
+                                ((delivery!.credit && delivery!.credit) || 0)
                         )}
                     </span>
                 </div>

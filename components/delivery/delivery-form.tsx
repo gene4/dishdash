@@ -67,7 +67,13 @@ import IngredientsCommandBox from "@/components/ingredients-command-box";
 import { IngredientPriceForm } from "@/components/ingredients/table/ingredient-price-form";
 import { calculateDeliverySummary } from "@/lib/utils/calculate-total-invoices-price";
 import { formatPrice } from "@/lib/utils/format-price";
-import { Ingredient, IngredientVariant } from "@prisma/client";
+import { Delivery } from "@prisma/client";
+
+interface Props {
+    isCredit?: Boolean;
+    initialDelivery?: Delivery;
+    setIsDialog?: (isOpen: boolean) => void;
+}
 
 const deliverySchema = z.object({
     invoiceNr: z.string().optional(),
@@ -85,19 +91,24 @@ const deliverySchema = z.object({
             ".jpg, .jpeg, .png and .pdf files are accepted."
         )
         .optional(),
-    ingredients: z.array(
-        z.object({
-            id: z.string(),
-            variant: z.string(),
-            unit: z.string(),
-            vat: z.string(),
-            amount: z.coerce.number(),
-            price: z.coerce.number(),
-        })
-    ),
+    ingredients: z
+        .array(
+            z.object({
+                id: z.string(),
+                unit: z.string(),
+                vat: z.string(),
+                amount: z.coerce.number(),
+                price: z.coerce.number(),
+            })
+        )
+        .optional(),
 });
 
-export default function DeliveryForm() {
+export default function DeliveryForm({
+    isCredit,
+    initialDelivery,
+    setIsDialog,
+}: Props) {
     const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
     const [isSupplierWindow, setIsSupplierWindow] = useState(false);
     const [isDateWindow, setIsDateWindow] = useState(false);
@@ -112,15 +123,19 @@ export default function DeliveryForm() {
 
     const form = useForm<z.infer<typeof deliverySchema>>({
         resolver: zodResolver(deliverySchema),
-        defaultValues: {
+        defaultValues: (initialDelivery && {
+            ...initialDelivery,
+            credit: initialDelivery?.credit || 0,
+            invoiceNr: initialDelivery?.invoiceNr || undefined,
+        }) || {
             invoiceNr: "",
             supplierId: "",
             credit: 0,
             date: new Date(),
             file: undefined,
-            ingredients: [
-                { id: "", variant: "", unit: "", vat: "", price: 0, amount: 0 },
-            ],
+            ingredients: isCredit
+                ? []
+                : [{ id: "", unit: "", vat: "", price: 0, amount: 0 }],
         },
     });
 
@@ -148,19 +163,29 @@ export default function DeliveryForm() {
         formData.append("date", values.date.toString());
         formData.append("ingredients", JSON.stringify(values.ingredients));
 
-        const response = axios.post("/api/delivery", formData);
+        if (initialDelivery || isCredit) {
+            setIsDialog && setIsDialog(false);
+        }
+
+        const response = initialDelivery
+            ? axios.patch(`/api/delivery/${initialDelivery.id}`, formData)
+            : axios.post("/api/delivery", formData);
 
         toast.promise(response, {
             loading: "Loading...",
             success: () => {
-                return `Delivery was added`;
+                return `Delivery was ${initialDelivery ? "updated" : "added"}`;
             },
             error: "Error",
         });
 
         response
             .then(({ data }) => {
-                router.push(`/deliveries/${data.id}`);
+                if (initialDelivery || isCredit) {
+                    router.refresh();
+                } else {
+                    router.push(`/deliveries/${data.id}`);
+                }
             })
             .catch(() => {
                 setIsLoading(false);
@@ -175,16 +200,16 @@ export default function DeliveryForm() {
     const items = form.watch("ingredients");
     const credit = form.watch("credit");
 
-    console.log("ingredients", ingredients.data);
-
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
 
     return (
         <>
-            <h2 className="border-b w-fit mb-2">General information:</h2>
+            {!isCredit && !initialDelivery && (
+                <h2 className="border-b w-fit mb-2">General information:</h2>
+            )}
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <div className="space-y-4 md:flex md:space-y-0 md:space-x-8 md:items-end">
+                    <div className="space-y-4">
                         <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8 mt-6">
                             <FormField
                                 control={form.control}
@@ -305,7 +330,7 @@ export default function DeliveryForm() {
                                                 </FormControl>
                                             </PopoverTrigger>
                                             <PopoverContent
-                                                className="w-auto z-50 p-0 bg-background border shadow-md rounded-md"
+                                                className="w-auto  z-50 p-0 bg-background border shadow-md rounded-md"
                                                 align="start">
                                                 <Calendar
                                                     mode="single"
@@ -371,69 +396,85 @@ export default function DeliveryForm() {
                                 )}
                             />
                         </div>
-                    </div>
-                    <h2 className="border-b w-fit mt-8">Items:</h2>
-
-                    <div className="border relative rounded-lg max-h-[380px] md:max-h-none overflow-scroll mt-6">
-                        <Table>
-                            <TableHeader className="shadow-sm sticky top-0 bg-background">
-                                <TableRow>
-                                    <TableHead>ITEM</TableHead>
-                                    <TableHead>VARIANT</TableHead>
-                                    <TableHead>UNIT</TableHead>
-                                    <TableHead>AMOUNT</TableHead>
-                                    <TableHead className="w-[100px]">
-                                        TOTAL PRICE
-                                    </TableHead>
-                                    <TableHead />
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="mt-5">
-                                {fields.map((field, index) => (
-                                    <TableRow key={field.id}>
-                                        <TableCell>
-                                            <FormField
-                                                control={form.control}
-                                                name={`ingredients.${index}.id`}
-                                                render={({ field }) => (
-                                                    <FormItem className="flex flex-col">
-                                                        <IngredientsCommandBox
-                                                            field={field}
-                                                            index={index}
-                                                            ingredients={
-                                                                ingredients.data
-                                                            }
-                                                            setValue={
-                                                                form.setValue
-                                                            }
-                                                            setIsIngredientFormOpen={
-                                                                setIsIngredientFormOpen
-                                                            }
-                                                        />
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
+                        {(isCredit || initialDelivery) && (
+                            <FormField
+                                control={form.control}
+                                name={`credit`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Amount (in EUR)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                className="w-[250px]"
+                                                type="number"
+                                                step={0.01}
+                                                min={0}
+                                                autoFocus={false}
+                                                {...field}
                                             />
-                                        </TableCell>
-                                        <TableCell>
-                                            <FormField
-                                                control={form.control}
-                                                name={`ingredients.${index}.variant`}
-                                                render={({ field }) => (
-                                                    <FormItem className="flex-1">
-                                                        <FormControl>
-                                                            {items[index].vat &&
-                                                                ingredients.data.find(
-                                                                    (
-                                                                        ingredient: Ingredient
-                                                                    ) =>
-                                                                        ingredient.id ===
-                                                                        items[
-                                                                            index
-                                                                        ].id
-                                                                ).variants
-                                                                    .length >
-                                                                    0 && (
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                    </div>
+
+                    {!isCredit && !initialDelivery && (
+                        <>
+                            <h2 className="border-b w-fit mt-8">Items:</h2>
+                            <div className="border relative rounded-lg max-h-[380px] md:max-h-none overflow-scroll mt-6">
+                                <Table>
+                                    <TableHeader className="shadow-sm sticky top-0 bg-background">
+                                        <TableRow>
+                                            <TableHead>ITEM</TableHead>
+                                            <TableHead>UNIT</TableHead>
+                                            <TableHead>AMOUNT</TableHead>
+                                            <TableHead className="w-[100px]">
+                                                TOTAL PRICE
+                                            </TableHead>
+                                            <TableHead />
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody className="mt-5">
+                                        {fields.map((field, index) => (
+                                            <TableRow key={field.id}>
+                                                <TableCell>
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`ingredients.${index}.id`}
+                                                        render={({ field }) => (
+                                                            <FormItem className="flex flex-col">
+                                                                <IngredientsCommandBox
+                                                                    field={
+                                                                        field
+                                                                    }
+                                                                    index={
+                                                                        index
+                                                                    }
+                                                                    ingredients={
+                                                                        ingredients.data
+                                                                    }
+                                                                    setValue={
+                                                                        form.setValue
+                                                                    }
+                                                                    setIsIngredientFormOpen={
+                                                                        setIsIngredientFormOpen
+                                                                    }
+                                                                />
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`ingredients.${index}.unit`}
+                                                        render={({ field }) => (
+                                                            <FormItem className="flex-1">
+                                                                <FormControl>
                                                                     <Select
                                                                         onValueChange={
                                                                             field.onChange
@@ -447,260 +488,216 @@ export default function DeliveryForm() {
                                                                             </SelectTrigger>
                                                                         </FormControl>
                                                                         <SelectContent>
-                                                                            {ingredients.data
-                                                                                .find(
-                                                                                    (
-                                                                                        ingredient: Ingredient
-                                                                                    ) =>
-                                                                                        ingredient.id ===
-                                                                                        items[
-                                                                                            index
-                                                                                        ]
-                                                                                            .id
+                                                                            {UNIT.map(
+                                                                                (
+                                                                                    unit
+                                                                                ) => (
+                                                                                    <SelectItem
+                                                                                        key={
+                                                                                            unit
+                                                                                        }
+                                                                                        value={
+                                                                                            unit
+                                                                                        }>
+                                                                                        {
+                                                                                            unit
+                                                                                        }
+                                                                                    </SelectItem>
                                                                                 )
-                                                                                .variants.map(
-                                                                                    (
-                                                                                        variant: IngredientVariant
-                                                                                    ) => (
-                                                                                        <SelectItem
-                                                                                            key={
-                                                                                                variant.id
-                                                                                            }
-                                                                                            value={
-                                                                                                variant.id
-                                                                                            }>
-                                                                                            {
-                                                                                                variant.name
-                                                                                            }
-                                                                                        </SelectItem>
-                                                                                    )
-                                                                                )}
+                                                                            )}
                                                                         </SelectContent>
                                                                     </Select>
-                                                                )}
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <FormField
-                                                control={form.control}
-                                                name={`ingredients.${index}.unit`}
-                                                render={({ field }) => (
-                                                    <FormItem className="flex-1">
-                                                        <FormControl>
-                                                            <Select
-                                                                onValueChange={
-                                                                    field.onChange
-                                                                }
-                                                                value={
-                                                                    field.value
-                                                                }>
-                                                                <FormControl>
-                                                                    <SelectTrigger className="rounded-lg w-20 md:w-24">
-                                                                        <SelectValue placeholder="Select" />
-                                                                    </SelectTrigger>
                                                                 </FormControl>
-                                                                <SelectContent>
-                                                                    {UNIT.map(
-                                                                        (
-                                                                            unit
-                                                                        ) => (
-                                                                            <SelectItem
-                                                                                key={
-                                                                                    unit
-                                                                                }
-                                                                                value={
-                                                                                    unit
-                                                                                }>
-                                                                                {
-                                                                                    unit
-                                                                                }
-                                                                            </SelectItem>
-                                                                        )
-                                                                    )}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <FormField
-                                                control={form.control}
-                                                name={`ingredients.${index}.amount`}
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <Input
-                                                                className="w-16 md:w-20"
-                                                                type="number"
-                                                                step={0.01}
-                                                                min={0}
-                                                                autoFocus={
-                                                                    false
-                                                                }
-                                                                {...field}
-                                                                onKeyDown={(
-                                                                    event
-                                                                ) => {
-                                                                    if (
-                                                                        event.key ===
-                                                                        "Enter"
-                                                                    ) {
-                                                                        event.preventDefault();
-                                                                    }
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <FormField
-                                                control={form.control}
-                                                name={`ingredients.${index}.price`}
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <Input
-                                                                className="w-16 md:w-20"
-                                                                type="number"
-                                                                step={0.01}
-                                                                min={0}
-                                                                autoFocus={
-                                                                    false
-                                                                }
-                                                                {...field}
-                                                                onChange={(
-                                                                    event
-                                                                ) =>
-                                                                    field.onChange(
-                                                                        parseFloat(
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`ingredients.${index}.amount`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                    <Input
+                                                                        className="w-16 md:w-20"
+                                                                        type="number"
+                                                                        step={
+                                                                            0.01
+                                                                        }
+                                                                        min={0}
+                                                                        autoFocus={
+                                                                            false
+                                                                        }
+                                                                        {...field}
+                                                                        onKeyDown={(
                                                                             event
-                                                                                .target
-                                                                                .value
-                                                                        )
-                                                                    )
-                                                                }
-                                                                onKeyDown={(
-                                                                    event
-                                                                ) => {
-                                                                    if (
-                                                                        event.key ===
-                                                                        "Enter"
-                                                                    ) {
-                                                                        event.preventDefault();
-                                                                    }
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button
-                                                className="rounded-full"
-                                                onClick={() => remove(index)}
-                                                size="icon"
-                                                variant="ghost">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    <Button
-                        type="button"
-                        size="sm"
-                        defaultValue={undefined}
-                        variant={"secondary"}
-                        className="rounded-lg border mt-4"
-                        onClick={() =>
-                            append({
-                                id: "",
-                                variant: "",
-                                unit: "",
-                                vat: "",
-                                price: 0,
-                                amount: 0,
-                            })
-                        }>
-                        <Plus className="mr-2 w-4 h-4" /> Add item
-                    </Button>
-
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                                                                        ) => {
+                                                                            if (
+                                                                                event.key ===
+                                                                                "Enter"
+                                                                            ) {
+                                                                                event.preventDefault();
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`ingredients.${index}.price`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                    <Input
+                                                                        className="w-16 md:w-20"
+                                                                        type="number"
+                                                                        step={
+                                                                            0.01
+                                                                        }
+                                                                        min={0}
+                                                                        autoFocus={
+                                                                            false
+                                                                        }
+                                                                        {...field}
+                                                                        onChange={(
+                                                                            event
+                                                                        ) =>
+                                                                            field.onChange(
+                                                                                parseFloat(
+                                                                                    event
+                                                                                        .target
+                                                                                        .value
+                                                                                )
+                                                                            )
+                                                                        }
+                                                                        onKeyDown={(
+                                                                            event
+                                                                        ) => {
+                                                                            if (
+                                                                                event.key ===
+                                                                                "Enter"
+                                                                            ) {
+                                                                                event.preventDefault();
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        className="rounded-full"
+                                                        onClick={() =>
+                                                            remove(index)
+                                                        }
+                                                        size="icon"
+                                                        variant="ghost">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                             <Button
                                 type="button"
                                 size="sm"
-                                variant={"outline"}
-                                className="rounded-lg border mt-4 ml-4">
-                                <Coins className="mr-2 w-4 h-4" />{" "}
-                                {credit == 0
-                                    ? "Add credit"
-                                    : formatPrice(credit)}
+                                defaultValue={undefined}
+                                variant={"secondary"}
+                                className="rounded-lg border mt-4"
+                                onClick={() =>
+                                    append({
+                                        id: "",
+                                        unit: "",
+                                        vat: "",
+                                        price: 0,
+                                        amount: 0,
+                                    })
+                                }>
+                                <Plus className="mr-2 w-4 h-4" /> Add item
                             </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Credit</AlertDialogTitle>
-                            </AlertDialogHeader>
-                            <AlertDialogDescription>
-                                The amount in EUR for credit for this delivery
-                            </AlertDialogDescription>
-                            <FormField
-                                control={form.control}
-                                name={`credit`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormControl>
-                                            <Input
-                                                className="w-16 md:w-20"
-                                                type="number"
-                                                step={0.01}
-                                                min={0}
-                                                autoFocus={false}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
 
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction>Update</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={"outline"}
+                                        className="rounded-lg border mt-4 ml-4">
+                                        <Coins className="mr-2 w-4 h-4" />{" "}
+                                        {credit == 0
+                                            ? "Add credit"
+                                            : formatPrice(credit)}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                            Credit
+                                        </AlertDialogTitle>
+                                    </AlertDialogHeader>
+                                    <AlertDialogDescription>
+                                        The amount in EUR for credit for this
+                                        delivery
+                                    </AlertDialogDescription>
+                                    <FormField
+                                        control={form.control}
+                                        name={`credit`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input
+                                                        className="w-16 md:w-20"
+                                                        type="number"
+                                                        step={0.01}
+                                                        min={0}
+                                                        autoFocus={false}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
-                    <p className="text-red-500 text-sm mt-2">
-                        {form.formState.errors.ingredients?.message}
-                    </p>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>
+                                            Cancel
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction>
+                                            Update
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </>
+                    )}
 
                     <div className="flex justify-end pt-5">
                         <Button
                             disabled={isLoading}
                             type="submit"
                             onClick={async (event) => {
-                                event.preventDefault();
-                                const validation = await form.trigger();
-                                if (validation) {
-                                    setIsSummeryOpen(true);
-                                    setSummery(calculateDeliverySummary(items));
+                                if (!isCredit && !initialDelivery) {
+                                    event.preventDefault();
+                                    const validation = await form.trigger();
+                                    if (validation) {
+                                        setIsSummeryOpen(true);
+                                        setSummery(
+                                            calculateDeliverySummary(items)
+                                        );
+                                    }
                                 }
                             }}>
                             Submit

@@ -60,7 +60,7 @@ import {
     CommandInput,
     CommandItem,
 } from "@/components/ui/command";
-import { DeliveryPrice, Ingredient, IngredientVariant } from "@prisma/client";
+import { DeliveryPrice, Ingredient } from "@prisma/client";
 import { formatPrice } from "@/lib/utils/format-price";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils/format-date";
@@ -80,7 +80,6 @@ export function DataTable({
 }: {
     ingredient: Ingredient & {
         deliveryPrices: DeliveryPrice[];
-        variants: IngredientVariant[];
     };
 }) {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -127,27 +126,6 @@ export function DataTable({
                     </Button>
                 );
             },
-        },
-
-        {
-            accessorKey: "ingredientVariant.name",
-            header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        VARIANT
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
-            },
-            cell: ({ row }: { row: any }) =>
-                (row.original.ingredientVariant &&
-                    `${row.original.ingredientVariant.name} (${row.original.ingredientVariant.wightPerPiece}Kg)`) ||
-                "-",
         },
 
         {

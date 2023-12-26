@@ -23,7 +23,6 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
-import PriceForm from "@/components/ingredients/table/price-form";
 import ItemForm from "@/components/delivery/item-form";
 
 export default function ItemActions({ row }: { row: Row<DeliveryPrice> }) {

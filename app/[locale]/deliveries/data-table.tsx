@@ -28,13 +28,7 @@ import {
 import { DataTablePagination } from "@/components/data-table-pagination";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-    ArrowUpDown,
-    Truck,
-    ChevronsUpDown,
-    Check,
-    FileText,
-} from "lucide-react";
+import { ArrowUpDown, ChevronsUpDown, Check, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils/format-date";
 import { formatPrice } from "@/lib/utils/format-price";
 import { DatePickerWithRange } from "@/components/date-picker-range";
@@ -58,6 +52,7 @@ import { calculateDeliveryTotal } from "@/lib/utils/calculate-total-invoices-pri
 import { useQuery } from "@tanstack/react-query";
 import { getDeliveries } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import DeliveryActions from "./delivery-actions";
 
 export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -72,7 +67,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
         queryFn: getDeliveries,
     });
 
-    const columns: ColumnDef<Delivery & { items: DeliveryPrice }>[] = [
+    const columns: ColumnDef<Delivery & { items: DeliveryPrice[] }>[] = [
         {
             id: "select",
             header: ({ table }) => (
@@ -168,7 +163,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                 );
             },
             cell: ({ row }) =>
-                formatPrice(calculateDeliveryTotal(row.original.items)),
+                formatPrice(calculateDeliveryTotal(row.original)),
         },
         {
             id: "actions",
@@ -238,7 +233,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
         }
 
         const totalPrice = selectedRows.reduce((total, row) => {
-            const price = calculateDeliveryTotal(row.original.items) || 0;
+            const price = calculateDeliveryTotal(row.original) || 0;
             return total + price;
         }, 0);
 
@@ -259,11 +254,6 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                     </span>
                 </h1>
             </div>
-            <Button
-                onClick={() => push("/deliveries/add-delivery")}
-                className="rounded-lg md:ml-auto absolute right-4 top-20 md:hidden">
-                Receive delivery <Truck className="ml-2 w-4 h-4" />
-            </Button>
             <div className="flex flex-col-reverse md:flex-row md:items-center pb-4 md:space-x-4">
                 <DatePickerWithRange date={date} setDate={setDate} />
                 <div className="flex justify-between mb-4 md:mb-0 w-full">
@@ -320,11 +310,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                         </PopoverContent>
                     </Popover>
 
-                    <Button
-                        onClick={() => push("/deliveries/add-delivery")}
-                        className="rounded-lg md:ml-auto hidden md:flex">
-                        Receive delivery <Truck className="ml-2 w-4 h-4" />
-                    </Button>
+                    <DeliveryActions />
                 </div>
             </div>
             <div className="rounded-sm border shadow-sm overflow-scroll">

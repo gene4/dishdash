@@ -61,15 +61,6 @@ const formSchema = z.object({
     amount: z.coerce.number().positive({ message: "Amount is required" }),
     price: z.coerce.number().positive({ message: "Price is required" }),
     supplierId: z.string().nullable(),
-    deliveryVariant: z.string(),
-    variants: z
-        .array(
-            z.object({
-                name: z.string(),
-                wightPerPiece: z.coerce.number(),
-            })
-        )
-        .optional(),
 });
 
 interface Props {
@@ -95,22 +86,13 @@ export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
             vat: "",
             category: "",
             unit: "",
-            deliveryVariant: "",
             supplierId: "",
             price: 0,
             amount: 0,
-            variants: [],
         },
     });
 
-    const variants = form.watch("variants");
-
     const router = useRouter();
-
-    const { fields, append, remove } = useFieldArray({
-        name: "variants",
-        control: form.control,
-    });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         console.log(values, "values");
@@ -222,86 +204,6 @@ export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
                                     )}
                                 />
                             </div>
-
-                            <SheetDescription className="mt-4">
-                                Wight variants (optional):
-                            </SheetDescription>
-                            <ol className="min-h-3 space-y-3 max-h-[300px] overflow-y-scroll">
-                                {fields.map((field, index) => (
-                                    <li key={field.id}>
-                                        <div className="flex justify-between items-end space-x-4 p-[1px]">
-                                            <FormField
-                                                control={form.control}
-                                                name={`variants.${index}.name`}
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel
-                                                            className={
-                                                                labelStyle
-                                                            }>
-                                                            Name
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                {...field}
-                                                                disabled={
-                                                                    isLoading
-                                                                }
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name={`variants.${index}.wightPerPiece`}
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel
-                                                            className={cn(
-                                                                labelStyle,
-                                                                "inline-block w-max"
-                                                            )}>
-                                                            Wight per piece (Kg)
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                type="number"
-                                                                step={0.01}
-                                                                min={0}
-                                                                autoFocus={
-                                                                    false
-                                                                }
-                                                                {...field}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <Button
-                                                className="rounded-full"
-                                                onClick={() => remove(index)}
-                                                size="icon"
-                                                variant="ghost">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ol>
-
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant={"secondary"}
-                                className="rounded-lg border w-fit"
-                                onClick={() =>
-                                    append({ name: "", wightPerPiece: 0 })
-                                }>
-                                <Plus className="mr-2 w-4 h-4" /> Add variant
-                            </Button>
 
                             <SheetDescription className="mt-4">
                                 Enter a delivery price:
@@ -472,56 +374,6 @@ export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
                                 />
                             </div>
                             <div className="flex space-x-6">
-                                {variants && variants.length > 0 && (
-                                    <FormField
-                                        control={form.control}
-                                        name="deliveryVariant"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Variant</FormLabel>
-                                                <Select
-                                                    value={field.value}
-                                                    disabled={isLoading}
-                                                    onValueChange={
-                                                        field.onChange
-                                                    }>
-                                                    <FormControl>
-                                                        <SelectTrigger className="w-[130px]">
-                                                            <SelectValue placeholder="Select" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {variants
-                                                            .filter(
-                                                                (item) =>
-                                                                    item.name
-                                                            )
-                                                            .map(
-                                                                (
-                                                                    variant,
-                                                                    index
-                                                                ) => (
-                                                                    <SelectItem
-                                                                        key={
-                                                                            index
-                                                                        }
-                                                                        value={
-                                                                            variant.name
-                                                                        }>
-                                                                        {
-                                                                            variant.name
-                                                                        }
-                                                                    </SelectItem>
-                                                                )
-                                                            )}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                )}
-
                                 <FormField
                                     control={form.control}
                                     name="amount"

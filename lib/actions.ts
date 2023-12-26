@@ -1,7 +1,7 @@
 "use server";
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
-import { Delivery, Supplier } from "@prisma/client";
+import { Supplier } from "@prisma/client";
 import { nestedRecipeItems } from "./utils";
 
 export async function getIngredients() {
@@ -18,7 +18,6 @@ export async function getIngredients() {
         include: {
             selectedDeliveryPrice: true,
             deliveryPrices: true,
-            variants: true,
         },
     });
     return ingredients;
@@ -87,6 +86,7 @@ export async function getDeliveries() {
             items: { include: { ingredient: true } },
         },
     });
+    console.log("deliveries", deliveries);
 
     return deliveries;
 }

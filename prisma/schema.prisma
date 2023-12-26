@@ -16,8 +16,6 @@ model Ingredient {
   vat                      String
   category                 String
 
-
-  variants                 IngredientVariant[] 
   deliveryPrices           DeliveryPrice[] @relation("deliveryPrices")
   
   selectedDeliveryPrice    DeliveryPrice?   @relation("selecteDelivery", fields: [selectedDeliveryPriceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -26,19 +24,6 @@ model Ingredient {
   recipes      RecipeIngredient[]
   dishes       DishIngredient[]
 
-}
-
-model IngredientVariant {
-  id                       String      @id @default(uuid())
-  name                     String
-  wightPerPiece            Float?
-  
-  parentIngredient         Ingredient @relation(fields: [parentIngredientId], references: [id])
-  parentIngredientId       String
-
-  deliveryPrices           DeliveryPrice[] 
-
-  @@index([parentIngredientId])
 }
 
 
@@ -57,8 +42,6 @@ model DeliveryPrice {
   supplier    Supplier?    @relation(fields: [supplierId], references: [id])
   supplierId  String?
 
-  ingredientVariant    IngredientVariant?    @relation(fields: [ingredientVariantId], references: [id])
-  ingredientVariantId  String? 
 
   ingredient   Ingredient @relation("deliveryPrices",fields: [ingredientId], references: [id])
   ingredientId String
@@ -68,24 +51,23 @@ model DeliveryPrice {
 @@index([deliveryId])
 @@index([ingredientId])
 @@index([supplierId])
-@@index([ingredientVariantId])
 }
 
-model Credit {
-    id           String      @id @default(uuid()) 
-    amount       Float
-    date         DateTime 
+// model Credit {
+//     id           String      @id @default(uuid()) 
+//     amount       Float
+//     date         DateTime 
 
-    delivery     Delivery?    @relation(fields: [deliveryId], references: [id])
-    deliveryId   String? @unique
+//     delivery     Delivery?    @relation(fields: [deliveryId], references: [id])
+//     deliveryId   String? @unique
 
-    supplier    Supplier?    @relation(fields: [supplierId], references: [id])
-    supplierId  String?
+//     supplier    Supplier?    @relation(fields: [supplierId], references: [id])
+//     supplierId  String?
 
 
-    @@index([deliveryId])
-    @@index([supplierId])
-}
+//     @@index([deliveryId])
+//     @@index([supplierId])
+// }
 
 
 model Recipe {
@@ -166,7 +148,7 @@ model Supplier {
   paymentInfo String? @db.Text
   deliveries  Delivery[] 
   deliveryPrices DeliveryPrice[]
-  credits     Credit[]
+  
 
   createdAt   DateTime    @default(now())
 }
@@ -179,7 +161,7 @@ model Delivery {
   date        DateTime 
   fileUrl     String? @db.Text
   fileRef     String? @db.Text
-  credit      Credit?
+  credit      Float
  
   supplier    Supplier    @relation(fields: [supplierId], references: [id])
   supplierId  String

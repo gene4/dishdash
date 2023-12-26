@@ -1,8 +1,6 @@
 import { currentUser } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
-
 import prismadb from "@/lib/prismadb";
-import { IngredientVariant } from "@prisma/client";
 
 export async function POST(req: Request) {
     try {
@@ -16,8 +14,6 @@ export async function POST(req: Request) {
             amount,
             price,
             date,
-            variants,
-            deliveryVariant,
             deliveryId,
             supplierId,
         } = body;
@@ -48,37 +44,9 @@ export async function POST(req: Request) {
             },
         });
 
-        const ingredientVariants: IngredientVariant[] = [];
-
-        if (variants.length > 0) {
-            await Promise.all(
-                variants.map(async (variant: any) => {
-                    const ingredientVariant =
-                        await prismadb.ingredientVariant.create({
-                            data: {
-                                name: variant.name,
-                                wightPerPiece: variant.wightPerPiece,
-                                parentIngredientId: ingredient.id,
-                            },
-                        });
-
-                    // Push the created ingredient to the array
-                    ingredientVariants.push(ingredientVariant);
-                })
-            );
-        }
-
-        const selectedIngredientVariant = ingredientVariants.find(
-            (variant) => variant.name === deliveryVariant
-        );
-
         const deliveryPrice = await prismadb.deliveryPrice.create({
             data: {
                 ingredientId: ingredient.id,
-                ingredientVariantId:
-                    (selectedIngredientVariant &&
-                        selectedIngredientVariant.id) ||
-                    null,
                 supplierId,
                 amount,
                 price,

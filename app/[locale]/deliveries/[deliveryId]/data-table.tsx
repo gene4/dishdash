@@ -54,7 +54,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import ItemActions from "./item-actions";
 import ItemForm from "@/components/delivery/item-form";
-import EditDeliveryForm from "@/components/delivery/edit-delivery-form";
+import DeliveryForm from "@/components/delivery/delivery-form";
 
 export function DataTable({
     delivery,
@@ -68,7 +68,6 @@ export function DataTable({
     const [isItemFormOpen, setIsItemFormOpen] = useState(false);
 
     const { push } = useRouter();
-    console.log(delivery);
 
     const columns: ColumnDef<DeliveryPrice>[] = [
         {
@@ -86,12 +85,6 @@ export function DataTable({
                         <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
                     </Button>
                 );
-            },
-            cell: ({ row }: { row: any }) => {
-                const item = row.original;
-                return `${item.ingredient.name} ${
-                    item.ingredientVariant && `(${item.ingredientVariant.name})`
-                }`;
             },
         },
         {
@@ -205,6 +198,8 @@ export function DataTable({
         });
     }, [delivery.id, push]);
 
+    const isCredit = delivery.items.length === 0 && !!delivery.credit;
+
     return (
         <>
             <div className="flex w-full justify-between mb-4">
@@ -308,11 +303,23 @@ export function DataTable({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <EditDeliveryForm
-                isOpen={isEditDeliveryFormOpen}
-                setIsOpen={setIsEditDeliveryFormOpen}
-                initialDelivery={delivery}
-            />
+
+            <Dialog
+                open={isEditDeliveryFormOpen}
+                onOpenChange={setIsEditDeliveryFormOpen}>
+                <DialogContent className="md:w-fit">
+                    <DialogHeader>
+                        <DialogTitle>
+                            Edit {isCredit ? "Credit" : "Delivery"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <DeliveryForm
+                        isCredit={isCredit}
+                        initialDelivery={delivery}
+                        setIsDialog={setIsEditDeliveryFormOpen}
+                    />
+                </DialogContent>
+            </Dialog>
             <Dialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}>
@@ -340,6 +347,28 @@ export function DataTable({
                 isOpen={isItemFormOpen}
                 setIsOpen={setIsItemFormOpen}
             />
+            <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Are you absolutely sure?</DialogTitle>
+                        <DialogDescription>
+                            This delivery will be permanently deleted.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button onClick={() => setIsDeleteDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={onDelete}
+                            className="bg-red-500 hover:bg-red-500/90">
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

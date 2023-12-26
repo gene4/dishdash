@@ -33,7 +33,7 @@ export default async function IngredientsPage() {
                 Receive Delivery
             </h1>
             <HydrationBoundary state={dehydrate(queryClient)}>
-                <DeliveryForm />
+                <DeliveryForm isCredit={false} />
             </HydrationBoundary>
         </>
     );

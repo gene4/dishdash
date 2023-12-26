@@ -84,10 +84,6 @@ export default function IngredientsCommandBox({
                                         ingredient.id
                                     );
                                     setValue(
-                                        `ingredients.${index}.variant`,
-                                        ""
-                                    );
-                                    setValue(
                                         `ingredients.${index}.vat`,
                                         ingredient.vat
                                     );

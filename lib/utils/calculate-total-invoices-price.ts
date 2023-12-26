@@ -1,7 +1,7 @@
-export function calculateDeliveryTotal(items: any) {
+export function calculateDeliveryTotal(delivery: any) {
     let total = 0;
 
-    for (const item of items) {
+    for (const item of delivery.items) {
         // Extract the numeric part of the VAT string and convert it to a number
         const vatPercentage = parseInt(item.ingredient.vat, 10) / 100;
 
@@ -9,7 +9,7 @@ export function calculateDeliveryTotal(items: any) {
         total += item.price * (1 + vatPercentage);
     }
 
-    return total;
+    return total - delivery.credit;
 }
 
 export const calculateDeliverySummary = (items: any) => {

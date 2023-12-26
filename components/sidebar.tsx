@@ -22,7 +22,7 @@ export const Sidebar = ({ setIsOpen }: Props) => {
                         <Link
                             onClick={() => setIsOpen && setIsOpen(false)}
                             className={clsx(
-                                "flex items-center hover:bg-muted text-sm font-normal",
+                                "flex items-center hover:bg-muted text-md md:text-sm font-normal",
                                 pathname === item.href &&
                                     "bg-primary hover:bg-primary text-white",
                                 "w-full rounded-lg py-1 px-3"

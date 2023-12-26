@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { DeliveryPrice, Ingredient, IngredientVariant } from "@prisma/client";
+import { DeliveryPrice, Ingredient } from "@prisma/client";
 import { Edit, Trash2, Star } from "lucide-react";
 import {
     AlertDialog,
@@ -33,7 +33,7 @@ export default function PriceActions({
 }: {
     row: Row<DeliveryPrice>;
     selectedPriceId: string | null;
-    ingredient: Ingredient & { variants: IngredientVariant[] };
+    ingredient: Ingredient;
 }) {
     const deliveryPrice = row.original;
 

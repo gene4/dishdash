@@ -44,7 +44,7 @@ import {
     CommandItem,
 } from "@/components/ui/command";
 import { toast } from "sonner";
-import { DeliveryPrice, Ingredient, IngredientVariant } from "@prisma/client";
+import { DeliveryPrice, Ingredient } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -52,7 +52,6 @@ import { getSuppliers } from "@/lib/actions";
 
 const formSchema = z.object({
     unit: z.string().min(1, { message: "Unit is required" }),
-    variant: z.string().optional(),
     amount: z.coerce.number().positive({ message: "Amount is required" }),
     price: z.coerce.number().positive({ message: "Price is required" }),
     supplierId: z.string().min(1, { message: "Supplier is required" }),
@@ -62,7 +61,7 @@ interface Props {
     initialPrice?: DeliveryPrice;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
-    ingredient: Ingredient & { variants: IngredientVariant[] };
+    ingredient: Ingredient;
 }
 
 export default function PriceForm({
@@ -83,7 +82,6 @@ export default function PriceForm({
         defaultValues: {
             ...initialPrice,
             supplierId: initialPrice?.supplierId || undefined,
-            variant: initialPrice?.ingredientVariantId || undefined,
         } || {
             supplierId: "",
             variant: "",
@@ -131,7 +129,7 @@ export default function PriceForm({
     const labelStyle = "after:content-['*'] after:text-red-500 after:ml-0.5";
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent>
+            <DialogContent className="md:w-fit">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold">
                         {initialPrice ? "Update" : "Add"} Price
@@ -271,50 +269,6 @@ export default function PriceForm({
                                         </FormItem>
                                     )}
                                 />
-                                {ingredient.variants.length > 0 && (
-                                    <FormField
-                                        control={form.control}
-                                        name="variant"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel
-                                                    className={labelStyle}>
-                                                    Variant
-                                                </FormLabel>
-                                                <Select
-                                                    value={field.value}
-                                                    onValueChange={
-                                                        field.onChange
-                                                    }>
-                                                    <FormControl>
-                                                        <SelectTrigger className="w-[130px]">
-                                                            <SelectValue
-                                                                className="text-muted-foreground"
-                                                                placeholder="Select"
-                                                            />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {ingredient.variants.map(
-                                                            (variant) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        variant.id
-                                                                    }
-                                                                    value={
-                                                                        variant.id
-                                                                    }>
-                                                                    {`${variant.name} (${variant.wightPerPiece}Kg)`}
-                                                                </SelectItem>
-                                                            )
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                )}
                             </div>
                             <div className="flex space-x-6">
                                 <FormField

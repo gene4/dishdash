@@ -33,9 +33,8 @@ export default async function IngredientsIdPage({
         },
         include: {
             selectedDeliveryPrice: true,
-            variants: true,
             deliveryPrices: {
-                include: { supplier: true, ingredientVariant: true },
+                include: { supplier: true },
                 orderBy: { date: "desc" },
             },
         },

@@ -53,40 +53,31 @@ export async function POST(req: Request) {
                 date: new Date(date),
                 fileUrl,
                 fileRef,
+                credit: credit ? parseFloat(credit) : null,
             },
         });
-
-        if (credit && parseFloat(credit) != 0) {
-            await prismadb.credit.create({
-                data: {
-                    amount: parseFloat(credit),
-                    date: new Date(date),
-                    deliveryId: delivery.id,
-                },
-            });
-        }
-
-        for (const ingredient of parsedIngredients) {
-            const deliveryPrice = await prismadb.deliveryPrice.create({
-                data: {
-                    unit: ingredient.unit,
-                    amount: ingredient.amount,
-                    price: ingredient.price,
-                    date: delivery.date,
-                    ingredientId: ingredient.id,
-                    deliveryId: delivery.id,
-                    supplierId: delivery.supplierId,
-                    ingredientVariantId: ingredient.variant,
-                },
-            });
-            await prismadb.ingredient.update({
-                where: {
-                    id: ingredient.id,
-                },
-                data: {
-                    selectedDeliveryPriceId: deliveryPrice.id,
-                },
-            });
+        if (ingredients.length > 0) {
+            for (const ingredient of parsedIngredients) {
+                const deliveryPrice = await prismadb.deliveryPrice.create({
+                    data: {
+                        unit: ingredient.unit,
+                        amount: ingredient.amount,
+                        price: ingredient.price,
+                        date: delivery.date,
+                        ingredientId: ingredient.id,
+                        deliveryId: delivery.id,
+                        supplierId: delivery.supplierId,
+                    },
+                });
+                await prismadb.ingredient.update({
+                    where: {
+                        id: ingredient.id,
+                    },
+                    data: {
+                        selectedDeliveryPriceId: deliveryPrice.id,
+                    },
+                });
+            }
         }
 
         return NextResponse.json(delivery);
