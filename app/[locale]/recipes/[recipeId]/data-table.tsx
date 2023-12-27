@@ -156,40 +156,6 @@ export function DataTable({ recipe }: DataTableProps) {
                                 </Tooltip>
                             </TooltipProvider>
                         );
-                    }
-                    if (
-                        recipeIngredient.unit === "Kg" &&
-                        recipeIngredient.ingredient.selectedDeliveryPrice
-                            .unit === "Piece"
-                    ) {
-                        if (
-                            !recipeIngredient.ingredient.selectedDeliveryPrice
-                                .ingredientVariant
-                        ) {
-                            return (
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Info className="h-4 w-4" />
-                                        </TooltipTrigger>
-                                        <TooltipContent className="bg-secondary text-secondary-foreground rounded-3xl">
-                                            <p>
-                                                Please specify a weight variant
-                                                for piece to weight conversion
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            );
-                        } else {
-                            return formatPrice(
-                                recipeIngredient.ingredient
-                                    .selectedDeliveryPrice.price /
-                                    recipeIngredient.ingredient
-                                        .selectedDeliveryPrice.ingredientVariant
-                                        .wightPerPiece
-                            );
-                        }
                     } else {
                         return formatPrice(
                             recipeIngredient.ingredient.selectedDeliveryPrice
@@ -232,25 +198,6 @@ export function DataTable({ recipe }: DataTableProps) {
                 if (row.original.ingredientId) {
                     if (!row.original.ingredient.selectedDeliveryPrice) {
                         return "N/A";
-                    }
-                    if (
-                        recipeIngredient.unit === "Kg" &&
-                        recipeIngredient.ingredient.selectedDeliveryPrice
-                            .unit === "Piece"
-                    ) {
-                        if (
-                            !recipeIngredient.ingredient.selectedDeliveryPrice
-                                .ingredientVariant
-                        ) {
-                            return "N/A";
-                        } else {
-                            pricePerUnit =
-                                recipeIngredient.ingredient
-                                    .selectedDeliveryPrice.price /
-                                recipeIngredient.ingredient
-                                    .selectedDeliveryPrice.ingredientVariant
-                                    .wightPerPiece;
-                        }
                     } else {
                         pricePerUnit =
                             recipeIngredient.ingredient.selectedDeliveryPrice

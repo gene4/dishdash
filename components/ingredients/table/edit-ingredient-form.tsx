@@ -32,8 +32,6 @@ import {
 import { toast } from "sonner";
 import { Ingredient } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
@@ -67,11 +65,6 @@ export default function EditIngredientForm({
     });
 
     const router = useRouter();
-
-    const { fields, append, remove } = useFieldArray({
-        name: "variants",
-        control: form.control,
-    });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsOpen(false);

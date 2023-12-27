@@ -107,7 +107,7 @@ export function DataTable() {
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer hover:bg-muted/50"
                                     onClick={() =>
                                         router.push(
                                             `/recipes/${row.original.id}`

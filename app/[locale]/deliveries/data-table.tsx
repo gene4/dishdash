@@ -338,7 +338,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
-                                    className="cursor-pointer"
+                                    className="cursor-pointer hover:bg-muted/50"
                                     onClick={() =>
                                         push(`/deliveries/${row.original.id}`)
                                     }

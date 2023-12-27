@@ -41,7 +41,7 @@ export default function IngredientsCommandBox({
                         variant="outline"
                         role="combobox"
                         className={cn(
-                            "w-[160px] justify-between",
+                            "w-[180px] justify-between",
                             !field.value && "text-muted-foreground"
                         )}>
                         {field.value
@@ -83,10 +83,7 @@ export default function IngredientsCommandBox({
                                         `ingredients.${index}.id`,
                                         ingredient.id
                                     );
-                                    setValue(
-                                        `ingredients.${index}.vat`,
-                                        ingredient.vat
-                                    );
+
                                     setValue(
                                         `ingredients.${index}.type`,
                                         "yield" in ingredient
@@ -94,7 +91,6 @@ export default function IngredientsCommandBox({
                                             : "ingredient"
                                     );
 
-                                    setValue(`ingredientsId`, ingredient.id);
                                     setValue(`ingredientId`, ingredient.id);
                                     setIsOpen(false);
                                 }}>

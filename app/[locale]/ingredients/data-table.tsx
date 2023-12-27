@@ -183,7 +183,7 @@ export function DataTable() {
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
-                                    className="cursor-pointer"
+                                    className="cursor-pointer hover:bg-muted/50"
                                     onClick={() =>
                                         push(`/ingredients/${row.original.id}`)
                                     }
