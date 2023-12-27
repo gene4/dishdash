@@ -11,7 +11,6 @@ export async function PATCH(
         const body = await req.json();
         const user = await currentUser();
         const { selectedDeliveryPriceId } = body;
-        console.log("selectedDeliveryPriceId", selectedDeliveryPriceId);
 
         if (!params.ingredientId) {
             return new NextResponse("Ingredient ID required", { status: 400 });
