@@ -3,16 +3,13 @@ import { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Navbar } from "@/components/navbar";
 import { NextIntlClientProvider } from "next-intl";
 import { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { notFound } from "next/navigation";
 import { deDE } from "@clerk/localizations";
 import { Toaster } from "sonner";
-
 import clsx from "clsx";
-import { Sidebar } from "@/components/sidebar";
 import TanstackProvider from "@/components/tanstack-provider";
 
 type Props = {
@@ -78,21 +75,9 @@ export default async function RootLayout({
                                 <NextIntlClientProvider
                                     locale={locale}
                                     messages={messages}>
-                                    <Navbar />
-                                    <div className="md:flex">
-                                        <div className="hidden top-14 fixed md:sticky md:flex w-fit flex-col h-[calc(100vh-4rem)]">
-                                            <Sidebar />
-                                        </div>
-                                        <main className="mx-auto max-w-7xl py-6 px-4 md:px-7 flex-1 flex-grow ">
-                                            {children}
-                                        </main>
-                                    </div>
+                                    {children}
+
                                     <Toaster richColors />
-                                    {/* <footer className="w-full flex items-center justify-center py-3">
-                                    <span className="text-default-600">
-                                        © DishDash
-                                    </span>
-                                </footer> */}
                                 </NextIntlClientProvider>
                             </div>
                         </ThemeProvider>

@@ -1,19 +1,19 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
-import { DataTable } from "./data-table";
+import { getIngredients, getRecipes, getSuppliers } from "@/lib/actions";
 import {
     HydrationBoundary,
     QueryClient,
     dehydrate,
 } from "@tanstack/react-query";
-import {
-    getDishes,
-    getIngredients,
-    getRecipes,
-    getSuppliers,
-} from "@/lib/actions";
+import CreateRecipeForm from "@/components/recipes/create-recipe-form";
+import { redirect } from "next/navigation";
 
-export default async function RecipesPage() {
-    const { userId } = auth();
+export default async function CreateRecipePage() {
+    const { userId, orgRole } = auth();
+
+    if (orgRole === "basic_member") {
+        redirect("/");
+    }
 
     if (!userId) {
         return redirectToSignIn();
@@ -37,20 +37,15 @@ export default async function RecipesPage() {
         queryFn: getSuppliers,
     });
 
-    const dishes = queryClient.prefetchQuery({
-        queryKey: ["dishes"],
-        queryFn: getDishes,
-    });
-
-    await Promise.all([dishes, recipes, ingredients, suppliers]);
+    await Promise.all([recipes, ingredients, suppliers]);
 
     return (
         <>
             <h1 className="scroll-m-20 pb-2 text-2xl font-semibold tracking-tight transition-colors first:mt-0 mb-5">
-                Dishes
+                Create Recipe
             </h1>
             <HydrationBoundary state={dehydrate(queryClient)}>
-                <DataTable />
+                <CreateRecipeForm />
             </HydrationBoundary>
         </>
     );

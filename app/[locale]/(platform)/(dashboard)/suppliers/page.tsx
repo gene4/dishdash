@@ -1,6 +1,7 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import { DataTable } from "./data-table";
 import { getSuppliers } from "@/lib/actions";
+import { redirect } from "next/navigation";
 import {
     HydrationBoundary,
     QueryClient,
@@ -8,7 +9,11 @@ import {
 } from "@tanstack/react-query";
 
 export default async function IngredientsPage() {
-    const { userId } = auth();
+    const { userId, orgRole } = auth();
+
+    if (orgRole === "basic_member") {
+        redirect("/");
+    }
 
     if (!userId) {
         return redirectToSignIn();

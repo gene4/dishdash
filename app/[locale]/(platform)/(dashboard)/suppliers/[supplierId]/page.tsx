@@ -1,6 +1,7 @@
 import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import SupplierTabs from "./supplier-tabs";
+import { redirect } from "next/navigation";
 
 interface RecipeIdPageProps {
     params: {
@@ -9,7 +10,11 @@ interface RecipeIdPageProps {
 }
 
 export default async function SupplierIdPage({ params }: RecipeIdPageProps) {
-    const { userId } = auth();
+    const { userId, orgRole } = auth();
+
+    if (orgRole === "basic_member") {
+        redirect("/");
+    }
 
     if (!userId) {
         return redirectToSignIn();

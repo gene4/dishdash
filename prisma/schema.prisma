@@ -53,22 +53,6 @@ model DeliveryPrice {
 @@index([supplierId])
 }
 
-// model Credit {
-//     id           String      @id @default(uuid()) 
-//     amount       Float
-//     date         DateTime 
-
-//     delivery     Delivery?    @relation(fields: [deliveryId], references: [id])
-//     deliveryId   String? @unique
-
-//     supplier    Supplier?    @relation(fields: [supplierId], references: [id])
-//     supplierId  String?
-
-
-//     @@index([deliveryId])
-//     @@index([supplierId])
-// }
-
 
 model Recipe {
   id              String      @id @default(uuid()) 

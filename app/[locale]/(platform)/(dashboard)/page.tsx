@@ -3,7 +3,7 @@
 
 import Lottie from "lottie-react";
 import { useTranslations } from "next-intl";
-import animation from "../../public/home.json";
+import animation from "../../../../public/home.json";
 
 export default function Home() {
     const t = useTranslations("HomePage_Dashboard");

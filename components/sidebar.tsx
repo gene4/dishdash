@@ -5,6 +5,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 
 interface Props {
     setIsOpen?: (open: boolean) => void;
@@ -12,7 +13,9 @@ interface Props {
 
 export const Sidebar = ({ setIsOpen }: Props) => {
     const t = useTranslations("Navigation");
+    const { orgRole } = useAuth();
     const pathname = usePathname();
+    console.log(orgRole);
 
     return (
         <aside className="flex space-y-4 flex-col md:h-full md:border-divider  md:w-48">
@@ -25,7 +28,10 @@ export const Sidebar = ({ setIsOpen }: Props) => {
                                 "flex items-center hover:bg-muted text-md md:text-sm font-normal",
                                 pathname === item.href &&
                                     "bg-primary hover:bg-primary text-white",
-                                "w-full rounded-lg py-1 px-3"
+                                "w-full rounded-lg py-1 px-3",
+                                item.restricted &&
+                                    orgRole === "basic_member" &&
+                                    "hidden"
                             )}
                             key={item.href}
                             href={item.href}>

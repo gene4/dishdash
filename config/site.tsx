@@ -1,75 +1,41 @@
 export type SiteConfig = typeof siteConfig;
-import {
-    Home,
-    Banana,
-    Pizza,
-    ClipboardList,
-    Truck,
-    UserCircle2,
-} from "lucide-react";
+import { Banana, Pizza, ClipboardList, Truck, UserCircle2 } from "lucide-react";
 
 export const siteConfig = {
     name: "Dishdash",
     description:
-        "Make beautiful websites regardless of your design experience.",
+        "Manage your restaurant operations effortlessly. Explore your restaurant's data, create new dishes, and stay on top of inventory.",
     navItems: [
         {
             label: "ingredients",
             href: "/ingredients",
             icon: Banana,
+            restricted: false,
         },
         {
             label: "recipes",
             href: "/recipes",
             icon: ClipboardList,
+            restricted: true,
         },
         {
             label: "dishes",
             href: "/dishes",
             icon: Pizza,
+            restricted: true,
         },
 
         {
             label: "suppliers",
             href: "/suppliers",
             icon: UserCircle2,
+            restricted: true,
         },
         {
             label: "deliveries",
             href: "/deliveries",
             icon: Truck,
-        },
-    ],
-    mobileNavItems: [
-        {
-            label: "Home",
-            href: "/",
-            icon: <Home />,
-        },
-
-        {
-            label: "ingredients",
-            href: "/ingredients",
-        },
-        {
-            label: "recipes",
-            href: "/recipes",
-        },
-        {
-            label: "dishes",
-            href: "/dishes",
-        },
-        {
-            label: "suppliers",
-            href: "/suppliers",
-        },
-        {
-            label: "Profile",
-            href: "/profile",
-        },
-        {
-            label: "Logout",
-            href: "/logout",
+            restricted: false,
         },
     ],
 };
