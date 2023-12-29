@@ -7,9 +7,16 @@ import LocaleSwitcher from "./locale-switch";
 import { ThemeSwitch } from "./theme-switch";
 import Image from "next/image";
 import { Separator } from "./ui/separator";
+import { OrganizationSwitcher, useAuth } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 
 function MobileSidebar() {
     const [isOpen, setIsOpen] = useState(false);
+    const { theme } = useTheme();
+
+    const { orgRole } = useAuth();
+
     return (
         <div className="md:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -35,8 +42,28 @@ function MobileSidebar() {
                     </div>
 
                     <Sidebar setIsOpen={setIsOpen} />
-                    <div className="mt-6 text-right flex w-full">
-                        <span className="ml-auto">
+                    <div className="mt-8 text-right flex w-full">
+                        <span className="ml-auto flex justify-between w-full pl-3">
+                            {orgRole === "admin" && (
+                                <OrganizationSwitcher
+                                    hidePersonal
+                                    afterCreateOrganizationUrl={"/"}
+                                    afterLeaveOrganizationUrl="/select-org"
+                                    afterSelectOrganizationUrl={"/"}
+                                    //@ts-ignore
+                                    appearance={{
+                                        baseTheme:
+                                            theme === "dark" ? dark : undefined,
+                                        elements: {
+                                            rootBox: {
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                            },
+                                        },
+                                    }}
+                                />
+                            )}
                             <LocaleSwitcher />
                         </span>
                     </div>

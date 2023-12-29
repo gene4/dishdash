@@ -1,15 +1,9 @@
 "use client";
 
 import { dark } from "@clerk/themes";
-import {
-    UserButton,
-    OrganizationSwitcher,
-    useOrganization,
-    auth,
-    useAuth,
-} from "@clerk/nextjs";
+import { UserButton, OrganizationSwitcher, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
-import LocaleSwitcher from "./locale-switch";
+// import LocaleSwitcher from "./locale-switch";
 import { ThemeSwitch } from "./theme-switch";
 import MobileSidebar from "./mobile-sidbar";
 import { useTheme } from "next-themes";
@@ -33,30 +27,31 @@ export const Navbar = () => {
             </Link>
             <div className="flex items-center space-x-2 md:space-x-4">
                 <div className="hidden md:flex items-center space-x-4">
-                    <LocaleSwitcher />
                     <ThemeSwitch />
                 </div>
 
                 {/* @ts-ignore */}
                 <UserButton appearance={theme === "dark" ? dark : undefined} />
                 {orgRole === "admin" && (
-                    <OrganizationSwitcher
-                        hidePersonal
-                        afterCreateOrganizationUrl={"/"}
-                        afterLeaveOrganizationUrl="/select-org"
-                        afterSelectOrganizationUrl={"/"}
-                        //@ts-ignore
-                        appearance={{
-                            baseTheme: theme === "dark" ? dark : undefined,
-                            elements: {
-                                rootBox: {
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
+                    <div className="hidden md:block">
+                        <OrganizationSwitcher
+                            hidePersonal
+                            afterCreateOrganizationUrl={"/"}
+                            afterLeaveOrganizationUrl="/select-org"
+                            afterSelectOrganizationUrl={"/"}
+                            //@ts-ignore
+                            appearance={{
+                                baseTheme: theme === "dark" ? dark : undefined,
+                                elements: {
+                                    rootBox: {
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    },
                                 },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                    </div>
                 )}
                 <MobileSidebar />
             </div>

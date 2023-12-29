@@ -6,6 +6,7 @@ import clsx from "clsx";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import LocaleSwitcher from "./locale-switch";
 
 interface Props {
     setIsOpen?: (open: boolean) => void;
@@ -15,11 +16,10 @@ export const Sidebar = ({ setIsOpen }: Props) => {
     const t = useTranslations("Navigation");
     const { orgRole } = useAuth();
     const pathname = usePathname();
-    console.log(orgRole);
 
     return (
-        <aside className="flex space-y-4 flex-col md:h-full md:border-divider  md:w-48">
-            <div className="md:p-4 flex-1 justify-center">
+        <aside className="flex space-y-4 flex-col md:h-full md:border-divider md:w-48">
+            <div className="md:p-4 h-full flex flex-col justify-between">
                 <div className="space-y-2 text-xl md:text-base">
                     {siteConfig.navItems.map((item) => (
                         <Link
@@ -40,6 +40,8 @@ export const Sidebar = ({ setIsOpen }: Props) => {
                         </Link>
                     ))}
                 </div>
+
+                {/* <LocaleSwitcher /> */}
             </div>
         </aside>
     );
