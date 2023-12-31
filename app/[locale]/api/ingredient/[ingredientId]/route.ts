@@ -10,13 +10,15 @@ export async function PATCH(
     try {
         const body = await req.json();
         const user = await currentUser();
+        const { orgId } = auth();
+
         const { name, vat, category, selectedDeliveryPriceId, variants } = body;
 
         if (!params.ingredientId) {
             return new NextResponse("Ingredient ID required", { status: 400 });
         }
 
-        if (!user || !user.id || !user.firstName) {
+        if (!user || !user.id || !orgId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -27,7 +29,7 @@ export async function PATCH(
         const ingredient = await prismadb.ingredient.update({
             where: {
                 id: params.ingredientId,
-                userId: user.id,
+                orgId,
             },
             data: {
                 name,
@@ -49,9 +51,9 @@ export async function DELETE(
     { params }: { params: { ingredientId: string } }
 ) {
     try {
-        const { userId } = auth();
+        const { userId, orgId } = auth();
 
-        if (!userId) {
+        if (!userId || !orgId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -98,7 +100,7 @@ export async function DELETE(
 
         await prismadb.ingredient.delete({
             where: {
-                userId,
+                orgId,
                 id: params.ingredientId,
             },
         });

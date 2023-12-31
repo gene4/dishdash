@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "@/firebase";
@@ -8,6 +9,7 @@ export async function POST(req: Request) {
     try {
         const user = await currentUser();
         const data = await req.formData();
+        const { orgId } = auth();
 
         const date = data.get("date")?.toString();
         const supplierId = data.get("supplierId")?.toString();
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
 
         const file: File | null = data.get("file") as unknown as File;
 
-        if (!user || !user.id) {
+        if (!user || !user.id || !orgId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
 
         const delivery = await prismadb.delivery.create({
             data: {
-                userId: user.id,
+                orgId,
                 invoiceNr,
                 supplierId,
                 date: new Date(date),

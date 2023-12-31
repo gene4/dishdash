@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-query";
 import { getIngredients, getRecipes } from "@/lib/actions";
 import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
+import { redirect } from "next/navigation";
 
 interface DishIdPageProps {
     params: {
@@ -19,10 +20,14 @@ interface DishIdPageProps {
 }
 
 export default async function RecipesIdPage({ params }: DishIdPageProps) {
-    const { userId } = auth();
+    const { userId, orgId } = auth();
 
     if (!userId) {
         return redirectToSignIn();
+    }
+
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const queryClient = new QueryClient();
@@ -31,7 +36,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
     const dish = await prismadb.dish.findUnique({
         where: {
             id: params.dishId,
-            userId,
+            orgId,
         },
         include: nestedRecipeItems,
     });

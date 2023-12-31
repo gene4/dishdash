@@ -6,12 +6,17 @@ import {
 } from "@tanstack/react-query";
 import { getIngredients, getSuppliers } from "@/lib/actions";
 import DeliveryForm from "@/components/delivery/delivery-form";
+import { redirect } from "next/navigation";
 
 export default async function IngredientsPage() {
-    const { userId } = auth();
+    const { userId, orgId } = auth();
 
     if (!userId) {
         return redirectToSignIn();
+    }
+
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const queryClient = new QueryClient();

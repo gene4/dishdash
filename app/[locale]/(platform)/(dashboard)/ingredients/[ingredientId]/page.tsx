@@ -8,6 +8,7 @@ import {
     QueryClient,
 } from "@tanstack/react-query";
 import { getSuppliers } from "@/lib/actions";
+import { redirect } from "next/navigation";
 
 interface IngredientIdPageProps {
     params: {
@@ -18,10 +19,14 @@ interface IngredientIdPageProps {
 export default async function IngredientsIdPage({
     params,
 }: IngredientIdPageProps) {
-    const { userId } = auth();
+    const { userId, orgId } = auth();
 
     if (!userId) {
         return redirectToSignIn();
+    }
+
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const queryClient = new QueryClient();
@@ -29,7 +34,7 @@ export default async function IngredientsIdPage({
     const ingredient = await prismadb.ingredient.findUnique({
         where: {
             id: params.ingredientId,
-            userId,
+            orgId,
         },
         include: {
             selectedDeliveryPrice: true,

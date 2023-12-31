@@ -1,19 +1,20 @@
 "use server";
-import { auth, redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import { Supplier } from "@prisma/client";
 import { nestedRecipeItems } from "./utils";
+import { redirect } from "next/navigation";
 
 export async function getIngredients() {
-    const { userId } = auth();
+    const { orgId } = auth();
 
-    if (!userId) {
-        return redirectToSignIn();
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const ingredients = await prismadb.ingredient.findMany({
         where: {
-            userId,
+            orgId,
         },
         include: {
             selectedDeliveryPrice: true,
@@ -24,30 +25,30 @@ export async function getIngredients() {
 }
 
 export async function getSuppliers(): Promise<Supplier[]> {
-    const { userId } = auth();
+    const { orgId } = auth();
 
-    if (!userId) {
-        return redirectToSignIn();
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const suppliers = await prismadb.supplier.findMany({
         where: {
-            userId,
+            orgId,
         },
     });
     return suppliers;
 }
 
 export async function getRecipes() {
-    const { userId } = auth();
+    const { orgId } = auth();
 
-    if (!userId) {
-        return redirectToSignIn();
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const recipes = await prismadb.recipe.findMany({
         where: {
-            userId,
+            orgId,
         },
         include: nestedRecipeItems,
     });
@@ -55,15 +56,15 @@ export async function getRecipes() {
 }
 
 export async function getDishes() {
-    const { userId } = auth();
+    const { orgId } = auth();
 
-    if (!userId) {
-        return redirectToSignIn();
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const recipes = await prismadb.dish.findMany({
         where: {
-            userId,
+            orgId,
         },
         include: nestedRecipeItems,
     });
@@ -71,22 +72,21 @@ export async function getDishes() {
 }
 
 export async function getDeliveries() {
-    const { userId } = auth();
+    const { orgId } = auth();
 
-    if (!userId) {
-        return redirectToSignIn();
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const deliveries = await prismadb.delivery.findMany({
         where: {
-            userId,
+            orgId,
         },
         include: {
             supplier: { select: { name: true } },
             items: { include: { ingredient: true } },
         },
     });
-    console.log("deliveries", deliveries);
 
     return deliveries;
 }

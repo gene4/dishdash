@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs";
+import { auth, currentUser } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
@@ -6,6 +6,8 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const user = await currentUser();
+        const { orgId } = auth();
+
         const {
             name,
             vat,
@@ -18,7 +20,7 @@ export async function POST(req: Request) {
             supplierId,
         } = body;
 
-        if (!user || !user.id) {
+        if (!user || !user.id || !orgId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -37,7 +39,7 @@ export async function POST(req: Request) {
 
         const ingredient = await prismadb.ingredient.create({
             data: {
-                userId: user.id,
+                orgId,
                 name,
                 vat,
                 category,
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
         await prismadb.ingredient.update({
             where: {
                 id: ingredient.id,
-                userId: user.id,
+                orgId,
             },
             data: {
                 selectedDeliveryPriceId: deliveryPrice.id,

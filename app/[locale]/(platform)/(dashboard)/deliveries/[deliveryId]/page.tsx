@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import { FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { redirect } from "next/navigation";
 
 interface DeliveryIdPageProps {
     params: {
@@ -27,23 +28,27 @@ interface DeliveryIdPageProps {
 }
 
 export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
-    const { userId } = auth();
+    const { userId, orgId } = auth();
 
     if (!userId) {
         return redirectToSignIn();
+    }
+
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const queryClient = new QueryClient();
 
     const suppliers = await prismadb.supplier.findMany({
         where: {
-            userId,
+            orgId,
         },
     });
 
     const delivery = await prismadb.delivery.findUnique({
         where: {
-            userId,
+            orgId,
             id: params.deliveryId,
         },
         include: {

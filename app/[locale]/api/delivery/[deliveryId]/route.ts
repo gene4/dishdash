@@ -17,6 +17,7 @@ export async function PATCH(
     try {
         const user = await currentUser();
         const data = await req.formData();
+        const { orgId } = auth();
 
         const invoiceNr = data.get("invoiceNr")?.toString();
         const date = data.get("date")?.toString();
@@ -31,7 +32,7 @@ export async function PATCH(
             return new NextResponse("Invoice ID required", { status: 400 });
         }
 
-        if (!user || !user.id) {
+        if (!user || !user.id || !orgId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -78,7 +79,7 @@ export async function PATCH(
         const delivery = await prismadb.delivery.update({
             where: {
                 id: params.deliveryId,
-                userId: user.id,
+                orgId,
             },
             data: {
                 supplierId,
@@ -102,9 +103,9 @@ export async function DELETE(
     { params }: { params: { deliveryId: string } }
 ) {
     try {
-        const { userId } = auth();
+        const { userId, orgId } = auth();
 
-        if (!userId) {
+        if (!userId || !orgId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -112,7 +113,7 @@ export async function DELETE(
         const invoice = await prismadb.delivery.findUnique({
             where: {
                 id: params.deliveryId,
-                userId,
+                orgId,
             },
         });
 
@@ -130,7 +131,7 @@ export async function DELETE(
         await prismadb.delivery.delete({
             where: {
                 id: params.deliveryId,
-                userId,
+                orgId,
             },
         });
 

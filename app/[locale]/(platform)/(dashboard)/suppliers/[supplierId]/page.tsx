@@ -10,7 +10,10 @@ interface RecipeIdPageProps {
 }
 
 export default async function SupplierIdPage({ params }: RecipeIdPageProps) {
-    const { userId, orgRole } = auth();
+    const { userId, orgRole, orgId } = auth();
+    if (!orgId) {
+        redirect("/select-org");
+    }
 
     if (orgRole === "basic_member") {
         redirect("/");
@@ -22,7 +25,7 @@ export default async function SupplierIdPage({ params }: RecipeIdPageProps) {
 
     const deliveries = await prismadb.delivery.findMany({
         where: {
-            userId,
+            orgId,
             supplierId: params.supplierId,
         },
         include: {
@@ -41,7 +44,7 @@ export default async function SupplierIdPage({ params }: RecipeIdPageProps) {
 
     const supplier = await prismadb.supplier.findUnique({
         where: {
-            userId,
+            orgId,
             id: params.supplierId,
         },
     });

@@ -6,20 +6,26 @@ import {
     QueryClient,
     dehydrate,
 } from "@tanstack/react-query";
+import { redirect } from "next/navigation";
+
 import { getDeliveries, getIngredients } from "@/lib/actions";
 
 export default async function IngredientsPage() {
-    const { userId } = auth();
+    const { userId, orgId } = auth();
 
     if (!userId) {
         return redirectToSignIn();
+    }
+
+    if (!orgId) {
+        redirect("/select-org");
     }
 
     const queryClient = new QueryClient();
 
     const suppliers = await prismadb.supplier.findMany({
         where: {
-            userId,
+            orgId,
         },
     });
     const ingredients = queryClient.prefetchQuery({

@@ -12,7 +12,7 @@ generator client {
 model Ingredient {
   id                       String      @id @default(uuid())
   name                     String
-  userId                   String
+  orgId                    String
   vat                      String
   category                 String
 
@@ -57,7 +57,7 @@ model DeliveryPrice {
 model Recipe {
   id              String      @id @default(uuid()) 
   name            String
-  userId          String
+  orgId           String
   unit            String
   yield           Float
  
@@ -96,7 +96,7 @@ model RecipeIngredient {
 model Dish {
   id              String      @id @default(uuid()) 
   name            String
-  userId          String
+  orgId           String
   menuPrice       Float
   vat             String
   multiplier      Float
@@ -128,7 +128,7 @@ model DishIngredient {
 model Supplier {
   id          String      @id @default(uuid()) 
   name        String
-  userId      String
+  orgId       String
   paymentInfo String? @db.Text
   deliveries  Delivery[] 
   deliveryPrices DeliveryPrice[]
@@ -139,7 +139,7 @@ model Supplier {
 
 model Delivery {
   id          String      @id @default(uuid()) 
-  userId      String
+  orgId       String
   items       DeliveryPrice[]
   invoiceNr   String?
   date        DateTime 
