@@ -41,7 +41,6 @@ export function DataTable() {
         queryKey: ["ingredients"],
         queryFn: getIngredients,
     });
-    console.log("ingredients", ingredients);
 
     const { push } = useRouter();
     const columns: ColumnDef<Ingredient>[] = [
@@ -114,7 +113,7 @@ export function DataTable() {
     ];
 
     const table = useReactTable({
-        data: ingredients.data,
+        data: ingredients.data!,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),

@@ -21,7 +21,7 @@ export async function getIngredients() {
             deliveryPrices: true,
         },
     });
-    return ingredients;
+    return ingredients || [];
 }
 
 export async function getSuppliers(): Promise<Supplier[]> {

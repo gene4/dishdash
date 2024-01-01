@@ -41,7 +41,7 @@ export function DataTable() {
     const router = useRouter();
 
     const table = useReactTable({
-        data: recipes.data,
+        data: recipes.data!,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),

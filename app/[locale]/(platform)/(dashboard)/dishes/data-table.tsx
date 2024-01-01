@@ -42,7 +42,7 @@ export function DataTable() {
     });
 
     const table = useReactTable({
-        data: dishes.data,
+        data: dishes.data!,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),

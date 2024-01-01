@@ -1,13 +1,14 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { formatPrice } from "@/lib/utils/format-price";
 import { formatDate } from "@/lib/utils/format-date";
-// import { RecipeDataReceived } from "./data-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
-import { Ingredient, Recipe } from "@prisma/client";
+import { Recipe, RecipeIngredient } from "@prisma/client";
 
-export const columns: ColumnDef<Recipe & { ingredients: Ingredient[] }>[] = [
+export const columns: ColumnDef<
+    Recipe & { ingredients: RecipeIngredient[] }
+>[] = [
     {
         accessorKey: "name",
         header: ({ column }) => {

@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import SupplierForm from "@/components/suppliers/supplier-form";
 import { useRouter } from "next/navigation";
-import { Supplier } from "@prisma/client";
 import { columns } from "./columns";
 import { useQuery } from "@tanstack/react-query";
 import { getSuppliers } from "@/lib/actions";
@@ -37,13 +36,13 @@ export function DataTable() {
 
     const router = useRouter();
 
-    const { data } = useQuery({
+    const suppliers = useQuery({
         queryKey: ["suppliers"],
         queryFn: getSuppliers,
     });
 
     const table = useReactTable({
-        data: data as Supplier[],
+        data: suppliers.data!,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
