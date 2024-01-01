@@ -240,8 +240,8 @@ export default function CreateDishForm() {
                                                             field={field}
                                                             index={index}
                                                             ingredients={[
-                                                                ...ingredients.data,
-                                                                ...recipes.data,
+                                                                ...ingredients.data!,
+                                                                ...recipes.data!,
                                                             ]}
                                                             setValue={
                                                                 form.setValue

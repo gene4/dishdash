@@ -193,7 +193,7 @@ export default function RecipeIngredientForm({
                                                                 index={index}
                                                                 ingredients={[
                                                                     ...filteredRecipes,
-                                                                    ...ingredients.data,
+                                                                    ...ingredients.data!,
                                                                 ]}
                                                                 setValue={
                                                                     form.setValue

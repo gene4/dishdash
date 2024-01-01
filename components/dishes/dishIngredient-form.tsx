@@ -160,8 +160,8 @@ export default function DishIngredientForm({
                                                             field={field}
                                                             index={index}
                                                             ingredients={[
-                                                                ...recipes.data,
-                                                                ...ingredients.data,
+                                                                ...recipes.data!,
+                                                                ...ingredients.data!,
                                                             ]}
                                                             setValue={
                                                                 form.setValue

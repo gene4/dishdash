@@ -248,8 +248,8 @@ export default function DishForm({ isOpen, setIsOpen, initialDish }: Props) {
                                                                         index
                                                                     }
                                                                     ingredients={[
-                                                                        ...recipes.data,
-                                                                        ...ingredients.data,
+                                                                        ...recipes.data!,
+                                                                        ...ingredients.data!,
                                                                     ]}
                                                                     setValue={
                                                                         form.setValue
