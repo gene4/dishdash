@@ -402,7 +402,7 @@ export default function DeliveryForm({
                                 name={`credit`}
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Amount (in EUR)</FormLabel>
+                                        <FormLabel>Credit (in EUR)</FormLabel>
                                         <FormControl>
                                             <Input
                                                 className="w-[250px]"
