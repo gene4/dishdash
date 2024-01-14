@@ -147,7 +147,7 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
                     </div>
                 </div>
                 <Separator className="my-2" />
-                {delivery?.credit && delivery?.credit != 0 && (
+                {delivery?.credit != 0 && (
                     <div className="flex justify-between">
                         <h2>Credit:</h2>{" "}
                         <span className="font-normal">
