@@ -10,7 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Delivery, DeliveryPrice } from "@prisma/client";
+import { Delivery } from "@prisma/client";
 import { calculateDeliveryTotal } from "@/lib/utils/calculate-total-invoices-price";
 
 interface Props {
