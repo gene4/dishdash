@@ -45,7 +45,7 @@ export function Overview({ deliveries, yearsFromInvoices }: Props) {
                     month: "short",
                 });
                 // Add the invoice amount to the corresponding month's total
-                monthlyTotals[month] += calculateDeliveryTotal(delivery.items);
+                monthlyTotals[month] += calculateDeliveryTotal(delivery);
             });
 
         // Convert the monthlyTotals object to an array of objects for the chart data

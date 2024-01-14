@@ -142,7 +142,7 @@ export function DeliveriesTable({ deliveries }: { deliveries: any }) {
                 );
             },
             cell: ({ row }) =>
-                formatPrice(calculateDeliveryTotal(row.original.items)),
+                formatPrice(calculateDeliveryTotal(row.original)),
         },
         {
             id: "actions",
@@ -206,7 +206,7 @@ export function DeliveriesTable({ deliveries }: { deliveries: any }) {
         }
 
         const totalPrice = selectedRows.reduce((total, row) => {
-            const price = calculateDeliveryTotal(row.original.items) || 0;
+            const price = calculateDeliveryTotal(row.original) || 0;
             return total + price;
         }, 0);
 
