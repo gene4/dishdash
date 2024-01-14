@@ -122,8 +122,8 @@ export default function ItemForm({
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className="space-y-4 md:flex md:space-x-4 md:space-y-0 my-4">
-                            <div className="flex space-x-4 w-full">
+                        <div className="space-y-4 my-4">
+                            <div className="space-y-4 md:flex md:space-x-4 md:space-y-0">
                                 <FormField
                                     control={form.control}
                                     name={`ingredientId`}
