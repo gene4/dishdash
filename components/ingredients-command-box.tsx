@@ -85,6 +85,11 @@ export default function IngredientsCommandBox({
                                     );
 
                                     setValue(
+                                        `ingredients.${index}.vat`,
+                                        ingredient.vat
+                                    );
+
+                                    setValue(
                                         `ingredients.${index}.type`,
                                         "yield" in ingredient
                                             ? "recipe"
