@@ -62,9 +62,9 @@ export default function CreateRecipeForm() {
         resolver: zodResolver(recipeSchema),
         defaultValues: {
             name: "",
-            unit: "",
+            unit: "Kg",
             yield: 0,
-            ingredients: [{ id: "", type: "", unit: "", amount: 0 }],
+            ingredients: [{ id: "", type: "", unit: "Kg", amount: 0 }],
         },
     });
 
@@ -339,7 +339,7 @@ export default function CreateRecipeForm() {
                                 append({
                                     id: "",
                                     type: "",
-                                    unit: "",
+                                    unit: "Kg",
                                     amount: 0,
                                 })
                             }>

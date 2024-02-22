@@ -66,7 +66,7 @@ export default function CreateDishForm() {
             vat: "",
             menuPrice: 0,
             multiplier: 0,
-            ingredients: [{ id: "", type: "", unit: "", amount: 0 }],
+            ingredients: [{ id: "", type: "", unit: "Kg", amount: 0 }],
         },
     });
 
@@ -358,7 +358,7 @@ export default function CreateDishForm() {
                             append({
                                 id: "",
                                 type: "",
-                                unit: "",
+                                unit: "Kg",
                                 amount: 0,
                             })
                         }>
