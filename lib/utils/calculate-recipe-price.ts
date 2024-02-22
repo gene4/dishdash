@@ -18,26 +18,26 @@ export function calculateNestedItemPrice(ingredients: any) {
             // If ingredient price isnt selected, return 0
             if (!ingredient.ingredient.selectedDeliveryPrice) return 0;
 
-            if (
-                // If ingredient unit is weight but price is Piece
-                ingredient.unit === "Kg" &&
-                ingredient.ingredient.selectedDeliveryPrice.unit === "Piece"
-            ) {
-                if (
-                    // If weight ingredient isnt selected return 0
-                    !ingredient.ingredient.selectedDeliveryPrice
-                        .ingredientVariant
-                ) {
-                    return 0;
-                } else {
-                    // Convert piece weight to Kg
-                    return (
-                        ingredient.ingredient.selectedDeliveryPrice.price /
-                        ingredient.ingredient.selectedDeliveryPrice
-                            .ingredientVariant.wightPerPiece
-                    );
-                }
-            }
+            // if (
+            //     // If ingredient unit is weight but price is Piece
+            //     ingredient.unit === "Kg" &&
+            //     ingredient.ingredient.selectedDeliveryPrice.unit === "Piece"
+            // ) {
+            //     if (
+            //         // If weight ingredient isnt selected return 0
+            //         !ingredient.ingredient.selectedDeliveryPrice
+            //             .ingredientVariant
+            //     ) {
+            //         return 0;
+            //     } else {
+            //         // Convert piece weight to Kg
+            //         return (
+            //             ingredient.ingredient.selectedDeliveryPrice.price /
+            //             ingredient.ingredient.selectedDeliveryPrice
+            //                 .ingredientVariant.wightPerPiece
+            //         );
+            //     }
+            // }
 
             return (
                 ingredient.ingredient.selectedDeliveryPrice.price /
