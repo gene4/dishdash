@@ -175,7 +175,7 @@ export default function RecipeIngredientForm({
                         className="space-y-6"
                         onSubmit={form.handleSubmit(onSubmit)}>
                         <>
-                            <ol className=" min-h-3 py-1 space-y-3  max-h-[300px] overflow-y-scroll">
+                            <ol className="min-h-3 py-1 space-y-3 max-h-[300px]  overflow-auto">
                                 {fields.length ? (
                                     fields.map((field, index) => (
                                         <li className="" key={field.id}>
@@ -185,7 +185,7 @@ export default function RecipeIngredientForm({
                                                     name={`ingredients.${index}.id`}
                                                     render={({ field }) => (
                                                         <FormItem className="flex flex-col justify-end">
-                                                            <FormLabel className="text-xs text-secondary-foreground">
+                                                            <FormLabel className="text-xs text-secondary-foreground pb-1">
                                                                 Ingredient
                                                             </FormLabel>
                                                             <IngredientsCommandBox

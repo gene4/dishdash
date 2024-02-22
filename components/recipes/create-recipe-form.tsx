@@ -186,7 +186,7 @@ export default function CreateRecipeForm() {
                                             className="w-16 md:w-20"
                                             type="number"
                                             min={0}
-                                            step={0.01}
+                                            step={0.001}
                                             {...field}
                                         />
                                     </FormControl>
@@ -289,7 +289,7 @@ export default function CreateRecipeForm() {
                                                             <Input
                                                                 className="w-16 md:w-20"
                                                                 type="number"
-                                                                step={0.01}
+                                                                step={0.001}
                                                                 min={0}
                                                                 autoFocus={
                                                                     false
