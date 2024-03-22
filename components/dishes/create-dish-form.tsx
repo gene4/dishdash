@@ -151,6 +151,9 @@ export default function CreateDishForm() {
                                                 disabled={isLoading}
                                                 className="w-20"
                                                 type="number"
+                                                onFocus={(event) =>
+                                                    event.target.select()
+                                                }
                                                 min={0}
                                                 step={0.01}
                                                 {...field}
@@ -175,6 +178,9 @@ export default function CreateDishForm() {
                                                 disabled={isLoading}
                                                 className="w-20"
                                                 type="number"
+                                                onFocus={(event) =>
+                                                    event.target.select()
+                                                }
                                                 min={0}
                                                 step={0.01}
                                                 {...field}
@@ -314,6 +320,11 @@ export default function CreateDishForm() {
                                                                 min={0}
                                                                 autoFocus={
                                                                     false
+                                                                }
+                                                                onFocus={(
+                                                                    event
+                                                                ) =>
+                                                                    event.target.select()
                                                                 }
                                                                 {...field}
                                                                 onKeyDown={(

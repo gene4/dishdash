@@ -160,6 +160,9 @@ export default function EditRecipeForm({
                                                 className="w-16 md:w-20"
                                                 type="number"
                                                 min={0}
+                                                onFocus={(event) =>
+                                                    event.target.select()
+                                                }
                                                 step={0.01}
                                                 {...field}
                                             />

@@ -268,6 +268,11 @@ export default function RecipeIngredientForm({
                                                                     autoFocus={
                                                                         false
                                                                     }
+                                                                    onFocus={(
+                                                                        event
+                                                                    ) =>
+                                                                        event.target.select()
+                                                                    }
                                                                     placeholder="Amount"
                                                                     {...field}
                                                                     onKeyDown={(

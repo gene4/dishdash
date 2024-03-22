@@ -407,6 +407,9 @@ export default function DeliveryForm({
                                             <Input
                                                 className="w-[250px]"
                                                 type="number"
+                                                onFocus={(event) =>
+                                                    event.target.select()
+                                                }
                                                 step={0.01}
                                                 min={0}
                                                 autoFocus={false}
@@ -526,6 +529,11 @@ export default function DeliveryForm({
                                                                         step={
                                                                             0.01
                                                                         }
+                                                                        onFocus={(
+                                                                            event
+                                                                        ) =>
+                                                                            event.target.select()
+                                                                        }
                                                                         min={0}
                                                                         autoFocus={
                                                                             false
@@ -560,6 +568,11 @@ export default function DeliveryForm({
                                                                         type="number"
                                                                         step={
                                                                             0.01
+                                                                        }
+                                                                        onFocus={(
+                                                                            event
+                                                                        ) =>
+                                                                            event.target.select()
                                                                         }
                                                                         min={0}
                                                                         autoFocus={
@@ -660,6 +673,9 @@ export default function DeliveryForm({
                                                     <Input
                                                         className="w-16 md:w-20"
                                                         type="number"
+                                                        onFocus={(event) =>
+                                                            event.target.select()
+                                                        }
                                                         step={0.01}
                                                         min={0}
                                                         autoFocus={false}

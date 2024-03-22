@@ -31,6 +31,7 @@ import { formatPrice } from "@/lib/utils/format-price";
 import { useQuery } from "@tanstack/react-query";
 import { getIngredients } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/lib/utils/format-date";
 
 export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -108,6 +109,33 @@ export function DataTable() {
                               selectedDeliveryPrice.amount
                       )} / ${selectedDeliveryPrice.unit}`
                     : "No price selected";
+            },
+        },
+        {
+            accessorKey: "selectedDeliveryPrice.supplier.name",
+            header: ({ column }) => (
+                <Button
+                    size={"sm"}
+                    className="px-0 font-bold group hover:bg-transparent"
+                    variant="ghost"
+                    onClick={() =>
+                        column.toggleSorting(column.getIsSorted() === "asc")
+                    }>
+                    SUPPLIER
+                    <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
+                </Button>
+            ),
+        },
+        {
+            accessorKey: "selectedDeliveryPrice.supplier.date",
+            header: () => <div className="w-max">LAST UPDATED</div>,
+            cell: ({ row }) => {
+                const selectedDeliveryPrice = row.getValue(
+                    "selectedDeliveryPrice"
+                ) as DeliveryPrice;
+                return selectedDeliveryPrice
+                    ? formatDate(selectedDeliveryPrice.date)
+                    : "";
             },
         },
     ];

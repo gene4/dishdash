@@ -9,7 +9,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 <div className="hidden top-14 fixed md:sticky md:flex w-fit flex-col h-[calc(100vh-4rem)]">
                     <Sidebar />
                 </div>
-                <main className="mx-auto max-w-7xl py-6 px-4 md:px-7 flex-1 flex-grow ">
+                <main className="mx-auto max-w-7xl py-6 px-4 md:px-6 flex-1 flex-grow">
                     {children}
                 </main>
                 {/* <footer className="w-full flex items-center justify-center py-3">

@@ -36,7 +36,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "@/components/data-table-pagination";
-import { Input } from "@/components/ui/input";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {

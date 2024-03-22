@@ -283,7 +283,9 @@ export default function PriceForm({
                                                 <Input
                                                     min={0}
                                                     className="w-24"
-                                                    type="number"
+                                                    onFocus={(event) =>
+                                                        event.target.select()
+                                                    }
                                                     step={0.01}
                                                     {...field}
                                                 />

@@ -55,7 +55,7 @@ export const Navbar = () => {
                 )}
                 <MobileSidebar />
             </div>
-            <div className="hidden md:block absolute bottom-0 left-56 right-7 opacity-90  h-[1px] bg-border" />
+            <div className="hidden md:block absolute bottom-0 left-48 right-7 opacity-90  h-[1px] bg-border" />
         </header>
     );
 };

@@ -192,6 +192,9 @@ export default function ItemForm({
                                                 <Input
                                                     className="w-[100px]"
                                                     min={0}
+                                                    onFocus={(event) =>
+                                                        event.target.select()
+                                                    }
                                                     type="number"
                                                     step={0.01}
                                                     {...field}
@@ -213,6 +216,9 @@ export default function ItemForm({
                                                 <Input
                                                     className="w-[100px]"
                                                     min={0}
+                                                    onFocus={(event) =>
+                                                        event.target.select()
+                                                    }
                                                     type="number"
                                                     step={0.01}
                                                     {...field}

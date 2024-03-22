@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     Sheet,
     SheetContent,
@@ -386,6 +386,9 @@ export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
                                                 <Input
                                                     disabled={isLoading}
                                                     min={0}
+                                                    onFocus={(event) =>
+                                                        event.target.select()
+                                                    }
                                                     type="number"
                                                     step={0.01}
                                                     {...field}
@@ -407,6 +410,9 @@ export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
                                                 <Input
                                                     disabled={isLoading}
                                                     min={0}
+                                                    onFocus={(event) =>
+                                                        event.target.select()
+                                                    }
                                                     type="number"
                                                     step={0.01}
                                                     {...field}

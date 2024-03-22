@@ -163,6 +163,9 @@ export default function DishForm({ isOpen, setIsOpen, initialDish }: Props) {
                                             <FormControl>
                                                 <Input
                                                     type="number"
+                                                    onFocus={(event) =>
+                                                        event.target.select()
+                                                    }
                                                     min={0}
                                                     step={0.01}
                                                     {...field}
@@ -185,6 +188,9 @@ export default function DishForm({ isOpen, setIsOpen, initialDish }: Props) {
                                             <FormControl>
                                                 <Input
                                                     type="number"
+                                                    onFocus={(event) =>
+                                                        event.target.select()
+                                                    }
                                                     min={0}
                                                     step={0.01}
                                                     {...field}
@@ -271,6 +277,11 @@ export default function DishForm({ isOpen, setIsOpen, initialDish }: Props) {
                                                                     <Input
                                                                         type="number"
                                                                         min={0}
+                                                                        onFocus={(
+                                                                            event
+                                                                        ) =>
+                                                                            event.target.select()
+                                                                        }
                                                                         step={
                                                                             0.1
                                                                         }

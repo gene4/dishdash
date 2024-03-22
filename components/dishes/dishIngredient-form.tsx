@@ -187,6 +187,11 @@ export default function DishIngredientForm({
                                                                 autoFocus={
                                                                     false
                                                                 }
+                                                                onFocus={(
+                                                                    event
+                                                                ) =>
+                                                                    event.target.select()
+                                                                }
                                                                 placeholder="Amount"
                                                                 {...field}
                                                                 onKeyDown={(

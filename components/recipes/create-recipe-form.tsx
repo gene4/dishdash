@@ -185,6 +185,9 @@ export default function CreateRecipeForm() {
                                             disabled={isLoading}
                                             className="w-16 md:w-20"
                                             type="number"
+                                            onFocus={(event) =>
+                                                event.target.select()
+                                            }
                                             min={0}
                                             step={0.001}
                                             {...field}
@@ -293,6 +296,11 @@ export default function CreateRecipeForm() {
                                                                 min={0}
                                                                 autoFocus={
                                                                     false
+                                                                }
+                                                                onFocus={(
+                                                                    event
+                                                                ) =>
+                                                                    event.target.select()
                                                                 }
                                                                 {...field}
                                                                 onKeyDown={(
