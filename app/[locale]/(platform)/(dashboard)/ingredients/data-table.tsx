@@ -24,7 +24,7 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { IngredientPriceForm } from "@/components/ingredients/table/ingredient-price-form";
 import { DeliveryPrice, Ingredient } from "@prisma/client";
 import { formatPrice } from "@/lib/utils/format-price";
@@ -32,6 +32,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getIngredients } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils/format-date";
+import SortButton from "@/components/sort-button";
+import { capitalize } from "@/lib/utils/captitalize";
 
 export function DataTable() {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -48,53 +50,27 @@ export function DataTable() {
         {
             accessorKey: "name",
             header: ({ column }) => {
-                return (
-                    <Button
-                        size={"sm"}
-                        className="px-0 font-bold group hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        NAME
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton label="NAME" column={column} />;
             },
-            cell: ({ row }) => <div className="w-max">{row.original.name}</div>,
+            cell: ({ row }) => (
+                <div className="w-max">{capitalize(row.original.name)}</div>
+            ),
         },
 
         {
             accessorKey: "vat",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        VAT
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton label="VAT" column={column} />;
             },
         },
         {
             accessorKey: "category",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        CATEGORY
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton label="CATEGORY" column={column} />;
             },
+            cell: ({ row }) => (
+                <div className="w-max">{capitalize(row.original.category)}</div>
+            ),
         },
         {
             accessorKey: "selectedDeliveryPrice",
@@ -114,16 +90,7 @@ export function DataTable() {
         {
             accessorKey: "selectedDeliveryPrice.supplier.name",
             header: ({ column }) => (
-                <Button
-                    size={"sm"}
-                    className="px-0 font-bold group hover:bg-transparent"
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }>
-                    SUPPLIER
-                    <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                </Button>
+                <SortButton label="SUPPLIER" column={column} />
             ),
         },
         {

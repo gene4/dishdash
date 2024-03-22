@@ -53,6 +53,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getDeliveries } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import DeliveryActions from "./delivery-actions";
+import KpiCard from "@/components/kpi-card";
 
 export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -243,16 +244,14 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
     return (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start overflow-y-scroll">
-                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0">
+                <h1 className="text-2xl font-semibold tracking-tight ">
                     Deliveries
                 </h1>
 
-                <h1 className="text-xl md:border-b">
-                    Selected total:{" "}
-                    <span className="font-semibold tracking-tight">
-                        {formatPrice(TotalInvoicesPrice)}
-                    </span>
-                </h1>
+                <KpiCard
+                    label="Selected total"
+                    value={formatPrice(TotalInvoicesPrice)}
+                />
             </div>
             <div className="flex flex-col-reverse md:flex-row md:items-center pb-4 md:space-x-4">
                 <DatePickerWithRange date={date} setDate={setDate} />

@@ -17,7 +17,7 @@ export async function getIngredients() {
             orgId,
         },
         include: {
-            selectedDeliveryPrice: true,
+            selectedDeliveryPrice: { include: { supplier: true } },
             deliveryPrices: true,
         },
     });

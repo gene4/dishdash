@@ -20,6 +20,8 @@ import {
 import { FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
+import { NavBreadcrumb } from "@/components/ui/breadcrumb";
+import KpiCard from "@/components/kpi-card";
 
 interface DeliveryIdPageProps {
     params: {
@@ -73,46 +75,38 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
 
     return (
         <>
-            <div className="flex flex-col text-lg md:text-xl mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
-                <div>
-                    <div className="font-semibold tracking-tight flex space-x-1">
-                        <h1>Delivery Number: </h1>
-                        <span className="font-normal flex items-center space-x-1">
-                            <span>
-                                {delivery?.invoiceNr || "Not available"}
-                            </span>
-                            {delivery?.fileUrl && (
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <a
-                                                target="_blank"
-                                                href={delivery?.fileUrl}>
-                                                <FileText className="h-4 w-4 hover:scale-110 transition-all" />
-                                            </a>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="bg-primary text-white rounded-3xl">
-                                            <p>Open file</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            )}
-                        </span>
-                    </div>
-                    <div className="font-semibold tracking-tight flex space-x-1">
-                        <h2 className="mb-1">Supplier:</h2>
-                        <span className="font-normal">
-                            {delivery?.supplier.name}
-                        </span>
-                    </div>
-                    <div className="font-semibold tracking-tight flex space-x-1">
-                        <h2 className="mb-1">Date:</h2>
-                        {delivery?.date && (
-                            <h2 className="font-normal">
-                                {formatDate(delivery?.date)}
-                            </h2>
-                        )}
-                    </div>
+            <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
+                <div className="flex items-center gap-1">
+                    <NavBreadcrumb
+                        primary={{
+                            label: "Deliveries",
+                            href: "/deliveries",
+                        }}
+                        secondary={delivery?.invoiceNr || "Nr. not available"}
+                    />
+                    {delivery?.fileUrl && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <a target="_blank" href={delivery?.fileUrl}>
+                                        <FileText className="h-4 w-4 hover:scale-110 transition-all" />
+                                    </a>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-primary text-white rounded-3xl">
+                                    <p>Open file</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
+                <div className="w-full space-y-4 md:w-fit md:flex md:space-y-0 md:space-x-4">
+                    <KpiCard label="Supplier" value={delivery?.supplier.name} />
+                    {delivery?.date && (
+                        <KpiCard
+                            label="Date"
+                            value={formatDate(delivery.date)}
+                        />
+                    )}
                 </div>
             </div>
 
@@ -125,23 +119,29 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
                     }
                 />
             </HydrationBoundary>
-            <div className="font-semibold mt-10 md:w-[250px] md:ml-auto">
+            <div className="rounded-lg p-4 border bg-card text-card-foreground shadow-sm  mt-10 md:w-[250px] md:ml-auto">
                 <div>
                     <div className="flex justify-between">
-                        <h2>Netto amount:</h2>{" "}
-                        <span className="font-normal">
+                        <h2 className="text-muted-foreground text-sm">
+                            Netto amount
+                        </h2>{" "}
+                        <span className="font-semibold">
                             {summery && formatPrice(summery?.nettoSum)}
                         </span>
                     </div>
                     <div className="flex justify-between">
-                        <h2>VAT 7%:</h2>{" "}
-                        <span className="font-normal">
+                        <h2 className="text-muted-foreground text-sm">
+                            VAT 7%
+                        </h2>{" "}
+                        <span className="font-semibold">
                             {summery && formatPrice(summery?.taxAmount7)}
                         </span>
                     </div>
                     <div className="flex justify-between">
-                        <h2>VAT 19%:</h2>{" "}
-                        <span className="font-normal">
+                        <h2 className="text-muted-foreground text-sm">
+                            VAT 19%
+                        </h2>{" "}
+                        <span className="font-semibold">
                             {summery && formatPrice(summery?.taxAmount19)}
                         </span>
                     </div>
@@ -149,15 +149,19 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
                 <Separator className="my-2" />
                 {delivery?.credit != 0 && (
                     <div className="flex justify-between">
-                        <h2>Credit:</h2>{" "}
-                        <span className="font-normal">
+                        <h2 className="text-muted-foreground text-sm">
+                            Credit
+                        </h2>{" "}
+                        <span className="font-semibold">
                             -{formatPrice(delivery!.credit)}
                         </span>
                     </div>
                 )}
                 <div className="flex justify-between">
-                    <h2>Total amount:</h2>{" "}
-                    <span>
+                    <h2 className="text-muted-foreground text-sm">
+                        Total amount
+                    </h2>{" "}
+                    <span className="font-semibold">
                         {formatPrice(
                             summery?.total -
                                 ((delivery!.credit && delivery!.credit) || 0)

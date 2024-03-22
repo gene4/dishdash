@@ -12,6 +12,8 @@ import {
 import { getIngredients, getRecipes } from "@/lib/actions";
 import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 import { redirect } from "next/navigation";
+import { NavBreadcrumb } from "@/components/ui/breadcrumb";
+import KpiCard from "@/components/kpi-card";
 
 interface DishIdPageProps {
     params: {
@@ -56,39 +58,27 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
     return dish ? (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
-                <h1 className="scroll-m-20 border-b md:border-none text-2xl font-semibold tracking-tight transition-colors first:mt-0">
-                    Dish: <span className="font-normal">{dish?.name}</span>
-                </h1>
-                <div className="text-lg md:text:xl flex flex-wrap text-center font-bold space-y-4 md:space-y-0 md:space-x-10">
-                    <div className="flex justify-around w-full md:w-fit md:space-x-10">
-                        <div>
-                            <h2 className="border-b mb-1">Neto Price </h2>
-                            <span className="font-normal text-xl md:text-2xl">
-                                {formatPrice(
-                                    calculateNestedItemPrice(dish.ingredients)
-                                )}
-                            </span>
-                        </div>
-                        <div>
-                            <h2 className="border-b mb-1">Multiplier </h2>
-                            <span className="font-normal text-xl md:text-2xl">
-                                {dish.multiplier}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex justify-around w-full md:w-fit md:space-x-10">
-                        <div>
-                            <h2 className="border-b mb-1">Menu Price </h2>
-                            <span className="font-normal text-xl md:text-2xl">
-                                {formatPrice(dish.menuPrice)}
-                            </span>
-                        </div>
-
-                        <div>
-                            <h2 className="border-b mb-1">Total Price </h2>
-                            <span
+                <NavBreadcrumb
+                    primary={{ label: "Dishes", href: "/dishes" }}
+                    secondary={dish?.name}
+                />
+                <div className="w-full space-y-4 md:w-fit md:flex md:space-y-0 md:space-x-4">
+                    <KpiCard
+                        label="Net price"
+                        value={formatPrice(
+                            calculateNestedItemPrice(dish.ingredients)
+                        )}
+                    />
+                    <KpiCard label="Multiplier" value={`x${dish.multiplier}`} />
+                    <KpiCard
+                        label="Menu price"
+                        value={formatPrice(dish.menuPrice)}
+                    />
+                    <KpiCard
+                        label="Total price"
+                        value={
+                            <p
                                 className={clsx(
-                                    "text-xl md:text-2xl font-semibold",
                                     calculateNestedItemPrice(dish.ingredients) *
                                         dish.multiplier >
                                         dish.menuPrice && "text-red-500"
@@ -97,9 +87,9 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                                     calculateNestedItemPrice(dish.ingredients) *
                                         dish.multiplier
                                 )}
-                            </span>
-                        </div>
-                    </div>
+                            </p>
+                        }
+                    />
                 </div>
             </div>
             <HydrationBoundary state={dehydrate(queryClient)}>

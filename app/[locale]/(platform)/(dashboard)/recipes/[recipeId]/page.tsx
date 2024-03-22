@@ -11,6 +11,8 @@ import {
 import { getIngredients, getSuppliers } from "@/lib/actions";
 import { nestedRecipeItems } from "@/lib/utils";
 import { redirect } from "next/navigation";
+import KpiCard from "@/components/kpi-card";
+import { NavBreadcrumb } from "@/components/ui/breadcrumb";
 
 interface RecipeIdPageProps {
     params: {
@@ -55,38 +57,28 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
     return recipe ? (
         <>
             <div className="flex flex-col mb-10 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
-                <h1 className="scroll-m-20 text-xl font-semibold tracking-tight transition-colors first:mt-0">
-                    Recipe: <span className="font-normal">{recipe?.name}</span>
-                </h1>
-                <div className="text-base md:text-xl flex flex-wrap text-center font-bold space-y-4 md:space-y-0">
-                    <div className="flex justify-around w-full md:w-fit space-x-10">
-                        <div>
-                            <h2 className="border-b mb-1">Yield</h2>
-                            <span className="font-normal">
-                                {recipe?.yield} {recipe?.unit}
-                            </span>
-                        </div>
-                        <div>
-                            <h2 className="border-b mb-1">Total Price</h2>
-                            <span className="font-normal">
-                                {formatPrice(
-                                    calculateNestedItemPrice(recipe.ingredients)
-                                )}
-                            </span>
-                        </div>
-                        <div>
-                            <h2 className="border-b mb-1">
-                                Price per {recipe?.unit.toLowerCase()}
-                            </h2>
-                            <span className="font-normal">
-                                {formatPrice(
-                                    calculateNestedItemPrice(
-                                        recipe.ingredients
-                                    ) / recipe?.yield
-                                )}
-                            </span>
-                        </div>
-                    </div>
+                <NavBreadcrumb
+                    primary={{ label: "Recipes", href: "/recipes" }}
+                    secondary={recipe?.name}
+                />
+                <div className="w-full space-y-4 md:w-fit md:flex md:space-y-0 md:space-x-4">
+                    <KpiCard
+                        label="Yield"
+                        value={`${recipe?.yield} ${recipe?.unit}`}
+                    />
+                    <KpiCard
+                        label="Total Price"
+                        value={formatPrice(
+                            calculateNestedItemPrice(recipe.ingredients)
+                        )}
+                    />
+                    <KpiCard
+                        label={`Price per ${recipe?.unit.toLowerCase()}`}
+                        value={formatPrice(
+                            calculateNestedItemPrice(recipe.ingredients) /
+                                recipe?.yield
+                        )}
+                    />
                 </div>
             </div>
             <HydrationBoundary state={dehydrate(queryClient)}>

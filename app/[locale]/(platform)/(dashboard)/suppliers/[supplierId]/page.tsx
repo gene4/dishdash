@@ -2,6 +2,7 @@ import { auth, redirectToSignIn } from "@clerk/nextjs";
 import prismadb from "@/lib/prismadb";
 import SupplierTabs from "./supplier-tabs";
 import { redirect } from "next/navigation";
+import { NavBreadcrumb } from "@/components/ui/breadcrumb";
 
 interface RecipeIdPageProps {
     params: {
@@ -54,10 +55,10 @@ export default async function SupplierIdPage({ params }: RecipeIdPageProps) {
     return supplier ? (
         <>
             <div className="flex flex-col mb-8 md:flex-row space-y-6 md:space-y-0 justify-between items-start">
-                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight transition-colors first:mt-0">
-                    Supplier:{" "}
-                    <span className="font-normal">{supplier?.name}</span>
-                </h1>
+                <NavBreadcrumb
+                    primary={{ label: "Suppliers", href: "/suppliers" }}
+                    secondary={supplier?.name}
+                />
             </div>
             <SupplierTabs
                 supplier={supplier}
