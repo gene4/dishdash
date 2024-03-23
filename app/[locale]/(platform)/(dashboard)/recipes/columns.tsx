@@ -1,10 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { formatPrice } from "@/lib/utils/format-price";
 import { formatDate } from "@/lib/utils/format-date";
-import { Button } from "@/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
 import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 import { Recipe, RecipeIngredient } from "@prisma/client";
+import SortButton from "@/components/sort-button";
 
 export const columns: ColumnDef<
     Recipe & { ingredients: RecipeIngredient[] }
@@ -12,17 +11,7 @@ export const columns: ColumnDef<
     {
         accessorKey: "name",
         header: ({ column }) => {
-            return (
-                <Button
-                    className="px-0 group hover:bg-transparent font-bold"
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }>
-                    NAME
-                    <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                </Button>
-            );
+            return <SortButton column={column} label="NAME" />;
         },
     },
     {
@@ -36,17 +25,7 @@ export const columns: ColumnDef<
     {
         accessorKey: "totalPrice",
         header: ({ column }) => {
-            return (
-                <Button
-                    className="px-0 group hover:bg-transparent font-bold w-max"
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }>
-                    TOTAL PRICE
-                    <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                </Button>
-            );
+            return <SortButton column={column} label="TOTAL PRICE" />;
         },
         cell: ({ row }) =>
             formatPrice(calculateNestedItemPrice(row.original.ingredients)),
@@ -54,17 +33,7 @@ export const columns: ColumnDef<
     {
         accessorKey: "pricePer",
         header: ({ column }) => {
-            return (
-                <Button
-                    className="px-0 group hover:bg-transparent font-bold w-max"
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }>
-                    PRICE PER UNIT
-                    <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                </Button>
-            );
+            return <SortButton column={column} label="PRICE PER UNIT" />;
         },
         cell: ({ row }) => {
             const totalPrice = calculateNestedItemPrice(
@@ -78,17 +47,7 @@ export const columns: ColumnDef<
     {
         accessorKey: "updatedAt",
         header: ({ column }) => {
-            return (
-                <Button
-                    className="px-0 group hover:bg-transparent font-bold w-max"
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === "asc")
-                    }>
-                    UPDATED AT
-                    <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                </Button>
-            );
+            return <SortButton column={column} label="UPDATED AT" />;
         },
         cell: ({ row }) => formatDate(row.getValue("updatedAt")),
     },

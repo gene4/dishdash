@@ -40,15 +40,7 @@ import { DataTablePagination } from "@/components/data-table-pagination";
 import { Input } from "@/components/ui/input";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-    ArrowUpDown,
-    MoreHorizontal,
-    Plus,
-    Search,
-    Trash2,
-    Edit,
-    Info,
-} from "lucide-react";
+import { MoreHorizontal, Plus, Search, Trash2, Edit, Info } from "lucide-react";
 import { Recipe, RecipeIngredient } from "@prisma/client";
 import RecipeActions from "./recipe-actions";
 import { useRouter } from "next/navigation";
@@ -64,7 +56,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Link from "next/link";
+import SortButton from "@/components/sort-button";
 
 interface DataTableProps {
     recipe: Recipe & { ingredients: RecipeIngredient[] };
@@ -88,30 +80,14 @@ export function DataTable({ recipe }: DataTableProps) {
                     ? row.ingredient.name
                     : row.recipeIngredient.name,
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent font-bold"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        NAME
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="NAME" />;
             },
             cell: ({ row }: { row: any }) => (
-                <Link
-                    href={
-                        row.original.ingredientId
-                            ? `/ingredients/${row.original.ingredient.id}`
-                            : `recipes/${row.original.recipeIngredient.id}`
-                    }
-                    className="w-max">
+                <p className="w-max">
                     {row.original.ingredientId
                         ? row.original.ingredient.name
                         : row.original.recipeIngredient.name}
-                </Link>
+                </p>
             ),
         },
         {
@@ -125,17 +101,7 @@ export function DataTable({ recipe }: DataTableProps) {
         {
             id: "pricePerUnit",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent font-bold w-max"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        PRICE PER UNIT
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="PRICE PER UNIT" />;
             },
             cell: ({ row }: { row: any }) => {
                 const recipeIngredient = row.original;
@@ -179,17 +145,7 @@ export function DataTable({ recipe }: DataTableProps) {
         {
             id: "totalPrice",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group hover:bg-transparent font-bold w-max"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        TOTAL PRICE
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="TOTAL PRICE" />;
             },
             cell: ({ row }: { row: any }) => {
                 let pricePerUnit;
@@ -344,6 +300,14 @@ export function DataTable({ recipe }: DataTableProps) {
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() =>
+                                        router.push(
+                                            row.original.ingredientId
+                                                ? `/ingredients/${row.original.ingredientId}`
+                                                : `/recipes/${row.original.recipeIngredientId}`
+                                        )
+                                    }
                                     data-state={
                                         row.getIsSelected() && "selected"
                                     }>

@@ -55,6 +55,7 @@ import { toast } from "sonner";
 import ItemActions from "./item-actions";
 import ItemForm from "@/components/delivery/item-form";
 import DeliveryForm from "@/components/delivery/delivery-form";
+import SortButton from "@/components/sort-button";
 
 export function DataTable({
     delivery,
@@ -74,66 +75,26 @@ export function DataTable({
             id: "ingredient.name",
             accessorKey: "ingredient.name",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        ITEM
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="ITEM" />;
             },
         },
         {
             accessorKey: "unit",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 font-bold group hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        UNIT
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="UNIT" />;
             },
         },
 
         {
             accessorKey: "amount",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        AMOUNT
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="AMOUNT" />;
             },
         },
         {
             id: "pricePerUnit",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent w-max"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        PRICE PER UNIT
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="PRICE PER UNIT" />;
             },
             cell: ({ row }) =>
                 formatPrice(row.original.price / row.original.amount),
@@ -141,17 +102,7 @@ export function DataTable({
         {
             accessorKey: "price",
             header: ({ column }) => {
-                return (
-                    <Button
-                        className="px-0 group font-bold hover:bg-transparent w-max"
-                        variant="ghost"
-                        onClick={() =>
-                            column.toggleSorting(column.getIsSorted() === "asc")
-                        }>
-                        TOTAL PRICE
-                        <ArrowUpDown className="text-transparent group-hover:text-foreground transition-all ml-2 h-4 w-4" />
-                    </Button>
-                );
+                return <SortButton column={column} label="TOTAL PRICE" />;
             },
             cell: ({ row }) => formatPrice(row.original.price),
         },
