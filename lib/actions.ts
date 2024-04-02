@@ -18,7 +18,6 @@ export async function getIngredients() {
         },
         include: {
             selectedDeliveryPrice: { include: { supplier: true } },
-            deliveryPrices: true,
         },
     });
     return ingredients || [];

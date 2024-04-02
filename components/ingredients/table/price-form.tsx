@@ -92,9 +92,6 @@ export default function PriceForm({
     });
 
     const router = useRouter();
-    const unit = form.watch("unit");
-
-    console.log(form.formState.errors);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsOpen(false);
