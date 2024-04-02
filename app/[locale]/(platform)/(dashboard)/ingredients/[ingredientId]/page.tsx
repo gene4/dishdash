@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 
 import KpiCard from "@/components/kpi-card";
 import { NavBreadcrumb } from "@/components/ui/breadcrumb";
+import { LayoutGrid, Percent, Star } from "lucide-react";
 
 interface IngredientIdPageProps {
     params: {
@@ -70,9 +71,21 @@ export default async function IngredientsIdPage({
                     secondary={ingredient?.name}
                 />
                 <div className="w-full space-y-4 md:w-fit md:flex md:space-y-0 md:space-x-4">
-                    <KpiCard label="VAT" value={ingredient.vat} />
-                    <KpiCard label="Category" value={ingredient.category} />
-                    <KpiCard label="Selected price" value={selectedPrice} />
+                    <KpiCard
+                        label="VAT"
+                        value={ingredient.vat}
+                        Icon={Percent}
+                    />
+                    <KpiCard
+                        Icon={LayoutGrid}
+                        label="Category"
+                        value={ingredient.category}
+                    />
+                    <KpiCard
+                        Icon={Star}
+                        label="Selected price"
+                        value={selectedPrice}
+                    />
                 </div>
             </div>
             <HydrationBoundary state={dehydrate(queryClient)}>

@@ -116,19 +116,19 @@ export default function CreateRecipeForm() {
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6">
-                    <div className="flex space-x-4">
+                    <div className="flex md:space-x-4 flex-wrap">
                         <FormField
                             control={form.control}
                             name="name"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="mb-4 md:m-0">
                                     <FormLabel className={labelStyle}>
                                         Name
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             disabled={isLoading}
-                                            className="w-32 md:w-36"
+                                            className="w-56 md:w-48"
                                             {...field}
                                         />
                                     </FormControl>
@@ -142,7 +142,7 @@ export default function CreateRecipeForm() {
                             control={form.control}
                             name="unit"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="mr-4 md:m-0">
                                     <FormLabel className={labelStyle}>
                                         Unit
                                     </FormLabel>
@@ -152,11 +152,11 @@ export default function CreateRecipeForm() {
                                             onValueChange={field.onChange}
                                             value={field.value}>
                                             <FormControl>
-                                                <SelectTrigger className="w-24">
+                                                <SelectTrigger className="w-[130px]">
                                                     <SelectValue placeholder="Select" />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent className="w-24">
+                                            <SelectContent>
                                                 {UNIT.map((unit) => (
                                                     <SelectItem
                                                         key={unit}
@@ -183,7 +183,7 @@ export default function CreateRecipeForm() {
                                     <FormControl>
                                         <Input
                                             disabled={isLoading}
-                                            className="w-16 md:w-20"
+                                            className="w-24"
                                             type="number"
                                             onFocus={(event) =>
                                                 event.target.select()

@@ -14,6 +14,7 @@ import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 import { redirect } from "next/navigation";
 import { NavBreadcrumb } from "@/components/ui/breadcrumb";
 import KpiCard from "@/components/kpi-card";
+import { Gem, Plus, ScrollText, XIcon } from "lucide-react";
 
 interface DishIdPageProps {
     params: {
@@ -68,11 +69,17 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                         value={formatPrice(
                             calculateNestedItemPrice(dish.ingredients)
                         )}
+                        Icon={Plus}
                     />
-                    <KpiCard label="Multiplier" value={`x${dish.multiplier}`} />
+                    <KpiCard
+                        label="Multiplier"
+                        value={`${dish.multiplier}`}
+                        Icon={XIcon}
+                    />
                     <KpiCard
                         label="Menu price"
                         value={formatPrice(dish.menuPrice)}
+                        Icon={ScrollText}
                     />
                     <KpiCard
                         label="Total price"
@@ -89,6 +96,7 @@ export default async function RecipesIdPage({ params }: DishIdPageProps) {
                                 )}
                             </p>
                         }
+                        Icon={Gem}
                     />
                 </div>
             </div>

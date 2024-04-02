@@ -117,8 +117,8 @@ export default function CreateDishForm() {
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6">
-                    <div className="md:flex space-y-4 md:space-y-0 md:space-x-8">
-                        <div className="flex space-x-8">
+                    <div className="md:flex space-y-4 md:space-y-0 md:space-x-4">
+                        <div className="flex space-x-4">
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -130,6 +130,7 @@ export default function CreateDishForm() {
                                         <FormControl>
                                             <Input
                                                 disabled={isLoading}
+                                                className="w-56 md:w-48"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -149,7 +150,7 @@ export default function CreateDishForm() {
                                         <FormControl>
                                             <Input
                                                 disabled={isLoading}
-                                                className="w-20"
+                                                className="w-24"
                                                 type="number"
                                                 onFocus={(event) =>
                                                     event.target.select()
@@ -164,7 +165,7 @@ export default function CreateDishForm() {
                                 )}
                             />
                         </div>
-                        <div className="flex space-x-8">
+                        <div className="flex space-x-4">
                             <FormField
                                 control={form.control}
                                 name="multiplier"
@@ -176,7 +177,7 @@ export default function CreateDishForm() {
                                         <FormControl>
                                             <Input
                                                 disabled={isLoading}
-                                                className="w-20"
+                                                className="w-24"
                                                 type="number"
                                                 onFocus={(event) =>
                                                     event.target.select()

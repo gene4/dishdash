@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
     Sheet,
     SheetContent,
@@ -47,7 +47,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { getSuppliers } from "@/lib/actions";
@@ -134,7 +134,7 @@ export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
                     <Form {...form}>
                         <form
                             onSubmit={form.handleSubmit(onSubmit)}
-                            className="flex flex-col gap-3 mt-5">
+                            className="flex flex-col gap-5 mt-6">
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -205,7 +205,7 @@ export function IngredientPriceForm({ isOpen, setIsOpen }: Props) {
                                 />
                             </div>
 
-                            <SheetDescription className="mt-4">
+                            <SheetDescription className="mt-6">
                                 Enter a delivery price:
                             </SheetDescription>
 

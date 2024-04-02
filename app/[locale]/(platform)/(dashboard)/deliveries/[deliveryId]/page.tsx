@@ -17,7 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { FileText } from "lucide-react";
+import { Calendar, FileText, User2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
 import { NavBreadcrumb } from "@/components/ui/breadcrumb";
@@ -100,11 +100,16 @@ export default async function IngredientsPage({ params }: DeliveryIdPageProps) {
                     )}
                 </div>
                 <div className="w-full space-y-4 md:w-fit md:flex md:space-y-0 md:space-x-4">
-                    <KpiCard label="Supplier" value={delivery?.supplier.name} />
+                    <KpiCard
+                        label="Supplier"
+                        value={delivery?.supplier.name}
+                        Icon={User2}
+                    />
                     {delivery?.date && (
                         <KpiCard
                             label="Date"
                             value={formatDate(delivery.date)}
+                            Icon={Calendar}
                         />
                     )}
                 </div>

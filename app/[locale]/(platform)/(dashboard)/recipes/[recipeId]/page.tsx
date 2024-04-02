@@ -13,6 +13,7 @@ import { nestedRecipeItems } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import KpiCard from "@/components/kpi-card";
 import { NavBreadcrumb } from "@/components/ui/breadcrumb";
+import { Divide, Gem, Plus, Scale } from "lucide-react";
 
 interface RecipeIdPageProps {
     params: {
@@ -65,12 +66,14 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                     <KpiCard
                         label="Yield"
                         value={`${recipe?.yield} ${recipe?.unit}`}
+                        Icon={Scale}
                     />
                     <KpiCard
                         label="Total Price"
                         value={formatPrice(
                             calculateNestedItemPrice(recipe.ingredients)
                         )}
+                        Icon={Plus}
                     />
                     <KpiCard
                         label={`Price per ${recipe?.unit.toLowerCase()}`}
@@ -78,6 +81,7 @@ export default async function RecipesIdPage({ params }: RecipeIdPageProps) {
                             calculateNestedItemPrice(recipe.ingredients) /
                                 recipe?.yield
                         )}
+                        Icon={Divide}
                     />
                 </div>
             </div>

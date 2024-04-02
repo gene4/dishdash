@@ -251,6 +251,7 @@ export function DataTable({ suppliers }: { suppliers: Supplier[] }) {
                 <KpiCard
                     label="Selected total"
                     value={formatPrice(TotalInvoicesPrice)}
+                    Icon={Check}
                 />
             </div>
             <div className="flex flex-col-reverse md:flex-row md:items-center pb-4 md:space-x-4">

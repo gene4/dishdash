@@ -58,6 +58,7 @@ import { toast } from "sonner";
 import { calculateNestedItemPrice } from "@/lib/utils/calculate-recipe-price";
 import DishActions from "./dish-actions";
 import SortButton from "@/components/sort-button";
+import Link from "next/link";
 
 interface DataTableProps {
     dish: Dish & { ingredients: DishIngredient[] };
@@ -84,11 +85,16 @@ export function DataTable({ dish }: DataTableProps) {
                 return <SortButton column={column} label="NAME" />;
             },
             cell: ({ row }: { row: any }) => (
-                <p className="w-max">
+                <Link
+                    href={
+                        row.original.ingredientId
+                            ? `/ingredients/${row.original.ingredientId}`
+                            : `/recipes/${row.original.recipeIngredientId}`
+                    }>
                     {row.original.ingredientId
                         ? row.original.ingredient.name
                         : row.original.recipeIngredient.name}
-                </p>
+                </Link>
             ),
         },
         {
@@ -115,10 +121,8 @@ export function DataTable({ dish }: DataTableProps) {
                                         <Info className="h-4 w-4" />
                                     </TooltipTrigger>
                                     <TooltipContent className="bg-secondary text-secondary-foreground rounded-3xl">
-                                        <p>
-                                            Please select a price for this
-                                            ingredient
-                                        </p>
+                                        Please select a price for this
+                                        ingredient
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -140,10 +144,8 @@ export function DataTable({ dish }: DataTableProps) {
                                             <Info className="h-4 w-4" />
                                         </TooltipTrigger>
                                         <TooltipContent className="bg-secondary text-secondary-foreground rounded-3xl">
-                                            <p>
-                                                Please specify a weight variant
-                                                for piece to weight conversion
-                                            </p>
+                                            Please specify a weight variant for
+                                            piece to weight conversion
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -352,14 +354,7 @@ export function DataTable({ dish }: DataTableProps) {
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    className="cursor-pointer hover:bg-muted/50"
-                                    onClick={() =>
-                                        router.push(
-                                            row.original.ingredientId
-                                                ? `/ingredients/${row.original.ingredientId}`
-                                                : `/recipes/${row.original.recipeIngredientId}`
-                                        )
-                                    }
+                                    className="hover:bg-muted/50"
                                     data-state={
                                         row.getIsSelected() && "selected"
                                     }>

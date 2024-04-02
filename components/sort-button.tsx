@@ -15,7 +15,7 @@ export default function SortButton<TData, TValue>({
     return (
         <Button
             size={"sm"}
-            className="px-0 font-bold group hover:bg-transparent"
+            className="px-0 font-bold group hover:bg-transparent w-max"
             variant="ghost"
             onClick={() =>
                 column.toggleSorting(column.getIsSorted() === "asc")
