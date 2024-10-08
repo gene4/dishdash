@@ -50,8 +50,7 @@ export default async function RootLayout({
                             <div
                                 style={{
                                     WebkitTapHighlightColor: "transparent",
-                                }}
-                                className="relative flex flex-col min-h-screen">
+                                }}>
                                 <NextIntlClientProvider
                                     locale={locale}
                                     messages={messages}>

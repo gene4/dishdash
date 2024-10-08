@@ -18,8 +18,8 @@ export const Sidebar = ({ setIsOpen }: Props) => {
     const pathname = usePathname();
 
     return (
-        <aside className="flex space-y-4 flex-col md:h-full md:border-divider md:w-40">
-            <div className="md:pt-4 md:pl-3 h-full flex flex-col justify-between">
+        <aside className="flex space-y-4 flex-col md:h-full md:border-divider md:w-40 md:border-r">
+            <div className="md:pt-4 md:px-3 h-full flex flex-col justify-between">
                 <div className="space-y-2 text-xl md:text-base">
                     {siteConfig.navItems.map((item) => (
                         <Link

@@ -4,9 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Overview } from "./overview";
 import { DeliveriesTable } from "./deliveries-table";
 import { Delivery, Supplier } from "@prisma/client";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Card, Title } from "@tremor/react";
 import SupplierActions from "../supplier-actions";
+import { useState } from "react";
 
 export default function SupplierTabs({
     deliveries,
@@ -17,31 +17,23 @@ export default function SupplierTabs({
     yearsFromDeliveries: string[];
     supplier: Supplier;
 }) {
-    const tabsParams = useSearchParams();
-    const selectedTab = tabsParams.get("tab");
-
-    const router = useRouter();
-    const pathname = usePathname();
+    const [tab, setTab] = useState("overview");
 
     return (
-        <Tabs value={selectedTab || "overview"} defaultValue="overview">
+        <Tabs value={tab}>
             <div className="flex justify-between">
                 <TabsList>
                     <TabsTrigger
-                        onClick={() => router.push(pathname + "?tab=overview")}
+                        onClick={() => setTab("overview")}
                         value="overview">
                         Overview
                     </TabsTrigger>
                     <TabsTrigger
-                        onClick={() =>
-                            router.push(pathname + "?tab=deliveries")
-                        }
+                        onClick={() => setTab("deliveries")}
                         value="deliveries">
                         Deliveries
                     </TabsTrigger>
-                    <TabsTrigger
-                        onClick={() => router.push(pathname + "?tab=info")}
-                        value="info">
+                    <TabsTrigger onClick={() => setTab("info")} value="info">
                         Information
                     </TabsTrigger>
                 </TabsList>

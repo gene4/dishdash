@@ -14,7 +14,7 @@ export const Navbar = () => {
     const { orgRole } = useAuth();
 
     return (
-        <header className="flex sticky z-50 top-0 bg-background/95 backdrop-blur items-center justify-between px-3 md:px-6 h-16 border-b md:border-none">
+        <header className="flex sticky z-50 top-0 bg-background/95 backdrop-blur items-center justify-between px-3 md:px-6 h-16 border-b">
             <Link className="flex justify-start items-center gap-2" href="/">
                 <Image
                     priority
@@ -55,7 +55,6 @@ export const Navbar = () => {
                 )}
                 <MobileSidebar />
             </div>
-            <div className="hidden md:block absolute bottom-0 left-48 right-7 opacity-90  h-[1px] bg-border" />
         </header>
     );
 };
